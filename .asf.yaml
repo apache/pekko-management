@@ -1,0 +1,22 @@
+# https://cwiki.apache.org/confluence/display/INFRA/.asf.yaml+features+for+git+repositories
+
+github:
+  description: "Apache Pekko Management is a suite of tools for operating Pekko Clusters."
+  homepage: https://pekko.apache.org/
+  labels:
+    - pekko
+    - pekko-http
+    - pekko-cluster
+    - ops
+    - operations
+    - microservice
+    - management
+    - cloud-native
+  
+  features:
+    # Enable wiki for documentation
+    wiki: false
+    # Enable issue management
+    issues: true
+    # Enable projects for project management boards
+    projects: false
