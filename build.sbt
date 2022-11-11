@@ -39,10 +39,7 @@ lazy val `akka-management-root` = project
   )
 
 lazy val mimaPreviousArtifactsSet =
-  mimaPreviousArtifacts := Set(
-      organization.value %% name.value % previousStableVersion.value.getOrElse(
-        throw new Error("Unable to determine previous version"))
-    )
+  mimaPreviousArtifacts := Set.empty // temporarily disable mima checks
 
 lazy val `akka-discovery-kubernetes-api` = project
   .in(file("discovery-kubernetes-api"))
