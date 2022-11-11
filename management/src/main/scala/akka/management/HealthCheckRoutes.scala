@@ -23,8 +23,7 @@ import scala.util.{ Failure, Success, Try }
 private[akka] class HealthCheckRoutes(system: ExtendedActorSystem) extends ManagementRouteProvider {
 
   private val settings: HealthCheckSettings = HealthCheckSettings(
-    system.settings.config.getConfig("akka.management.health-checks")
-  )
+    system.settings.config.getConfig("akka.management.health-checks"))
 
   // exposed for testing
   protected val healthChecks = HealthChecks(system, settings)
@@ -35,8 +34,7 @@ private[akka] class HealthCheckRoutes(system: ExtendedActorSystem) extends Manag
       complete(StatusCodes.InternalServerError -> s"Not Healthy: $failingChecks")
     case Failure(t) =>
       complete(
-        StatusCodes.InternalServerError -> s"Health Check Failed: ${t.getMessage}"
-      )
+        StatusCodes.InternalServerError -> s"Health Check Failed: ${t.getMessage}")
   }
 
   override def routes(mrps: ManagementRouteProviderSettings): Route = {
@@ -50,7 +48,6 @@ private[akka] class HealthCheckRoutes(system: ExtendedActorSystem) extends Manag
         get {
           onComplete(healthChecks.aliveResult())(healthCheckResponse)
         }
-      }
-    )
+      })
   }
 }

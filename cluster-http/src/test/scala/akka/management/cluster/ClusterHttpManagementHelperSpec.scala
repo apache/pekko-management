@@ -41,8 +41,7 @@ class ClusterHttpManagementHelperSpec extends AnyWordSpec with Matchers {
         "one" -> address1.toString,
         "two" -> address1.toString,
         "three" -> address3.toString,
-        dc -> address1.toString
-      )
+        dc -> address1.toString)
     }
   }
 

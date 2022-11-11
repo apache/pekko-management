@@ -87,8 +87,7 @@ final private[akka] class HealthChecksImpl(system: ExtendedActorSystem, settings
     system.dynamicAccess
       .createInstanceFor[HealthCheck](
         fqcn,
-        immutable.Seq((classOf[ActorSystem], system))
-      )
+        immutable.Seq((classOf[ActorSystem], system)))
       .recoverWith {
         case _: NoSuchMethodException =>
           system.dynamicAccess.createInstanceFor[HealthCheck](fqcn, Nil)
@@ -102,8 +101,7 @@ final private[akka] class HealthChecksImpl(system: ExtendedActorSystem, settings
     system.dynamicAccess
       .createInstanceFor[Supplier[CompletionStage[JBoolean]]](
         fqcn,
-        immutable.Seq((classOf[ActorSystem], system))
-      )
+        immutable.Seq((classOf[ActorSystem], system)))
       .recoverWith {
         case _: NoSuchMethodException =>
           system.dynamicAccess.createInstanceFor[Supplier[CompletionStage[JBoolean]]](fqcn, Nil)
@@ -112,8 +110,7 @@ final private[akka] class HealthChecksImpl(system: ExtendedActorSystem, settings
   }
 
   private def load(
-      checks: immutable.Seq[NamedHealthCheck]
-  ): immutable.Seq[HealthCheck] = {
+      checks: immutable.Seq[NamedHealthCheck]): immutable.Seq[HealthCheck] = {
     checks
       .map(namedHealthCheck =>
         tryLoadScalaHealthCheck(namedHealthCheck.fullyQualifiedClassName).recoverWith {
@@ -127,21 +124,17 @@ final private[akka] class HealthChecksImpl(system: ExtendedActorSystem, settings
         case Success(c) => c
         case Failure(_: NoSuchMethodException) =>
           throw new InvalidHealthCheckException(
-            s"Health checks: [${checks.mkString(",")}] must have a no args constructor or a single argument constructor that takes an ActorSystem"
-          )
+            s"Health checks: [${checks.mkString(",")}] must have a no args constructor or a single argument constructor that takes an ActorSystem")
         case Failure(_: ClassCastException) =>
           throw new InvalidHealthCheckException(
-            s"Health checks: [${checks.mkString(",")}] must have type: () => Future[Boolean]"
-          )
+            s"Health checks: [${checks.mkString(",")}] must have type: () => Future[Boolean]")
         case Failure(c: ClassNotFoundException) =>
           throw new InvalidHealthCheckException(
-            s"Health check: [${c.getMessage}] not found"
-          )
+            s"Health check: [${c.getMessage}] not found")
         case Failure(t) =>
           throw new InvalidHealthCheckException(
             "Uncaught exception from Health check construction",
-            t
-          )
+            t)
       }
   }
 
@@ -189,8 +182,7 @@ final private[akka] class HealthChecksImpl(system: ExtendedActorSystem, settings
           timeout.recoverWith {
             case t: Throwable =>
               Future.failed(
-                CheckTimeoutException(s"Check [$checkName] timed out after ${settings.checkTimeout}")
-              )
+                CheckTimeoutException(s"Check [$checkName] timed out after ${settings.checkTimeout}"))
           },
           runCheck(check)
             .map {
@@ -199,9 +191,7 @@ final private[akka] class HealthChecksImpl(system: ExtendedActorSystem, settings
             }
             .recoverWith {
               case t: Throwable => Future.failed(CheckFailedException(s"Check [$checkName] failed: ${t.getMessage}", t))
-            }
-        )
-      )
+            }))
     }
 
     Future.sequence(spawnedChecks).map { completedChecks =>

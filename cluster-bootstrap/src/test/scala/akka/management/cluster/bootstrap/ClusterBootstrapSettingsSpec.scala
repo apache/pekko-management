@@ -33,8 +33,7 @@ class ClusterBootstrapSettingsSpec extends AbstractBootstrapSpec {
             form-new-cluster=on
             new-cluster-enabled=off
           }""")),
-          NoLogging
-        )
+          NoLogging)
       settings.newClusterEnabled should ===(true)
 
     }

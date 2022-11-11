@@ -42,8 +42,7 @@ object HealthCheckSettings {
         .toList,
       config.getString("readiness-path"),
       config.getString("liveness-path"),
-      config.getDuration("check-timeout").asScala
-    )
+      config.getDuration("check-timeout").asScala)
   }
 
   /**
@@ -65,8 +64,7 @@ object HealthCheckSettings {
       livenessChecks.asScala.toList,
       readinessPath,
       livenessPath,
-      checkDuration.asScala
-    )
+      checkDuration.asScala)
 }
 
 /**

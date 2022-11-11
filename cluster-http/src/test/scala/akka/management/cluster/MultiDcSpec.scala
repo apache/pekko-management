@@ -32,8 +32,7 @@ class MultiDcSpec
       |akka.remote.artery.canonical.hostname = "127.0.0.1"
       |akka.remote.artery.enabled = true
       |#akka.loglevel = DEBUG
-    """.stripMargin
-  )
+    """.stripMargin)
 
   "Http cluster management" must {
     "allow multiple DCs" in {
@@ -46,15 +45,13 @@ class MultiDcSpec
            |akka.cluster.multi-data-center.self-data-center = "DC-A"
            |akka.remote.artery.canonical.port = $portA
            |akka.remote.artery.canonical.port = $portA
-           |          """.stripMargin
-      )
+           |          """.stripMargin)
       val dcB = ConfigFactory.parseString(
         s"""
            |akka.cluster.seed-nodes = ["akka://MultiDcSystem@127.0.0.1:$portA"]
            |akka.cluster.multi-data-center.self-data-center = "DC-B"
            |akka.remote.artery.canonical.port = $portB
-           |          """.stripMargin
-      )
+           |          """.stripMargin)
 
       implicit val dcASystem = ActorSystem("MultiDcSystem", config.withFallback(dcA))
       val dcBSystem = ActorSystem("MultiDcSystem", config.withFallback(dcB))

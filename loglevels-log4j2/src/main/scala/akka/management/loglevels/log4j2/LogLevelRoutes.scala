@@ -43,13 +43,13 @@ final class LogLevelRoutes private (system: ExtendedActorSystem) extends Extensi
             put {
               parameters(
                 "level".as[Level].withDefault(Level.INFO),
-                "logger" ? LogManager.ROOT_LOGGER_NAME
-              ) { (level, logger) =>
+                "logger" ? LogManager.ROOT_LOGGER_NAME) { (level, logger) =>
                 if (settings.readOnly) {
                   complete(StatusCodes.Forbidden)
                 } else {
                   log.info(
-                    s"Log level for [${if (logger.equals(LogManager.ROOT_LOGGER_NAME)) "Root" else logger}] set to [$level] through Akka Management loglevel endpoint from [$clientIp]")
+                    s"Log level for [${if (logger.equals(LogManager.ROOT_LOGGER_NAME)) "Root"
+                      else logger}] set to [$level] through Akka Management loglevel endpoint from [$clientIp]")
                   val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
                   val config = context.getConfiguration
                   val loggerConfig = config.getLoggerConfig(logger)
@@ -61,8 +61,7 @@ final class LogLevelRoutes private (system: ExtendedActorSystem) extends Extensi
             } ~
             get {
               parameters(
-                "logger" ? LogManager.ROOT_LOGGER_NAME
-              ) { logger =>
+                "logger" ? LogManager.ROOT_LOGGER_NAME) { logger =>
                 val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
                 val config = context.getConfiguration
                 val loggerConfig = config.getLoggerConfig(logger)
@@ -83,8 +82,7 @@ final class LogLevelRoutes private (system: ExtendedActorSystem) extends Extensi
               parameter("level".as[ClassicLogging.LogLevel]) { level =>
                 log.info(
                   "Akka loglevel set to [{}] through Akka Management loglevel endpoint from [{}]",
-                  Array[Object](classicLogLevelName(level), clientIp): _*
-                )
+                  Array[Object](classicLogLevelName(level), clientIp): _*)
                 system.eventStream.setLogLevel(level)
                 complete(StatusCodes.OK)
               }
@@ -119,9 +117,7 @@ private[akka] object LoggingUnmarshallers {
         .levelFor(string)
         .getOrElse(
           throw new IllegalArgumentException(
-            s"Unknown logger level $string, allowed are [${ClassicLogging.AllLogLevels.map(_.toString).mkString(",")}]"
-          )
-        )
+            s"Unknown logger level $string, allowed are [${ClassicLogging.AllLogLevels.map(_.toString).mkString(",")}]"))
     }
 
   def classicLogLevelName(level: ClassicLogging.LogLevel): String = level match {

@@ -20,15 +20,12 @@ class ClusterHttpManagementRouteProviderSpec extends AnyWordSpec with ScalatestR
 
   "Cluster HTTP Management Route" should {
     val routes = ClusterHttpManagementRouteProvider(
-      system.asInstanceOf[ExtendedActorSystem]
-    )
+      system.asInstanceOf[ExtendedActorSystem])
     "not expose write operations when readOnly set" in {
       val readOnlyRoutes = routes.routes(
         ManagementRouteProviderSettings(
           Uri("http://localhost"),
-          readOnly = true
-        )
-      )
+          readOnly = true))
       Get("/cluster/members") ~> readOnlyRoutes ~> check {
         handled shouldEqual true
         status shouldEqual StatusCodes.OK
@@ -52,9 +49,7 @@ class ClusterHttpManagementRouteProviderSpec extends AnyWordSpec with ScalatestR
       val allRoutes = routes.routes(
         ManagementRouteProviderSettings(
           Uri("http://localhost"),
-          readOnly = false
-        )
-      )
+          readOnly = false))
       Get("/cluster/members") ~> allRoutes ~> check {
         handled shouldEqual true
       }

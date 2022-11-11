@@ -20,8 +20,7 @@ abstract class LocalLeaseSpec extends LeaseSpec {
       namespace-path = ""
       secure-api-server = false
     }
-    """)
-  )
+    """))
 
   override def system = _system
 }

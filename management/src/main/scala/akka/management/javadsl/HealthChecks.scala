@@ -7,7 +7,7 @@ package akka.management.javadsl
 import java.util.concurrent.CompletionStage
 import java.util.function.Supplier
 import java.util.function.{ Function => JFunction }
-import java.util.{ Optional, List => JList }
+import java.util.{ List => JList, Optional }
 
 import scala.compat.java8.FunctionConverters._
 import scala.compat.java8.FutureConverters._
@@ -69,8 +69,7 @@ object ReadinessCheckSetup {
  * Setup for readiness checks, constructor is *Internal API*, use factories in [[ReadinessCheckSetup]]
  */
 final class ReadinessCheckSetup private (
-    val createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]
-) extends Setup
+    val createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]) extends Setup
 
 object LivenessCheckSetup {
 
@@ -88,8 +87,7 @@ object LivenessCheckSetup {
  * Setup for liveness checks, constructor is *Internal API*, use factories in [[LivenessCheckSetup]]
  */
 final class LivenessCheckSetup private (
-    val createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]
-) extends Setup
+    val createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]) extends Setup
 
 /**
  * Result for readiness and liveness checks

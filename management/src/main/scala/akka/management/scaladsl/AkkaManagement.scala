@@ -65,10 +65,8 @@ final class AkkaManagement(implicit private[akka] val system: ExtendedActorSyste
       "akka-discovery-kubernetes-api",
       "akka-management",
       "akka-management-cluster-bootstrap",
-      "akka-management-cluster-http"
-    ),
-    logWarning = true
-  )
+      "akka-management-cluster-http"),
+    logWarning = true)
 
   private val log = Logging.withMarker(system, getClass)
   val settings: AkkaManagementSettings = new AkkaManagementSettings(system.settings.config)

@@ -20,8 +20,7 @@ class HealthCheckRoutesSpec extends AnyWordSpec with Matchers with ScalatestRout
 
   private def testRoute(
       readyResultValue: Future[Either[String, Unit]] = Future.successful(Right(())),
-      aliveResultValue: Future[Either[String, Unit]] = Future.successful(Right(()))
-  ): Route = {
+      aliveResultValue: Future[Either[String, Unit]] = Future.successful(Right(()))): Route = {
     new HealthCheckRoutes(eas) {
       override protected val healthChecks: HealthChecks = new HealthChecks {
         override def readyResult(): Future[Either[String, Unit]] = readyResultValue

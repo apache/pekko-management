@@ -31,8 +31,7 @@ object MarathonApiDockerDemoApp extends App {
     concat(
       path("ping")(complete("pong!")),
       path("healthy")(complete(if (isHealthy()) StatusCodes.OK else StatusCodes.ServiceUnavailable)),
-      path("ready")(complete(if (isReady()) StatusCodes.OK else StatusCodes.ServiceUnavailable))
-    )
+      path("ready")(complete(if (isReady()) StatusCodes.OK else StatusCodes.ServiceUnavailable)))
 
   AkkaManagement(system).start()
   ClusterBootstrap(system).start()

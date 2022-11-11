@@ -117,7 +117,8 @@ class ClusterBootstrapDiscoveryBackoffIntegrationSpec
     val name = s"$systemName.svc.cluster.local"
 
     MockDiscovery.set(
-      Lookup(name).withProtocol("tcp").withPortName("management"), { system =>
+      Lookup(name).withProtocol("tcp").withPortName("management"),
+      { system =>
         val stats = perSystemStats.compute(
           system,
           new BiFunction[ActorSystem, SystemStats, SystemStats] {
@@ -129,8 +130,7 @@ class ClusterBootstrapDiscoveryBackoffIntegrationSpec
               else
                 stats.copy(called = stats.called + 1)
             }
-          }
-        )
+          })
         val res =
           if (stats.called < 4)
             Future.failed(new Exception("Boom! Discovery failed, was rate limited for example..."))
@@ -142,21 +142,16 @@ class ClusterBootstrapDiscoveryBackoffIntegrationSpec
                   ResolvedTarget(
                     host = clusterA.selfAddress.host.get,
                     port = contactPointPorts.get("A"),
-                    address = Option(InetAddress.getByName(clusterA.selfAddress.host.get))
-                  ),
+                    address = Option(InetAddress.getByName(clusterA.selfAddress.host.get))),
                   ResolvedTarget(
                     host = clusterB.selfAddress.host.get,
                     port = contactPointPorts.get("B"),
-                    address = Option(InetAddress.getByName(clusterB.selfAddress.host.get))
-                  )
-                )
-              ))
+                    address = Option(InetAddress.getByName(clusterB.selfAddress.host.get))))))
 
         resolveProbe.ref ! DiscoveryRequest(System.currentTimeMillis(), stats.called, res)
         res
 
-      }
-    )
+      })
 
     "start listening with the http contact-points on 2 systems" in {
       def start(system: ActorSystem, contactPointPort: Int) = {

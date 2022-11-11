@@ -70,8 +70,7 @@ class KubernetesLease private[akka] (system: ExtendedActorSystem, leaseTaken: At
   private val leaseName = makeDNS1039Compatible(settings.leaseName)
   private val leaseActor = system.systemActorOf(
     LeaseActor.props(k8sApi, settings, leaseName, leaseTaken),
-    s"kubernetesLease${KubernetesLease.leaseCounter.incrementAndGet}"
-  )
+    s"kubernetesLease${KubernetesLease.leaseCounter.incrementAndGet}")
   if (leaseName != settings.leaseName) {
     logger.info(
       "Original lease name [{}] sanitized for kubernetes: [{}]",

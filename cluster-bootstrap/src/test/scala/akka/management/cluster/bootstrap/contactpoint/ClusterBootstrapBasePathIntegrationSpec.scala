@@ -82,10 +82,7 @@ class ClusterBootstrapBasePathIntegrationSpec extends AnyWordSpecLike with Match
               ResolvedTarget(
                 host = "127.0.0.1",
                 port = Some(managementPort),
-                address = Option(InetAddress.getByName("127.0.0.1")))
-            ))
-        )
-    )
+                address = Option(InetAddress.getByName("127.0.0.1")))))))
 
     "start listening with the http contact-points on system" in {
       managementA.start()

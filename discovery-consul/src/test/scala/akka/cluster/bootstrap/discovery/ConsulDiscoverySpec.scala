@@ -49,12 +49,10 @@ class ConsulDiscoverySpec
                 .id("test")
                 .service("test")
                 .port(1235)
-                .build()
-            )
+                .build())
             .node("testNode")
             .address("localhost")
-            .build()
-        )
+            .build())
 
       val lookupService = new ConsulServiceDiscovery(system)
       val resolved = lookupService.lookup("test", 10.seconds).futureValue
@@ -62,9 +60,7 @@ class ConsulDiscoverySpec
         ResolvedTarget(
           host = "127.0.0.1",
           port = Some(1234),
-          address = Some(InetAddress.getByName("127.0.0.1"))
-        )
-      )
+          address = Some(InetAddress.getByName("127.0.0.1"))))
     }
   }
 

@@ -50,8 +50,7 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     Future.firstCompletedOf(
       Seq(
         after(resolveTimeout, using = system.scheduler)(
-          Future.failed(new TimeoutException("Future timed out!"))
-        ),
+          Future.failed(new TimeoutException("Future timed out!"))),
         Future {
           Resolved(
             serviceName = query.serviceName,
@@ -62,11 +61,8 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
             } yield {
               val address = networkInterface.getPrivateIpv4Address
               ResolvedTarget(host = address, port = None, address = Try(InetAddress.getByName(address)).toOption)
-            }
-          )
-        }
-      )
-    )
+            })
+        }))
 
 }
 
@@ -110,8 +106,7 @@ object EcsServiceDiscovery {
         .withCluster(cluster)
         .withServiceName(serviceName)
         .withNextToken(pageTaken.orNull)
-        .withDesiredStatus(DesiredStatus.RUNNING)
-    )
+        .withDesiredStatus(DesiredStatus.RUNNING))
     val accumulatedTasksArns = accumulator ++ listTasksResult.getTaskArns.asScala
     listTasksResult.getNextToken match {
       case null =>
@@ -123,8 +118,7 @@ object EcsServiceDiscovery {
           cluster,
           serviceName,
           Some(nextPageToken),
-          accumulatedTasksArns
-        )
+          accumulatedTasksArns)
     }
   }
 
@@ -133,8 +127,7 @@ object EcsServiceDiscovery {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.
       group <- taskArns.grouped(100).toList
       tasks = ecsClient.describeTasks(
-        new DescribeTasksRequest().withCluster(cluster).withTasks(group.asJava)
-      )
+        new DescribeTasksRequest().withCluster(cluster).withTasks(group.asJava))
       task <- tasks.getTasks.asScala
     } yield task
 

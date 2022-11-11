@@ -35,8 +35,8 @@ class Main(nr: Int) {
 
   ClusterBootstrap(system).start()
 
-  Cluster(system).registerOnMemberUp({
+  Cluster(system).registerOnMemberUp {
     system.log.info("Cluster is up!")
-  })
+  }
 }
 //#main

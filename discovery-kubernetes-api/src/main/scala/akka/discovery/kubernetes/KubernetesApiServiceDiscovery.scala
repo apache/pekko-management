@@ -81,8 +81,7 @@ object KubernetesApiServiceDiscovery {
       ResolvedTarget(
         host = hostOrIp,
         port = maybePort,
-        address = Some(InetAddress.getByName(ip))
-      )
+        address = Some(InetAddress.getByName(ip)))
     }
 
   class KubernetesApiException(msg: String) extends RuntimeException(msg) with NoStackTrace
@@ -136,8 +135,7 @@ class KubernetesApiServiceDiscovery(implicit system: ActorSystem) extends Servic
     for {
       request <- optionToFuture(
         podRequest(apiToken, podNamespace, labelSelector),
-        s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})"
-      )
+        s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})")
 
       response <- http.singleRequest(request, clientSslContext)
 
@@ -170,8 +168,7 @@ class KubernetesApiServiceDiscovery(implicit system: ActorSystem) extends Servic
               log.warning(
                 "Non-200 when communicating with Kubernetes API server. Status code: [{}]. Response body: [{}]",
                 other,
-                body
-              )
+                body)
             }
 
             Future.failed(new KubernetesApiException(s"Non-200 from Kubernetes API server: $other"))
@@ -188,14 +185,12 @@ class KubernetesApiServiceDiscovery(implicit system: ActorSystem) extends Servic
           log.info(
             "No targets found from pod list. Is the correct port name configured? Current configuration: [{}]. Ports on pods: [{}]",
             query.portName,
-            containerPortNames
-          )
+            containerPortNames)
         }
       }
       Resolved(
         serviceName = query.serviceName,
-        addresses = addresses
-      )
+        addresses = addresses)
     }
   }
 

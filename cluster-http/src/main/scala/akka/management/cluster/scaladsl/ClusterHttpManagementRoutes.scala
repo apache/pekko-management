@@ -104,9 +104,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
             case None =>
               complete(
                 StatusCodes.NotFound -> ClusterHttpManagementMessage(
-                  s"Member [$memberAddress] not found"
-                )
-              )
+                  s"Member [$memberAddress] not found"))
           }
         }
       }
@@ -140,8 +138,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
       "ReachableMember" -> classOf[ClusterEvent.ReachableMember],
       "DataCenterReachabilityEvent" -> classOf[ClusterEvent.DataCenterReachabilityEvent],
       "UnreachableDataCenter" -> classOf[ClusterEvent.UnreachableDataCenter],
-      "ReachableDataCenter" -> classOf[ClusterEvent.ReachableDataCenter]
-    )
+      "ReachableDataCenter" -> classOf[ClusterEvent.ReachableDataCenter])
 
     extractMaterializer { implicit mat: Materializer =>
       implicit val ec: ExecutionContext = mat.executionContext
@@ -164,8 +161,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
               completionMatcher = PartialFunction.empty,
               failureMatcher = PartialFunction.empty,
               bufferSize = 128,
-              overflowStrategy = OverflowStrategy.fail
-            )
+              overflowStrategy = OverflowStrategy.fail)
             .map(ClusterDomainEventServerSentEventEncoder.encode)
             .collect {
               case Some(serverSentEvent) => serverSentEvent
@@ -200,8 +196,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
                 cluster.subscribe(
                   actorRef,
                   initialStateMode = ClusterEvent.InitialStateAsEvents,
-                  classes: _*
-                )
+                  classes: _*)
               }
 
             case None =>
@@ -263,8 +258,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
             pathEndOrSingleSlash {
               routeGetMembers(cluster) ~ routePostMembers(cluster)
             },
-            routeFindMember(cluster, readOnly = false)
-          )
+            routeFindMember(cluster, readOnly = false))
         },
         pathPrefix("domain-events") {
           routeGetClusterDomainEvents(cluster)
@@ -274,8 +268,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
         },
         pathPrefix("shards" / Remaining) { shardRegionName =>
           routeGetShardInfo(cluster, shardRegionName)
-        }
-      )
+        })
     }
 
   private def routePutCluster(cluster: Cluster): Route = {
@@ -298,16 +291,15 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
     concat(
       pathPrefix("cluster" / "members") {
         concat(pathEndOrSingleSlash {
-          routeGetMembers(cluster)
-        }, routeFindMember(cluster, readOnly = true))
+            routeGetMembers(cluster)
+          }, routeFindMember(cluster, readOnly = true))
       },
       pathPrefix("cluster" / "domain-events") {
         routeGetClusterDomainEvents(cluster)
       },
       pathPrefix("cluster" / "shards" / Remaining) { shardRegionName =>
         routeGetShardInfo(cluster, shardRegionName)
-      }
-    )
+      })
   }
 
   /**

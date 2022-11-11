@@ -31,8 +31,7 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
       |akka.management.cluster.bootstrap {
       | contact-point-discovery.service-name = $serviceName
       |}
-    """.stripMargin).withFallback(ConfigFactory.load())
-  )
+    """.stripMargin).withFallback(ConfigFactory.load()))
   val settings = ClusterBootstrapSettings(system.settings.config, system.log)
   val joinDecider = new LowestAddressJoinDecider(system, settings)
 
@@ -55,30 +54,24 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
                 ResolvedTarget("host1", Some(2552), None),
                 ResolvedTarget("host1", Some(8558), None),
                 ResolvedTarget("host2", Some(2552), None),
-                ResolvedTarget("host2", Some(8558), None)
-              )
-            )
-          )
-      )
+                ResolvedTarget("host2", Some(8558), None)))))
 
       val targets = new AtomicReference[List[ResolvedTarget]](Nil)
       val coordinator = system.actorOf(
         Props(new BootstrapCoordinator(discovery, joinDecider, settings) {
           override def ensureProbing(
               selfContactPointScheme: String,
-              contactPoint: ResolvedTarget
-          ): Option[ActorRef] = {
+              contactPoint: ResolvedTarget): Option[ActorRef] = {
             println(s"Resolving $contactPoint")
             val targetsSoFar = targets.get
             targets.compareAndSet(targetsSoFar, contactPoint +: targetsSoFar)
             None
           }
-        })
-      )
+        }))
       coordinator ! InitiateBootstrapping(selfUri)
       eventually {
         val targetsToCheck = targets.get
-        targetsToCheck.length should be >= (2)
+        targetsToCheck.length should be >= 2
         targetsToCheck.map(_.host) should contain("host1")
         targetsToCheck.map(_.host) should contain("host2")
         targetsToCheck.flatMap(_.port).toSet should be(Set(8558))
@@ -97,11 +90,7 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
                 ResolvedTarget("host1", None, None),
                 ResolvedTarget("host1", None, None),
                 ResolvedTarget("host2", None, None),
-                ResolvedTarget("host2", None, None)
-              )
-            )
-          )
-      )
+                ResolvedTarget("host2", None, None)))))
 
       val targets = new AtomicReference[List[ResolvedTarget]](Nil)
       val coordinator = system.actorOf(Props(new BootstrapCoordinator(discovery, joinDecider, settings) {
@@ -115,7 +104,7 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
       coordinator ! InitiateBootstrapping(selfUri)
       eventually {
         val targetsToCheck = targets.get
-        targetsToCheck.length should be >= (2)
+        targetsToCheck.length should be >= 2
         targetsToCheck.map(_.host) should contain("host1")
         targetsToCheck.map(_.host) should contain("host2")
         targetsToCheck.flatMap(_.port).toSet shouldBe empty
@@ -130,15 +119,13 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
         ResolvedTarget("host1", Some(1), None),
         ResolvedTarget("host2", Some(2), None),
         ResolvedTarget("host3", Some(3), None),
-        ResolvedTarget("host4", Some(4), None)
-      )
+        ResolvedTarget("host4", Some(4), None))
 
       BootstrapCoordinator.selectHosts(
         Lookup.create("service").withPortName("cats"),
         8558,
         filterOnFallbackPort = true,
-        beforeFiltering
-      ) shouldEqual beforeFiltering
+        beforeFiltering) shouldEqual beforeFiltering
     }
 
     // For example when using DNS A-record-based discovery in K8s
@@ -147,13 +134,12 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
         ResolvedTarget("host1", Some(8558), None),
         ResolvedTarget("host1", Some(2), None),
         ResolvedTarget("host2", Some(8558), None),
-        ResolvedTarget("host2", Some(4), None)
-      )
+        ResolvedTarget("host2", Some(4), None))
 
-      BootstrapCoordinator.selectHosts(Lookup.create("service"), 8558, filterOnFallbackPort = true, beforeFiltering) shouldEqual List(
+      BootstrapCoordinator.selectHosts(Lookup.create("service"), 8558, filterOnFallbackPort = true,
+        beforeFiltering) shouldEqual List(
         ResolvedTarget("host1", Some(8558), None),
-        ResolvedTarget("host2", Some(8558), None)
-      )
+        ResolvedTarget("host2", Some(8558), None))
     }
 
     // For example when using ECS service discovery
@@ -162,10 +148,10 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
         ResolvedTarget("host1", Some(1), None),
         ResolvedTarget("host1", Some(2), None),
         ResolvedTarget("host2", Some(3), None),
-        ResolvedTarget("host2", Some(4), None)
-      )
+        ResolvedTarget("host2", Some(4), None))
 
-      BootstrapCoordinator.selectHosts(Lookup.create("service"), 8558, filterOnFallbackPort = false, beforeFiltering) shouldEqual beforeFiltering
+      BootstrapCoordinator.selectHosts(Lookup.create("service"), 8558, filterOnFallbackPort = false,
+        beforeFiltering) shouldEqual beforeFiltering
     }
 
     "not filter if there is a single target per host" in {
@@ -173,8 +159,7 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
         ResolvedTarget("host1", Some(8558), None),
         ResolvedTarget("host2", Some(2), None),
         ResolvedTarget("host3", Some(8558), None),
-        ResolvedTarget("host4", Some(4), None)
-      )
+        ResolvedTarget("host4", Some(4), None))
 
       BootstrapCoordinator
         .selectHosts(Lookup.create("service"), 8558, filterOnFallbackPort = true, beforeFiltering)

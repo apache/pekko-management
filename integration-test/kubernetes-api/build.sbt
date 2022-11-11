@@ -16,5 +16,4 @@ dockerBaseImage := "openjdk:8-jre-alpine"
 dockerCommands ++= Seq(
   Cmd("USER", "root"),
   Cmd("RUN", "/sbin/apk", "add", "--no-cache", "bash", "bind-tools", "busybox-extras", "curl", "strace"),
-  Cmd("RUN", "chgrp -R 0 . && chmod -R g=u .")
-)
+  Cmd("RUN", "chgrp -R 0 . && chmod -R g=u ."))

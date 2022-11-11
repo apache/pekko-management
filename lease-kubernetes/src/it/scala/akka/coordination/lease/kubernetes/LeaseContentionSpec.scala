@@ -26,8 +26,9 @@ import org.scalatest.matchers.should.Matchers
  * Test in CI:
  * https://github.com/akka/akka-management/issues/679
  */
-class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec", ConfigFactory.parseString(
-  """
+class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec",
+      ConfigFactory.parseString(
+        """
     akka.loglevel = INFO
     akka.coordination.lease.kubernetes {
       api-service-host = localhost
@@ -37,24 +38,23 @@ class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec", Con
       secure-api-server = false
     }
 
-  """
-))) with AnyWordSpecLike with Matchers with ScalaFutures with BeforeAndAfterAll {
+  """))) with AnyWordSpecLike with Matchers with ScalaFutures with BeforeAndAfterAll {
 
   implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration)
 
   // for cleanup
-  val k8sApi = new KubernetesApiImpl(system, KubernetesSettings(system, TimeoutSettings(system.settings.config.getConfig("akka.coordination.lease.kubernetes"))))
+  val k8sApi = new KubernetesApiImpl(system,
+    KubernetesSettings(system, TimeoutSettings(system.settings.config.getConfig("akka.coordination.lease.kubernetes"))))
 
   val lease1 = "contended-lease"
   val lease2 = "contended-lease-2"
-
 
   override protected def beforeAll(): Unit = {
     k8sApi.removeLease(lease1).futureValue
     k8sApi.removeLease(lease2).futureValue
   }
 
-  override protected def afterAll(): Unit ={
+  override protected def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
 

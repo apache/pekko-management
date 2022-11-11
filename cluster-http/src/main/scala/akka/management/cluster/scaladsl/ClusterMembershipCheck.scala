@@ -29,8 +29,7 @@ private[akka] object ClusterMembershipCheckSettings {
       case "removed"  => MemberStatus.Removed
       case invalid =>
         throw new IllegalArgumentException(
-          s"'$invalid' is not a valid MemberStatus. See reference.conf for valid values"
-        )
+          s"'$invalid' is not a valid MemberStatus. See reference.conf for valid values")
     }
   def apply(config: Config): ClusterMembershipCheckSettings =
     new ClusterMembershipCheckSettings(config.getStringList("ready-states").asScala.map(memberStatus).toSet)

@@ -32,9 +32,9 @@ import software.amazon.awssdk.services.ecs.model.{
   DescribeTasksRequest,
   DesiredStatus,
   ListTasksRequest,
+  Tag => _,
   Task,
-  TaskField,
-  Tag => _
+  TaskField
 }
 import spray.json.DefaultJsonProtocol._
 
@@ -58,8 +58,7 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
     Future.firstCompletedOf(
       Seq(
         after(resolveTimeout, using = system.scheduler)(
-          Future.failed(new TimeoutException(s"$lookup timed out after $resolveTimeout"))
-        ),
+          Future.failed(new TimeoutException(s"$lookup timed out after $resolveTimeout"))),
         resolveTasks(ecsClient, cluster, httpClient).map(tasks =>
           Resolved(
             serviceName = lookup.serviceName,
@@ -70,10 +69,7 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
             } yield {
               val address = networkInterface.privateIpv4Address()
               ResolvedTarget(host = address, port = None, address = Try(InetAddress.getByName(address)).toOption)
-            }
-          ))
-      )
-    )
+            }))))
 
 }
 
@@ -90,8 +86,7 @@ object AsyncEcsTaskSetDiscovery {
   private def resolveTasks(ecsClient: EcsAsyncClient, cluster: String, httpClient: HttpExt)(
       implicit
       ec: ExecutionContext,
-      mat: Materializer
-  ): Future[Seq[Task]] =
+      mat: Materializer): Future[Seq[Task]] =
     for {
       taskArn <- resolveTaskMetadata(httpClient).map(_.map(_.TaskARN))
       taskSet <- taskArn match {
@@ -109,8 +104,7 @@ object AsyncEcsTaskSetDiscovery {
   private[this] def resolveTaskMetadata(httpClient: HttpExt)(
       implicit
       ec: ExecutionContext,
-      mat: Materializer
-  ): Future[Option[TaskMetadata]] = {
+      mat: Materializer): Future[Option[TaskMetadata]] = {
     val ecsContainerMetadataUri = sys.env.get(ECS_CONTAINER_METADATA_URI_PATH) match {
       case Some(uri) => uri
       case None =>
@@ -128,21 +122,18 @@ object AsyncEcsTaskSetDiscovery {
   }
 
   private[this] def resolveTaskSet(ecsClient: EcsAsyncClient, cluster: String, taskArn: String)(
-      implicit ec: ExecutionContext
-  ): Future[Option[TaskSet]] =
+      implicit ec: ExecutionContext): Future[Option[TaskSet]] =
     toScala(
       ecsClient.describeTasks(
-        DescribeTasksRequest.builder().cluster(cluster).tasks(taskArn).include(TaskField.TAGS).build()
-      )
-    ).map(_.tasks().asScala.headOption).map(_.map(task => TaskSet(task.startedBy())))
+        DescribeTasksRequest.builder().cluster(cluster).tasks(taskArn).include(TaskField.TAGS).build())).map(
+      _.tasks().asScala.headOption).map(_.map(task => TaskSet(task.startedBy())))
 
   private[this] def listTaskArns(
       ecsClient: EcsAsyncClient,
       cluster: String,
       taskSet: TaskSet,
       pageTaken: Option[String] = None,
-      accumulator: Seq[String] = Seq.empty
-  )(implicit ec: ExecutionContext): Future[Seq[String]] =
+      accumulator: Seq[String] = Seq.empty)(implicit ec: ExecutionContext): Future[Seq[String]] =
     for {
       listTasksResponse <- toScala(
         ecsClient.listTasks(
@@ -152,9 +143,7 @@ object AsyncEcsTaskSetDiscovery {
             .startedBy(taskSet.value)
             .nextToken(pageTaken.orNull)
             .desiredStatus(DesiredStatus.RUNNING)
-            .build()
-        )
-      )
+            .build()))
       accumulatedTasksArns = accumulator ++ listTasksResponse.taskArns().asScala
       taskArns <- listTasksResponse.nextToken() match {
         case null =>
@@ -166,22 +155,19 @@ object AsyncEcsTaskSetDiscovery {
             cluster,
             taskSet,
             Some(nextPageToken),
-            accumulatedTasksArns
-          )
+            accumulatedTasksArns)
       }
     } yield taskArns
 
   private[this] def describeTasks(ecsClient: EcsAsyncClient, cluster: String, taskArns: Seq[String])(
-      implicit ec: ExecutionContext
-  ): Future[Seq[Task]] =
+      implicit ec: ExecutionContext): Future[Seq[Task]] =
     for {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.
       describeTasksResponses <- Future.traverse(taskArns.grouped(100))(taskArnGroup =>
         toScala(
           ecsClient.describeTasks(
-            DescribeTasksRequest.builder().cluster(cluster).tasks(taskArnGroup.asJava).include(TaskField.TAGS).build()
-          )
-        ))
+            DescribeTasksRequest.builder().cluster(cluster).tasks(taskArnGroup.asJava).include(
+              TaskField.TAGS).build())))
       tasks = describeTasksResponses.flatMap(_.tasks().asScala).toList
     } yield tasks
 

@@ -28,8 +28,7 @@ class KubernetesApiSpec
         ConfigFactory.parseString("""akka.coordination.lease.kubernetes {
         |    lease-operation-timeout = 10s
         |}
-        |""".stripMargin)
-      ))
+        |""".stripMargin)))
     with ScalaFutures
     with AnyWordSpecLike
     with BeforeAndAfterAll

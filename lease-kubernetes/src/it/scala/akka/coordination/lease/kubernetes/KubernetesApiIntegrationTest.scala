@@ -5,8 +5,8 @@ import akka.actor.ActorSystem
 import akka.coordination.lease.kubernetes.internal.KubernetesApiImpl
 import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{BeforeAndAfterAll, CancelAfterFailure}
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatest.{ BeforeAndAfterAll, CancelAfterFailure }
+import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
@@ -14,20 +14,20 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 /**
-  * This test requires an API server available on localhost:8080, the lease CRD created and a namespace called lease
-  *
-  * One way of doing this is to have a kubectl proxy open:
-  *
-  * `kubectl proxy --port=8080`
-  *
-  */
-class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiIntegrationSpec", ConfigFactory.parseString(
-  """
+ * This test requires an API server available on localhost:8080, the lease CRD created and a namespace called lease
+ *
+ * One way of doing this is to have a kubectl proxy open:
+ *
+ * `kubectl proxy --port=8080`
+ */
+class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiIntegrationSpec",
+      ConfigFactory.parseString(
+        """
     akka.loglevel = DEBUG
     akka.coordination.lease.kubernetes.lease-operation-timeout = 1.5s
     """)))
-  with AnyWordSpecLike with Matchers
-  with ScalaFutures with BeforeAndAfterAll with CancelAfterFailure with Eventually {
+    with AnyWordSpecLike with Matchers
+    with ScalaFutures with BeforeAndAfterAll with CancelAfterFailure with Eventually {
 
   implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration)
 
@@ -39,8 +39,7 @@ class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiInt
     namespace = Some("lease"),
     "",
     apiServerRequestTimeout = 1.second,
-    false
-  )
+    false)
 
   val underTest = new KubernetesApiImpl(system, settings)
   val leaseName = "lease-1"
@@ -48,11 +47,9 @@ class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiInt
   val client2 = "client-2"
   var currentVersion = ""
 
-
   override protected def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
-
 
   override protected def beforeAll(): Unit = {
     // do some operation to check the proxy is up
@@ -79,7 +76,7 @@ class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiInt
       val leaseRecord = underTest.updateLeaseResource(leaseName, client1, currentVersion).futureValue
       val success: LeaseResource = leaseRecord match {
         case Right(lr) => lr
-        case Left(_) => fail("There shouldn't be anyone else updating the resource.")
+        case Left(_)   => fail("There shouldn't be anyone else updating the resource.")
       }
       success.version shouldNot equal(currentVersion)
       currentVersion = success.version
@@ -91,7 +88,7 @@ class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiInt
       val leaseRecord = underTest.updateLeaseResource(leaseName, client1, currentVersion, time = timeUpdate).futureValue
       val success: LeaseResource = leaseRecord match {
         case Right(lr) => lr
-        case Left(_) => fail("There shouldn't be anyone else updating the resource.")
+        case Left(_)   => fail("There shouldn't be anyone else updating the resource.")
       }
       success.version shouldNot equal(currentVersion)
       currentVersion = success.version
@@ -116,7 +113,7 @@ class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiInt
       val leaseRecord = underTest.updateLeaseResource(leaseName, "", currentVersion).futureValue
       val success: LeaseResource = leaseRecord match {
         case Right(lr) => lr
-        case Left(_) => fail("There shouldn't be anyone else updating the resource.")
+        case Left(_)   => fail("There shouldn't be anyone else updating the resource.")
       }
       success.version shouldNot equal(currentVersion)
       currentVersion = success.version
@@ -127,7 +124,7 @@ class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiInt
       val leaseRecord = underTest.updateLeaseResource(leaseName, client2, currentVersion).futureValue
       val success: LeaseResource = leaseRecord match {
         case Right(lr) => lr
-        case Left(_) => fail("There shouldn't be anyone else updating the resource.")
+        case Left(_)   => fail("There shouldn't be anyone else updating the resource.")
       }
       success.version shouldNot equal(currentVersion)
       currentVersion = success.version

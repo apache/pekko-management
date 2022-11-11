@@ -29,30 +29,25 @@ object ClusterApp {
       ClusterSingletonManager.props(
         Props[NoisySingleton],
         PoisonPill,
-        ClusterSingletonManagerSettings(system)
-      )
-    )
+        ClusterSingletonManagerSettings(system)))
     Cluster(system).subscribe(
       system.actorOf(Props[ClusterWatcher]),
       ClusterEvent.InitialStateAsEvents,
-      classOf[ClusterDomainEvent]
-    )
+      classOf[ClusterDomainEvent])
 
     // add real app routes here
     val routes =
       path("hello") {
         get {
           complete(
-            HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Hello</h1>")
-          )
+            HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Hello</h1>"))
         }
       }
 
     Http().newServerAt("0.0.0.0", 8080).bind(routes)
 
     system.log.info(
-      s"Server online at http://localhost:8080/\nPress RETURN to stop..."
-    )
+      s"Server online at http://localhost:8080/\nPress RETURN to stop...")
 
     cluster.registerOnMemberUp(() => {
       system.log.info("Cluster member is up!")

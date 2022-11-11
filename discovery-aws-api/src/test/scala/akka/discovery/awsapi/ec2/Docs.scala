@@ -6,7 +6,7 @@ package akka.discovery.awsapi.ec2
 
 object Docs {
 
-  //#custom-client-config
+  // #custom-client-config
   // package com.example
   import com.amazonaws.ClientConfiguration
   import com.amazonaws.retry.PredefinedRetryPolicies
@@ -20,6 +20,6 @@ object Docs {
     // Cluster Bootstrap already has its own retry/back-off mechanism. To avoid RequestLimitExceeded errors from AWS,
     // disable retries in the EC2 client configuration.
   }
-  //#custom-client-config
+  // #custom-client-config
 
 }
