@@ -76,8 +76,7 @@ class ClusterHttpManagementRoutesSpec
           CurrentClusterState(SortedSet(clusterMember1, clusterMember2), leader = Some(address1))
 
         val unreachable = Map(
-          UniqueAddress(address3, 2L) -> Set(uniqueAddress1, uniqueAddress2)
-        )
+          UniqueAddress(address3, 2L) -> Set(uniqueAddress1, uniqueAddress2))
 
         val mockedCluster = mock(classOf[Cluster])
         val mockedClusterReadView = mock(classOf[ClusterReadView])
@@ -99,8 +98,7 @@ class ClusterHttpManagementRoutesSpec
             Seq("akka://Main@hostname.com:3311", "akka://Main@hostname2.com:3311"))
           val clusterMembers = Set(
             ClusterMember("akka://Main@hostname.com:3311", "1", "Up", Set(s"dc-$dcName")),
-            ClusterMember("akka://Main@hostname2.com:3311", "2", "Joining", Set(s"dc-$dcName"))
-          )
+            ClusterMember("akka://Main@hostname2.com:3311", "2", "Joining", Set(s"dc-$dcName")))
 
           val expected = ClusterMembers(
             selfNode = s"$address1",
@@ -108,8 +106,7 @@ class ClusterHttpManagementRoutesSpec
             unreachable = Seq(clusterUnreachableMember),
             leader = Some(address1.toString),
             oldest = Some(address1.toString),
-            Map(s"dc-$dcName" -> address1.toString)
-          )
+            Map(s"dc-$dcName" -> address1.toString))
 
           val members = responseAs[ClusterMembers]
           // specific checks for easier spotting in failure output what was not matching
@@ -356,14 +353,12 @@ class ClusterHttpManagementRoutesSpec
             |akka.remote.log-remote-lifecycle-events = off
             |akka.remote.netty.tcp.port = 0
             |akka.remote.artery.canonical.port = 0
-           """.stripMargin
-        )
+           """.stripMargin)
         val configClusterHttpManager = ConfigFactory.parseString(
           """
             |akka.management.http.hostname = "127.0.0.1"
             |akka.management.http.port = 20100
-          """.stripMargin
-        )
+          """.stripMargin)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager))
         val cluster = Cluster(system)
@@ -377,8 +372,7 @@ class ClusterHttpManagementRoutesSpec
           TestShardedActor.props,
           ClusterShardingSettings(system),
           TestShardedActor.extractEntityId,
-          TestShardedActor.extractShardId
-        )
+          TestShardedActor.extractShardId)
 
         implicit val t = ScalatestTimeout(5.seconds)
 
@@ -421,14 +415,12 @@ class ClusterHttpManagementRoutesSpec
             |akka.remote.log-remote-lifecycle-events = off
             |akka.remote.netty.tcp.port = 0
             |akka.remote.artery.canonical.port = 0
-           """.stripMargin
-        )
+           """.stripMargin)
         val configClusterHttpManager = ConfigFactory.parseString(
           """
             |akka.management.http.hostname = "127.0.0.1"
             |akka.management.http.port = 20100
-          """.stripMargin
-        )
+          """.stripMargin)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager))
         val cluster = Cluster(system)
@@ -442,8 +434,7 @@ class ClusterHttpManagementRoutesSpec
           TestShardedActor.props,
           ClusterShardingSettings(system),
           TestShardedActor.extractEntityId,
-          TestShardedActor.extractShardId
-        )
+          TestShardedActor.extractShardId)
 
         implicit val t = ScalatestTimeout(5.seconds)
 
@@ -462,8 +453,7 @@ class ClusterHttpManagementRoutesSpec
 
         val responseInvalidGetShardDetails = Http()
           .singleRequest(
-            HttpRequest(uri = s"http://127.0.0.1:20100/cluster/shards/ThisShardRegionDoesNotExist")
-          )
+            HttpRequest(uri = s"http://127.0.0.1:20100/cluster/shards/ThisShardRegionDoesNotExist"))
           .futureValue
         responseInvalidGetShardDetails.status shouldEqual StatusCodes.NotFound
         responseInvalidGetShardDetails.entity.getContentType shouldEqual ContentTypes.`application/json`
@@ -491,14 +481,12 @@ class ClusterHttpManagementRoutesSpec
             |akka.remote.log-remote-lifecycle-events = off
             |akka.remote.netty.tcp.port = 0
             |akka.remote.artery.canonical.port = 0
-           """.stripMargin
-        )
+           """.stripMargin)
         val configClusterHttpManager = ConfigFactory.parseString(
           """
             |akka.management.http.hostname = "127.0.0.1"
             |akka.management.http.port = 20100
-          """.stripMargin
-        )
+          """.stripMargin)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager))
         val cluster = Cluster(system)

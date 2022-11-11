@@ -63,8 +63,7 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
       |akka.remote.netty.tcp.port = 0
       |akka.remote.artery.canonical.port = 0
       |#akka.loglevel = DEBUG
-    """.stripMargin
-  )
+    """.stripMargin)
 
   "Http Cluster Management" should {
     "start and stop" when {
@@ -81,8 +80,7 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
               test1 = "akka.management.HttpManagementEndpointSpecRoutesScaladsl"
               test2 = "akka.management.HttpManagementEndpointSpecRoutesJavadsl"
             }
-          """
-        )
+          """)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
@@ -116,8 +114,7 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             akka.management.http.routes {
               test3 = "akka.management.HttpManagementEndpointSpecRoutesScaladsl"
             }
-          """
-        )
+          """)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
         import system.dispatcher
@@ -156,13 +153,11 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             akka.management.http.routes {
               test4 = "akka.management.HttpManagementEndpointSpecRoutesScaladsl"
             }
-          """
-        )
+          """)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
-        val password
-            : Array[Char] = "password".toCharArray // do not store passwords in code, read them from somewhere safe!
+        val password: Array[Char] = "password".toCharArray // do not store passwords in code, read them from somewhere safe!
 
         val ks: KeyStore = KeyStore.getInstance("PKCS12")
         val keystore: InputStream = getClass.getClassLoader.getResourceAsStream("httpsDemoKeys/keys/keystore.p12")
@@ -184,22 +179,22 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
           val engine = sslContext.createSSLEngine(host, port)
           engine.setUseClientMode(true)
           // disable endpoint verification for tests
-          engine.setSSLParameters({
+          engine.setSSLParameters {
             val params = engine.getSSLParameters
             params.setEndpointIdentificationAlgorithm(null)
             params
-          })
+          }
 
           engine
         })
 
-        //#start-akka-management-with-https-context
+        // #start-akka-management-with-https-context
         val management = AkkaManagement(system)
 
         val httpsServer: HttpsConnectionContext = ConnectionContext.httpsServer(sslContext)
 
         val started = management.start(_.withHttpsConnectionContext(httpsServer))
-        //#start-akka-management-with-https-context
+        // #start-akka-management-with-https-context
 
         Await.result(started, 10.seconds)
 
@@ -218,8 +213,7 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
           s"""
             akka.management.http.hostname = "127.0.0.1"
             akka.management.http.port = $httpPort
-          """
-        )
+          """)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
@@ -243,8 +237,7 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
           s"""
             akka.management.http.hostname = "127.0.0.1"
             akka.management.http.port = 0
-          """
-        )
+          """)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
@@ -279,8 +272,7 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             akka.management.http.routes {
               test5 = "akka.management.HttpManagementEndpointSpecRoutesScaladsl"
             }
-          """
-        )
+          """)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
@@ -311,8 +303,7 @@ class AkkaManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             akka.management.http.routes {
               health-checks = ""
             }
-          """
-        )
+          """)
 
         implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 

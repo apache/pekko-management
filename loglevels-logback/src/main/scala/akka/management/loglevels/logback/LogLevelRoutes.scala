@@ -59,8 +59,7 @@ final class LogLevelRoutes private (system: ExtendedActorSystem) extends Extensi
                             "Log level for [{}] set to [{}] through Akka Management loglevel endpoint from [{}]",
                             loggerName,
                             level,
-                            clientIp
-                          )
+                            clientIp)
                           logger.setLevel(level)
                           complete(StatusCodes.OK)
                         } else {
@@ -77,8 +76,7 @@ final class LogLevelRoutes private (system: ExtendedActorSystem) extends Extensi
                   } else {
                     complete(StatusCodes.NotFound)
                   }
-                }
-              )
+                })
           }
         },
         path("akka") {
@@ -94,17 +92,14 @@ final class LogLevelRoutes private (system: ExtendedActorSystem) extends Extensi
                   extractClientIP { clientIp =>
                     logger.info(
                       "Akka loglevel set to [{}] through Akka Management loglevel endpoint from [{}]",
-                      Array[Object](classicLogLevelName(level), clientIp): _*
-                    )
+                      Array[Object](classicLogLevelName(level), clientIp): _*)
                     system.eventStream.setLogLevel(level)
                     complete(StatusCodes.OK)
                   }
                 }
               }
-            }
-          )
-        }
-      )
+            })
+        })
     }
 }
 
@@ -129,9 +124,7 @@ private[akka] object LoggingUnmarshallers {
         .levelFor(string)
         .getOrElse(
           throw new IllegalArgumentException(
-            s"Unknown logger level $string, allowed are [${ClassicLogging.AllLogLevels.map(_.toString).mkString(",")}]"
-          )
-        )
+            s"Unknown logger level $string, allowed are [${ClassicLogging.AllLogLevels.map(_.toString).mkString(",")}]"))
     }
 
   def classicLogLevelName(level: ClassicLogging.LogLevel): String = level match {

@@ -37,8 +37,7 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     .map { tagConfig =>
       Tag(
         tagConfig.getString("key"),
-        tagConfig.getString("value")
-      )
+        tagConfig.getString("value"))
     }
     .toList
 
@@ -54,8 +53,7 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     Future.firstCompletedOf(
       Seq(
         after(resolveTimeout, using = system.scheduler)(
-          Future.failed(new TimeoutException("Future timed out!"))
-        ),
+          Future.failed(new TimeoutException("Future timed out!"))),
         resolveTasks(ecsClient, cluster, lookup.serviceName, tags).map(tasks =>
           Resolved(
             serviceName = lookup.serviceName,
@@ -66,10 +64,7 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
             } yield {
               val address = networkInterface.privateIpv4Address()
               ResolvedTarget(host = address, port = None, address = Try(InetAddress.getByName(address)).toOption)
-            }
-          ))
-      )
-    )
+            }))))
 
 }
 
@@ -79,8 +74,7 @@ object AsyncEcsServiceDiscovery {
   case class Tag(key: String, value: String)
 
   private def resolveTasks(ecsClient: EcsAsyncClient, cluster: String, serviceName: String, tags: List[Tag])(
-      implicit ec: ExecutionContext
-  ): Future[Seq[Task]] =
+      implicit ec: ExecutionContext): Future[Seq[Task]] =
     for {
       taskArns <- listTaskArns(ecsClient, cluster, serviceName)
       tasks <- describeTasks(ecsClient, cluster, taskArns)
@@ -95,8 +89,7 @@ object AsyncEcsServiceDiscovery {
       cluster: String,
       serviceName: String,
       pageTaken: Option[String] = None,
-      accumulator: Seq[String] = Seq.empty
-  )(implicit ec: ExecutionContext): Future[Seq[String]] =
+      accumulator: Seq[String] = Seq.empty)(implicit ec: ExecutionContext): Future[Seq[String]] =
     for {
       listTasksResponse <- toScala(
         ecsClient.listTasks(
@@ -106,9 +99,7 @@ object AsyncEcsServiceDiscovery {
             .serviceName(serviceName)
             .nextToken(pageTaken.orNull)
             .desiredStatus(DesiredStatus.RUNNING)
-            .build()
-        )
-      )
+            .build()))
       accumulatedTasksArns = accumulator ++ listTasksResponse.taskArns().asScala
       taskArns <- listTasksResponse.nextToken() match {
         case null =>
@@ -120,22 +111,19 @@ object AsyncEcsServiceDiscovery {
             cluster,
             serviceName,
             Some(nextPageToken),
-            accumulatedTasksArns
-          )
+            accumulatedTasksArns)
       }
     } yield taskArns
 
   private[this] def describeTasks(ecsClient: EcsAsyncClient, cluster: String, taskArns: Seq[String])(
-      implicit ec: ExecutionContext
-  ): Future[Seq[Task]] =
+      implicit ec: ExecutionContext): Future[Seq[Task]] =
     for {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.
       describeTasksResponses <- Future.traverse(taskArns.grouped(100))(taskArnGroup =>
         toScala(
           ecsClient.describeTasks(
-            DescribeTasksRequest.builder().cluster(cluster).tasks(taskArnGroup.asJava).include(TaskField.TAGS).build()
-          )
-        ))
+            DescribeTasksRequest.builder().cluster(cluster).tasks(taskArnGroup.asJava).include(
+              TaskField.TAGS).build())))
       tasks = describeTasksResponses.flatMap(_.tasks().asScala).toList
     } yield tasks
 

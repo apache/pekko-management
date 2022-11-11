@@ -61,8 +61,7 @@ final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Exten
     system.dynamicAccess
       .createInstanceFor[JoinDecider](
         settings.joinDecider.implClass,
-        List((classOf[ActorSystem], system), (classOf[ClusterBootstrapSettings], settings))
-      )
+        List((classOf[ActorSystem], system), (classOf[ClusterBootstrapSettings], settings)))
       .get
   }
 
@@ -103,8 +102,7 @@ final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Exten
         "Application is configured with specific `akka.cluster.seed-nodes`: {}, bailing out of the bootstrap process! " +
         "If you want to use the automatic bootstrap mechanism, make sure to NOT set explicit seed nodes in the configuration. " +
         "This node will attempt to join the configured seed nodes.",
-        Cluster(system).settings.SeedNodes.mkString("[", ", ", "]")
-      )
+        Cluster(system).settings.SeedNodes.mkString("[", ", ", "]"))
     } else if (bootstrapStep.compareAndSet(NotRunning, Initializing)) {
       log.info("Initiating bootstrap procedure using {} method...", settings.contactPointDiscovery.discoveryMethod)
 
@@ -127,8 +125,7 @@ final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Exten
       _selfContactPointUri.failure(new TimeoutException("Awaiting Bootstrap.selfContactPoint timed out."))
       log.error(
         "'Bootstrap.selfContactPoint' was NOT set, but is required for the bootstrap to work " +
-        "if binding bootstrap routes manually and not via akka-management."
-      )
+        "if binding bootstrap routes manually and not via akka-management.")
     }
   }
 

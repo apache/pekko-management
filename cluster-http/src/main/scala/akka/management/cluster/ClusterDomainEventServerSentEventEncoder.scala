@@ -19,9 +19,7 @@ object ClusterDomainEventServerSentEventEncoder extends SprayJsonSupport with De
       Some(
         ServerSentEvent(
           data = value.copy(fields = value.fields.updated("type", JsString(eventType))).compactPrint,
-          eventType = Some(eventType)
-        )
-      )
+          eventType = Some(eventType)))
 
     event match {
       case memberEvent: ClusterEvent.MemberEvent =>
@@ -65,8 +63,7 @@ object ClusterDomainEventServerSentEventEncoder extends SprayJsonSupport with De
           case Some(address) =>
             sse(
               "RoleLeaderChanged",
-              JsObject("role" -> JsString(roleLeaderChanged.role), "address" -> encode(address))
-            )
+              JsObject("role" -> JsString(roleLeaderChanged.role), "address" -> encode(address)))
 
           case None =>
             sse("RoleLeaderChanged", JsObject("role" -> JsString(roleLeaderChanged.role)))
@@ -104,8 +101,7 @@ object ClusterDomainEventServerSentEventEncoder extends SprayJsonSupport with De
 
   private def encode(address: UniqueAddress): JsValue = JsObject(
     "address" -> encode(address.address),
-    "longUid" -> JsNumber(address.longUid)
-  )
+    "longUid" -> JsNumber(address.longUid))
 
   private def encode(memberStatus: MemberStatus): JsValue = JsString(
     memberStatus match {
@@ -117,13 +113,11 @@ object ClusterDomainEventServerSentEventEncoder extends SprayJsonSupport with De
       case MemberStatus.Down     => "Down"
       case MemberStatus.Removed  => "Removed"
       case other                 => other.toString
-    }
-  )
+    })
 
   private def encode(member: Member): JsValue = JsObject(
     "uniqueAddress" -> encode(member.uniqueAddress),
     "status" -> encode(member.status),
     "roles" -> JsArray(member.roles.toVector.map(JsString.apply)),
-    "dataCenter" -> JsString(member.dataCenter)
-  )
+    "dataCenter" -> JsString(member.dataCenter))
 }

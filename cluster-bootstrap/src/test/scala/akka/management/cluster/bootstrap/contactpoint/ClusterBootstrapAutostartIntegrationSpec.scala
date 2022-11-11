@@ -111,29 +111,22 @@ class ClusterBootstrapAutostartIntegrationSpec extends AnyWordSpecLike with Matc
               ResolvedTarget(
                 host = clusterA.selfAddress.host.get,
                 port = contactPointPorts.get("A"),
-                address = Option(InetAddress.getByName(clusterA.selfAddress.host.get))
-              ),
+                address = Option(InetAddress.getByName(clusterA.selfAddress.host.get))),
               ResolvedTarget(
                 host = clusterB.selfAddress.host.get,
                 port = contactPointPorts.get("B"),
-                address = Option(InetAddress.getByName(clusterB.selfAddress.host.get))
-              ),
+                address = Option(InetAddress.getByName(clusterB.selfAddress.host.get))),
               ResolvedTarget(
                 host = clusterC.selfAddress.host.get,
                 port = contactPointPorts.get("C"),
-                address = Option(InetAddress.getByName(clusterC.selfAddress.host.get))
-              )
-            )
-          )
-        )
-    )
+                address = Option(InetAddress.getByName(clusterC.selfAddress.host.get)))))))
 
     "join three DNS discovered nodes by forming new cluster (happy path)" in {
       val pA = TestProbe()(systemA)
       pA.awaitAssert({
-        clusterA.state.members should have size (3)
-        clusterA.state.members.count(_.status == MemberStatus.Up) should ===(3)
-      }, 20.seconds)
+          clusterA.state.members should have size 3
+          clusterA.state.members.count(_.status == MemberStatus.Up) should ===(3)
+        }, 20.seconds)
     }
 
     "terminate a system when autostart fails" in {
@@ -144,15 +137,15 @@ class ClusterBootstrapAutostartIntegrationSpec extends AnyWordSpecLike with Matc
         ConfigFactory.parseString("""
         akka.remote.netty.tcp.port = 0
         akka.remote.artery.canonical.port = 0
-      """).withFallback(config("A"))
-      )
+      """).withFallback(config("A")))
       systemA.whenTerminated.futureValue
     }
 
     "terminate all systems" in {
       try TestKit.shutdownActorSystem(systemA, 3.seconds)
-      finally try TestKit.shutdownActorSystem(systemB, 3.seconds)
-      finally TestKit.shutdownActorSystem(systemC, 3.seconds)
+      finally
+        try TestKit.shutdownActorSystem(systemB, 3.seconds)
+        finally TestKit.shutdownActorSystem(systemC, 3.seconds)
     }
 
   }

@@ -146,8 +146,7 @@ PUTs must contain resourceVersions. Response:
         log.debug("updating {} to {}", leaseName, lcr)
         makeRequest(
           requestForPath(pathForLease(leaseName), method = HttpMethods.PUT, entity),
-          s"Timed out updating lease [$leaseName] to owner [$ownerName]. It is not known if the update happened"
-        )
+          s"Timed out updating lease [$leaseName] to owner [$ownerName]. It is not known if the update happened")
       }
       result <- response.status match {
         case StatusCodes.OK =>

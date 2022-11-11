@@ -78,15 +78,17 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
     val settings = ClusterBootstrapSettings(system.settings.config, NoLogging)
 
     "sort ResolvedTarget by lowest hostname:port" in {
-      List(ResolvedTarget("c", None, None), ResolvedTarget("a", None, None), ResolvedTarget("b", None, None)).sorted should ===(
-        List(ResolvedTarget("a", None, None), ResolvedTarget("b", None, None), ResolvedTarget("c", None, None))
-      )
-      List(ResolvedTarget("c", Some(1), None), ResolvedTarget("a", Some(3), None), ResolvedTarget("b", Some(2), None)).sorted should ===(
-        List(ResolvedTarget("a", Some(3), None), ResolvedTarget("b", Some(2), None), ResolvedTarget("c", Some(1), None))
-      )
-      List(ResolvedTarget("a", Some(2), None), ResolvedTarget("a", Some(1), None), ResolvedTarget("a", Some(3), None)).sorted should ===(
-        List(ResolvedTarget("a", Some(1), None), ResolvedTarget("a", Some(2), None), ResolvedTarget("a", Some(3), None))
-      )
+      List(ResolvedTarget("c", None, None), ResolvedTarget("a", None, None),
+        ResolvedTarget("b", None, None)).sorted should ===(
+        List(ResolvedTarget("a", None, None), ResolvedTarget("b", None, None), ResolvedTarget("c", None, None)))
+      List(ResolvedTarget("c", Some(1), None), ResolvedTarget("a", Some(3), None),
+        ResolvedTarget("b", Some(2), None)).sorted should ===(
+        List(ResolvedTarget("a", Some(3), None), ResolvedTarget("b", Some(2), None),
+          ResolvedTarget("c", Some(1), None)))
+      List(ResolvedTarget("a", Some(2), None), ResolvedTarget("a", Some(1), None),
+        ResolvedTarget("a", Some(3), None)).sorted should ===(
+        List(ResolvedTarget("a", Some(1), None), ResolvedTarget("a", Some(2), None),
+          ResolvedTarget("a", Some(3), None)))
     }
 
     /**
@@ -104,8 +106,7 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
         List(
           ResolvedTarget("x", None, Some(addr1)),
           ResolvedTarget("c", None, Some(addr2)),
-          ResolvedTarget("b", None, Some(addr3)))
-      )
+          ResolvedTarget("b", None, Some(addr3))))
     }
 
     "join existing cluster immediately" in {
@@ -120,8 +121,7 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
             now.minusSeconds(1),
             contactA,
             Address("akka", "join-decider-spec-system", "10.0.0.2", 2552),
-            Set(Address("akka", "join-decider-spec-system", "10.0.0.2", 2552))))
-      )
+            Set(Address("akka", "join-decider-spec-system", "10.0.0.2", 2552)))))
       decider.decide(info).futureValue should ===(
         JoinOtherSeedNodes(Set(Address("akka", "join-decider-spec-system", "10.0.0.2", 2552))))
     }
@@ -148,9 +148,7 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
             now.minusSeconds(1),
             contactC,
             Address("akka", "join-decider-spec-system", "c", 2552),
-            Set.empty)
-        )
-      )
+            Set.empty)))
       decider.decide(info).futureValue should ===(KeepProbing)
     }
 
@@ -171,9 +169,7 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
             now.minusSeconds(1),
             contactB,
             Address("akka", "join-decider-spec-system", "b", 2552),
-            Set.empty)
-        )
-      )
+            Set.empty)))
       decider.decide(info).futureValue should ===(KeepProbing)
     }
 
@@ -194,8 +190,7 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
             now.minusSeconds(1),
             contactB,
             Address("akka", "join-decider-spec-system", "b", 2552),
-            Set.empty)
-        )
+            Set.empty))
         // << 2 < required-contact-point-nr
       )
       decider.decide(info).futureValue should ===(KeepProbing)
@@ -225,9 +220,7 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
             now.minusSeconds(1),
             contactC,
             Address("akka", "join-decider-spec-system", "c", 2552),
-            Set.empty)
-        )
-      )
+            Set.empty)))
       decider.decide(info).futureValue should ===(JoinSelf)
     }
   }
@@ -265,8 +258,7 @@ class SelfAwareJoinDeciderSpec extends JoinDeciderSpec {
           now.minusSeconds(1),
           contactC,
           Address("akka", "join-decider-spec-system-selfaware", "c", 2552),
-          Set.empty)
-      ))
+          Set.empty)))
   }
 
   "SelfAwareJoinDecider" should {
@@ -341,8 +333,7 @@ class SelfAwareJoinDeciderIPv6Spec extends JoinDeciderSpec {
           now.minusSeconds(1),
           contactIPv6C,
           Address("akka", "join-decider-spec-system-selfaware-ipv6", "c", 2552),
-          Set.empty)
-      ))
+          Set.empty)))
   }
 
   "SelfAwareJoinDecider (IPv6)" should {

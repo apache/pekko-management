@@ -112,22 +112,15 @@ class ClusterBootstrapIntegrationSpec extends AnyWordSpecLike with Matchers {
               ResolvedTarget(
                 host = clusterA.selfAddress.host.get,
                 port = contactPointPorts.get("A"),
-                address = Option(InetAddress.getByName(clusterA.selfAddress.host.get))
-              ),
+                address = Option(InetAddress.getByName(clusterA.selfAddress.host.get))),
               ResolvedTarget(
                 host = clusterB.selfAddress.host.get,
                 port = contactPointPorts.get("B"),
-                address = Option(InetAddress.getByName(clusterB.selfAddress.host.get))
-              ),
+                address = Option(InetAddress.getByName(clusterB.selfAddress.host.get))),
               ResolvedTarget(
                 host = clusterC.selfAddress.host.get,
                 port = contactPointPorts.get("C"),
-                address = Option(InetAddress.getByName(clusterC.selfAddress.host.get))
-              )
-            )
-          )
-        )
-    )
+                address = Option(InetAddress.getByName(clusterC.selfAddress.host.get)))))))
 
     "start listening with the http contact-points on 3 systems" in {
       def start(system: ActorSystem, contactPointPort: Int) = {
@@ -167,8 +160,9 @@ class ClusterBootstrapIntegrationSpec extends AnyWordSpecLike with Matchers {
 
     "terminate all systems" in {
       try TestKit.shutdownActorSystem(systemA, 3.seconds)
-      finally try TestKit.shutdownActorSystem(systemB, 3.seconds)
-      finally TestKit.shutdownActorSystem(systemC, 3.seconds)
+      finally
+        try TestKit.shutdownActorSystem(systemB, 3.seconds)
+        finally TestKit.shutdownActorSystem(systemC, 3.seconds)
     }
 
   }

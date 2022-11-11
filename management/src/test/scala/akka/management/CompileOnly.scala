@@ -13,7 +13,7 @@ import akka.management.scaladsl.AkkaManagement
 object CompileOnly {
   val system: ActorSystem = null
   implicit val ec = system.dispatcher
-  //#basic-auth
+  // #basic-auth
   def myUserPassAuthenticator(credentials: Credentials): Future[Option[String]] =
     credentials match {
       case p @ Credentials.Provided(id) =>
@@ -27,17 +27,17 @@ object CompileOnly {
   // ...
   val management = AkkaManagement(system)
   management.start(_.withAuth(myUserPassAuthenticator))
-  //#basic-auth
+  // #basic-auth
 
   object stopping {
-    //#stopping
+    // #stopping
     val management = AkkaManagement(system)
     management.start()
-    //...
+    // ...
     val bindingFuture = management.stop()
     bindingFuture.onComplete { _ =>
       println("It's stopped")
     }
-    //#stopping
+    // #stopping
   }
 }

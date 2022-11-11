@@ -47,8 +47,7 @@ class LeaseActorSpec
     akka.loglevel = DEBUG
     akka.stdout-loglevel = DEBUG
     akka.actor.debug.fsm = true
-  """)
-      ))
+  """)))
     with AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll {

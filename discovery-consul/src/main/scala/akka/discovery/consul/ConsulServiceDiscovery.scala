@@ -40,11 +40,8 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     Future.firstCompletedOf(
       Seq(
         after(resolveTimeout, using = system.scheduler)(
-          Future.failed(new TimeoutException(s"Lookup for [${lookup}] timed-out, within [${resolveTimeout}]!"))
-        ),
-        lookupInConsul(lookup.serviceName)
-      )
-    )
+          Future.failed(new TimeoutException(s"Lookup for [${lookup}] timed-out, within [${resolveTimeout}]!"))),
+        lookupInConsul(lookup.serviceName)))
   }
 
   private def lookupInConsul(name: String)(implicit executionContext: ExecutionContext): Future[Resolved] = {
@@ -73,18 +70,17 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     ResolvedTarget(
       host = address,
       port = Some(port.getOrElse(catalogService.getServicePort)),
-      address = Try(InetAddress.getByName(address)).toOption
-    )
+      address = Try(InetAddress.getByName(address)).toOption)
   }
 
   private def getServicesWithTags: Future[ConsulResponse[util.Map[String, util.List[String]]]] = {
     ((callback: ConsulResponseCallback[util.Map[String, util.List[String]]]) =>
-      consul.catalogClient().getServices(callback)).asFuture
+          consul.catalogClient().getServices(callback)).asFuture
   }
 
   private def getService(name: String) =
     ((callback: ConsulResponseCallback[util.List[CatalogService]]) =>
-      consul.catalogClient().getService(name, QueryOptions.BLANK, callback)).asFuture
+          consul.catalogClient().getService(name, QueryOptions.BLANK, callback)).asFuture
 
 }
 

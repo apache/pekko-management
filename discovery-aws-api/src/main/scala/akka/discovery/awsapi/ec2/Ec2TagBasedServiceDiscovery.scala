@@ -121,8 +121,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
       client: AmazonEC2,
       filters: List[Filter],
       nextToken: Option[String],
-      accumulator: List[String] = Nil
-  ): List[String] = {
+      accumulator: List[String] = Nil): List[String] = {
 
     val describeInstancesRequest = new DescribeInstancesRequest()
       .withFilters(filters.asJava) // withFilters is a set operation (i.e. calls setFilters, be careful with chaining)
@@ -152,11 +151,8 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
     Future.firstCompletedOf(
       Seq(
         after(resolveTimeout, using = system.scheduler)(
-          Future.failed(new TimeoutException(s"Lookup for [$query] timed-out, within [$resolveTimeout]!"))
-        ),
-        lookup(query)
-      )
-    )
+          Future.failed(new TimeoutException(s"Lookup for [$query] timed-out, within [$resolveTimeout]!"))),
+        lookup(query)))
 
   def lookup(query: Lookup): Future[Resolved] = {
 

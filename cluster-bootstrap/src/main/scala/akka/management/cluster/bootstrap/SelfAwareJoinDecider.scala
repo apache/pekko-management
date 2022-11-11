@@ -20,8 +20,7 @@ import scala.concurrent.duration._
  */
 @InternalApi private[bootstrap] abstract class SelfAwareJoinDecider(
     system: ActorSystem,
-    settings: ClusterBootstrapSettings
-) extends JoinDecider {
+    settings: ClusterBootstrapSettings) extends JoinDecider {
 
   protected val log = Logging.withMarker(system, getClass)
 
@@ -57,8 +56,7 @@ import scala.concurrent.duration._
           BootstrapLogMarker.inProgress(info.contactPoints.map(contactPointString), info.allSeedNodes),
           "Self contact point [{}] not found in targets {}",
           contactPointString(selfContactPoint),
-          info.contactPoints.mkString(", ")
-        )
+          info.contactPoints.mkString(", "))
       }
       false
     }

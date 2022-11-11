@@ -12,12 +12,12 @@ object ClusterBootstrapCompileOnly {
 
   val system = ActorSystem()
 
-  //#start
+  // #start
   // Akka Management hosts the HTTP routes used by bootstrap
   AkkaManagement(system).start()
 
   // Starting the bootstrap process needs to be done explicitly
   ClusterBootstrap(system).start()
-  //#start
+  // #start
 
 }

@@ -25,16 +25,15 @@ object DemoApp extends App {
 
   log.info(s"Started [$system], cluster.selfAddress = ${cluster.selfAddress}")
 
-  //#start-akka-management
+  // #start-akka-management
   AkkaManagement(system).start()
-  //#start-akka-management
+  // #start-akka-management
   ClusterBootstrap(system).start()
 
   cluster.subscribe(
     system.actorOf(Props[ClusterWatcher]),
     ClusterEvent.InitialStateAsEvents,
-    classOf[ClusterDomainEvent]
-  )
+    classOf[ClusterDomainEvent])
 
   // add real app routes here
   val routes =
@@ -43,16 +42,14 @@ object DemoApp extends App {
         complete(
           HttpEntity(
             ContentTypes.`text/html(UTF-8)`,
-            "<h1>Hello</h1>"
-          )
-        )
+            "<h1>Hello</h1>"))
       }
     }
   Http().newServerAt("0.0.0.0", 8080).bind(routes)
 
-  Cluster(system).registerOnMemberUp({
+  Cluster(system).registerOnMemberUp {
     log.info("Cluster member is up!")
-  })
+  }
 
 }
 

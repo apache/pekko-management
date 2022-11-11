@@ -72,8 +72,7 @@ class LocalBootstrapTest extends AnyWordSpec with ScalaFutures with Matchers wit
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(
       timeout = scaled(Span(20, Seconds)),
-      interval = scaled(Span(500, Millis))
-    )
+      interval = scaled(Span(500, Millis)))
 
   private var systems = Seq.empty[ActorSystem]
 
@@ -83,8 +82,7 @@ class LocalBootstrapTest extends AnyWordSpec with ScalaFutures with Matchers wit
       ConfigFactory.parseString(s"""
       akka.management.http.port = $managementPort
       akka.coordinated-shutdown.exit-jvm = off
-       """.stripMargin).withFallback(config)
-    )
+       """.stripMargin).withFallback(config))
 
   override def afterAll(): Unit = {
     // TODO: shutdown Akka HTTP connection pools. Requires Akka HTTP 10.2
@@ -100,8 +98,7 @@ class LocalBootstrapTest extends AnyWordSpec with ScalaFutures with Matchers wit
     healthCheckStatus(port, "health/alive")
 
   def healthCheckStatus(port: Int, path: String)(
-      implicit system: ActorSystem
-  ): StatusCode = {
+      implicit system: ActorSystem): StatusCode = {
     Http().singleRequest(HttpRequest(uri = s"http://localhost:$port/$path")).futureValue.status
   }
 
@@ -134,8 +131,7 @@ class LocalBootstrapTest extends AnyWordSpec with ScalaFutures with Matchers wit
           c.state.members.toList.map(_.status) shouldEqual List(
             MemberStatus.Up,
             MemberStatus.Up,
-            MemberStatus.Up
-          ))
+            MemberStatus.Up))
       }
     }
 

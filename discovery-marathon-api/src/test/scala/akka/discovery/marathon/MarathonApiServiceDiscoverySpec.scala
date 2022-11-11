@@ -27,8 +27,7 @@ class MarathonApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
         ResolvedTarget(
           host = "192.168.65.111",
           port = Some(6850),
-          address = Option(InetAddress.getByName("192.168.65.111")))
-      )
+          address = Option(InetAddress.getByName("192.168.65.111"))))
     }
     "calculate the correct list of resolved targets for docker" in {
       val data = resourceAsString("docker-app.json")
@@ -43,8 +42,7 @@ class MarathonApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
         ResolvedTarget(
           host = "10.121.48.204",
           port = Some(10136),
-          address = Option(InetAddress.getByName("10.121.48.204")))
-      )
+          address = Option(InetAddress.getByName("10.121.48.204"))))
     }
   }
 

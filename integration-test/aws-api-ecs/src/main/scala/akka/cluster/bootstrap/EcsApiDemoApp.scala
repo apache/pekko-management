@@ -29,8 +29,7 @@ object EcsApiDemoApp {
              |  discovery.method = aws-api-ecs-async
              |  remote.netty.tcp.hostname = "${privateAddress.getHostAddress}"
              |}
-           """.stripMargin)
-      )
+           """.stripMargin))
     val system = ActorSystem("ecsBootstrapDemoApp", config)
     AkkaManagement(system).start()
     ClusterBootstrap(system).start()

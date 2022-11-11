@@ -64,8 +64,7 @@ object ManagementRouteProviderSettings {
     scaladslAuth: Option[AsyncAuthenticator[String]],
     javadslAuth: Option[JFunction[Optional[ProvidedCredentials], CompletionStage[Optional[String]]]],
     override val httpsConnectionContext: Option[HttpsConnectionContext],
-    override val readOnly: Boolean
-) extends ManagementRouteProviderSettings {
+    override val readOnly: Boolean) extends ManagementRouteProviderSettings {
 
   // There is no public API for defining both so it should not be possible
   require(!(javadslAuth.isDefined && scaladslAuth.isDefined), "Defining both javadsl and scaladsl auth is not allowed")

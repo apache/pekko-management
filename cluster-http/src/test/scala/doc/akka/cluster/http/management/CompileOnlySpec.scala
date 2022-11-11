@@ -12,18 +12,18 @@ import akka.management.scaladsl.AkkaManagement
 
 object CompileOnlySpec {
 
-  //#loading
+  // #loading
   val system = ActorSystem()
   // Automatically loads Cluster Http Routes
   AkkaManagement(system).start()
-  //#loading
+  // #loading
 
-  //#all
+  // #all
   val cluster = Cluster(system)
   val allRoutes: Route = ClusterHttpManagementRoutes(cluster)
-  //#all
+  // #all
 
-  //#read-only
+  // #read-only
   val readOnlyRoutes: Route = ClusterHttpManagementRoutes.readOnly(cluster)
-  //#read-only
+  // #read-only
 }

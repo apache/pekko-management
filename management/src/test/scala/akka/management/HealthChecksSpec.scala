@@ -123,9 +123,7 @@ class HealthChecksSpec
         eas,
         settings(
           im.Seq(OkCheck),
-          im.Seq(OkCheck)
-        )
-      )
+          im.Seq(OkCheck)))
       checks.aliveResult().futureValue shouldEqual Right(())
       checks.readyResult().futureValue shouldEqual Right(())
       checks.alive().futureValue shouldEqual true
@@ -136,9 +134,7 @@ class HealthChecksSpec
         eas,
         settings(
           im.Seq(NoArgsCtrCheck),
-          im.Seq(NoArgsCtrCheck)
-        )
-      )
+          im.Seq(NoArgsCtrCheck)))
       checks.aliveResult().futureValue shouldEqual Right(())
       checks.readyResult().futureValue shouldEqual Right(())
       checks.alive().futureValue shouldEqual true
@@ -149,9 +145,7 @@ class HealthChecksSpec
         eas,
         settings(
           im.Seq(FalseCheck),
-          im.Seq(FalseCheck)
-        )
-      )
+          im.Seq(FalseCheck)))
       checks.readyResult().futureValue.isRight shouldEqual false
       checks.aliveResult().futureValue.isRight shouldEqual false
       checks.ready().futureValue shouldEqual false
@@ -162,9 +156,7 @@ class HealthChecksSpec
         eas,
         settings(
           im.Seq(ThrowsCheck),
-          im.Seq(ThrowsCheck)
-        )
-      )
+          im.Seq(ThrowsCheck)))
       checks.readyResult().failed.futureValue shouldEqual akka.management.internal
         .CheckFailedException("Check [akka.management.Throws] failed: null", failedCause)
       checks.aliveResult().failed.futureValue shouldEqual akka.management.internal
@@ -178,8 +170,7 @@ class HealthChecksSpec
       val checks = im.Seq(
         OkCheck,
         ThrowsCheck,
-        FalseCheck
-      )
+        FalseCheck)
       val hc = HealthChecks(eas, settings(checks, checks))
       hc.readyResult().failed.futureValue shouldEqual akka.management.internal
         .CheckFailedException("Check [akka.management.Throws] failed: null", failedCause)
@@ -192,8 +183,7 @@ class HealthChecksSpec
     }
     "return failure if check throws" in {
       val checks = im.Seq(
-        NaughtyCheck
-      )
+        NaughtyCheck)
       val hc = HealthChecks(eas, settings(checks, checks))
       hc.readyResult().failed.futureValue.getMessage shouldEqual "Check [akka.management.Naughty] failed: bad"
       hc.aliveResult().failed.futureValue.getMessage shouldEqual "Check [akka.management.Naughty] failed: bad"
@@ -203,8 +193,7 @@ class HealthChecksSpec
     "return failure if checks timeout" in {
       val checks = im.Seq(
         SlowCheck,
-        OkCheck
-      )
+        OkCheck)
       val hc = HealthChecks(eas, settings(checks, checks))
       Await.result(hc.readyResult().failed, 1.second) shouldEqual CheckTimeoutException(
         "Check [akka.management.Slow] timed out after 500 milliseconds")

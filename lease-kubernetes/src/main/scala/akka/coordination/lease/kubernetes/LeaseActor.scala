@@ -117,16 +117,14 @@ private[akka] class LeaseActor(
           "Lease time {} is close or past expiry so re-acquiring",
           leaseName,
           ownerName,
-          time
-        )
+          time)
         tryGetLease(version, who, leaseLost)
       } else {
         log.warning(
           "Lease {} requested by client {} is already owned by client. Previous lease was not released due to ungraceful shutdown. " +
           "Lease is still within timeout so granting immediately",
           leaseName,
-          ownerName
-        )
+          ownerName)
         who ! LeaseAcquired
         goto(Granted).using(GrantedVersion(version, leaseLost))
       }
@@ -147,8 +145,8 @@ private[akka] class LeaseActor(
 
   when(Granting) {
     case Event(
-        WriteResponse(Right(response)),
-        cc @ OperationInProgress(who, oldVersion, leaseLost, operationStartTime)) =>
+          WriteResponse(Right(response)),
+          cc @ OperationInProgress(who, oldVersion, leaseLost, operationStartTime)) =>
       require(
         oldVersion != response.version,
         s"Update response from Kubernetes API should not return the same version: Response: $response. Client: $cc")
@@ -224,15 +222,13 @@ private[akka] class LeaseActor(
     case Event(WriteResponse(Left(lr @ LeaseResource(None, _, _))), OperationInProgress(who, _, _, _)) =>
       log.warning(
         "Release conflict and owner has been removed: {}. Lease will continue to work but TTL must have been reached to allow another node to remove lease.",
-        lr
-      )
+        lr)
       who ! LeaseReleased
       goto(Idle).using(ReadRequired)
     case Event(WriteResponse(Left(lr @ LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _)) =>
       log.warning(
         "Release conflict and owner has changed: {}. Lease will continue to work but TTL must have been reached to allow another node to update the lease.",
-        lr
-      )
+        lr)
       who ! LeaseReleased
       goto(Idle).using(ReadRequired)
   }
