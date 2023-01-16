@@ -1,27 +1,27 @@
-# Welcome! Thank you for contributing to Akka Cluster Management!
+# Contributing to the Apache Pekko Management
 
 We follow the standard GitHub [fork & pull](https://help.github.com/articles/using-pull-requests/#fork--pull) approach to pull requests. Just fork the official repo, develop in a branch, and submit a PR!
 
-You're always welcome to submit your PR straight away and start the discussion (without reading the rest of this wonderful doc, or the README.md). The goal of these notes is to make your experience contributing to Akka Management as smooth and pleasant as possible. We're happy to guide you through the process once you've submitted your PR.
+You're always welcome to submit your PR straight away and start the discussion (without reading the rest of this wonderful doc, or the README.md). The goal of these notes is to make your experience contributing to Apache Pekko as smooth and pleasant as possible. We're happy to guide you through the process once you've submitted your PR.
 
-# The Akka Community
+# The Pekko Community
 
-In case of questions about the contribution process or for discussion of specific issues please visit the [akka/dev gitter chat](https://gitter.im/akka/dev).
+If you have questions about the contribution process or discuss specific issues, please interact with the community using the following resources.
 
-You may also check out these [other resources](https://akka.io/get-involved/).
+- [GitHub discussions](https://github.com/apache/incubator-pekko-management/discussions): for questions and general discussion.
+- [Pekko dev mailing list](https://lists.apache.org/list.html?dev@pekko.apache.org): for Pekko development discussions.
+- [GitHub issues](https://github.com/apache/incubator-pekko-management/issues): for bug reports and feature requests. Please search the existing issues before creating new ones. If you are unsure whether you have found a bug, consider asking in GitHub discussions or the mailing list first.
 
 ## General Workflow
 
 This is the process for committing code into master.
 
-1. Make sure you have signed the Lightbend CLA, if not, [sign it online](https://www.lightbend.com/contribute/cla).
-2. Especially for bigger features it can be good to create or find a ticket for your work in the [issue tracker](https://github.com/akka/akka-management/issues) and discuss your proposed solution there. This is not a requirement, but can avoid disappointment later in the process.
+1. Sign the [CLA](https://www.apache.org/licenses/contributor-agreements.html) if necessary.
+2. Especially for bigger features it can be good to create or find a ticket for your work in the [issue tracker](https://github.com/apache/incubator-pekko-management/issues) and discuss your proposed solution there. This is not a requirement, but can avoid disappointment later in the process.
 3. Perform your work according to the [pull request requirements](#pull-request-requirements).
-4. When the feature or fix is completed you should open a [Pull Request](https://help.github.com/articles/using-pull-requests) on [GitHub](https://github.com/akka/akka-management/pulls).
+4. When the feature or fix is completed you should open a [Pull Request](https://help.github.com/articles/using-pull-requests) on [GitHub](https://github.com/apache/incubator-pekko-management/pulls).
 5. The Pull Request should be reviewed by other maintainers (as many as feasible/practical). Note that the maintainers can consist of outside contributors, both within and outside Lightbend. Outside contributors are encouraged to participate in the review process, it is not a closed process.
 6. After the review you should fix the issues (review comments, CI failures) by pushing a new commit for new review, iterating until the reviewers give their thumbs up and CI tests pass.
-
-In case of questions about the contribution process or for discussion of specific issues please visit the [akka/dev gitter chat](https://gitter.im/akka/dev).
 
 ## Pull Request Requirements
 
@@ -43,7 +43,7 @@ If these requirements are not met then the code should **not** be merged into ma
 Documentation should be written in two forms:
 
 1. API documentation in the form of scaladoc/javadoc comments on the Scala and Java user API.
-2. Guide documentation in [docs](docs/) subproject using [Paradox](https://github.com/lightbend/paradox) documentation tool. This documentation should give a short introduction of how a given connector should be used.
+2. Guide documentation in [docs](docs/) subproject using [Paradox](https://github.com/apache/incubator-pekko-sbt-paradox) documentation tool. This documentation should give a short introduction of how a given connector should be used.
 
 ## External Dependencies
 
@@ -88,6 +88,6 @@ Example:
 
 ## How To Enforce These Guidelines?
 
-1. [Travis CI](https://travis-ci.org/akka/akka-management) automatically merges the code, builds it, runs the tests and sets Pull Request status accordingly of results in GitHub.
+1. [CI](https://github.com/apache/incubator-pekko-management/actions) automatically merges the code, builds it, runs the tests and sets Pull Request status accordingly of results in GitHub.
 2. [Scalafmt](https://olafurpg.github.io/scalafmt) enforces some of the code style rules.
 3. [sbt-header plugin](https://github.com/sbt/sbt-header) manages consistent copyright headers in every source file.
