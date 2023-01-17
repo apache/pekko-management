@@ -1,7 +1,7 @@
 import com.geirsson.CiReleasePlugin
 import com.lightbend.paradox.projectinfo.ParadoxProjectInfoPluginKeys._
+import de.heikoseeberger.sbtheader.HeaderPlugin
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport._
-import de.heikoseeberger.sbtheader._
 import sbt.Keys._
 import sbt._
 import xerial.sbt.Sonatype.autoImport.sonatypeProfileName
@@ -13,7 +13,7 @@ object Common extends AutoPlugin {
 
   val currentYear = "2021"
 
-  override lazy val projectSettings =
+  override lazy val projectSettings: Seq[sbt.Def.Setting[_]] =
     Seq(
       organization := "com.lightbend.akka.management",
       organizationName := "Lightbend Inc.",
@@ -34,7 +34,7 @@ object Common extends AutoPlugin {
       projectInfoVersion := (if (isSnapshot.value) "snapshot" else version.value),
       crossVersion := CrossVersion.binary,
       scalacOptions ++= {
-        var scalacOptionsBase = Seq(
+        val scalacOptionsBase = Seq(
           "-encoding",
           "UTF-8",
           "-feature",
