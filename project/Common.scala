@@ -1,7 +1,7 @@
 import com.geirsson.CiReleasePlugin
 import com.lightbend.paradox.projectinfo.ParadoxProjectInfoPluginKeys._
+import de.heikoseeberger.sbtheader.HeaderPlugin
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport._
-import de.heikoseeberger.sbtheader._
 import sbt.Keys._
 import sbt._
 import xerial.sbt.Sonatype.autoImport.sonatypeProfileName
@@ -13,7 +13,7 @@ object Common extends AutoPlugin {
 
   val currentYear = "2021"
 
-  override lazy val projectSettings =
+  override lazy val projectSettings: Seq[sbt.Def.Setting[_]] =
     Seq(
       organization := "com.lightbend.akka.management",
       organizationName := "Lightbend Inc.",
@@ -29,13 +29,12 @@ object Common extends AutoPlugin {
         url("https://github.com/akka/akka-management/graphs/contributors")),
       licenses := Seq(("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))),
       description := "Akka Management is a suite of tools for operating Akka Clusters.",
-      headerLicense := Some(
-        HeaderLicense.Custom(s"Copyright (C) 2017-$currentYear Lightbend Inc. <https://www.lightbend.com>")),
+      headerLicense := Some(HeaderLicense.Custom(apacheHeader)),
       crossScalaVersions := Dependencies.CrossScalaVersions,
       projectInfoVersion := (if (isSnapshot.value) "snapshot" else version.value),
       crossVersion := CrossVersion.binary,
       scalacOptions ++= {
-        var scalacOptionsBase = Seq(
+        val scalacOptionsBase = Seq(
           "-encoding",
           "UTF-8",
           "-feature",
@@ -81,4 +80,13 @@ object Common extends AutoPlugin {
 
   private def isJdk8 =
     VersionNumber(sys.props("java.specification.version")).matchesSemVer(SemanticSelector(s"=1.8"))
+
+  def apacheHeader: String =
+    """Licensed to the Apache Software Foundation (ASF) under one or more
+      |license agreements; and to You under the Apache License, version 2.0:
+      |
+      |  https://www.apache.org/licenses/LICENSE-2.0
+      |
+      |This file is part of the Apache Pekko project, derived from Akka.
+      |""".stripMargin
 }
