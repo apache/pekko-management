@@ -2,11 +2,11 @@ enablePlugins(JavaServerAppPackaging)
 
 name := "bootstrap-demo-marathon-api"
 
-version := "0.1.0"
+version := "1.1.4"
 
 scalaVersion := "2.12.16"
 
-val akkaManagementVersion = "0.10.0"
+val akkaManagementVersion = "1.10.0"
 
 libraryDependencies ++= Vector(
   "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % akkaManagementVersion,

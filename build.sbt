@@ -4,171 +4,164 @@ import sbt.Keys.parallelExecution
 ThisBuild / resolvers += Resolver.jcenterRepo
 
 // root
-lazy val `akka-management-root` = project
+lazy val root = project
   .in(file("."))
   .enablePlugins(ScalaUnidocPlugin)
   .disablePlugins(MimaPlugin)
   .aggregate(
     // When this aggregate is updated the list of modules in ManifestInfo.checkSameVersion
-    // in AkkaManagement should also be updated
-    `akka-discovery-aws-api`,
-    `akka-discovery-aws-api-async`,
-    `akka-discovery-consul`,
-    `akka-discovery-kubernetes-api`,
-    `akka-discovery-marathon-api`,
-    `akka-management`,
-    `akka-management-pki`,
-    `loglevels-logback`,
-    `loglevels-log4j2`,
-    `integration-test-aws-api-ec2-tag-based`,
-    `integration-test-local`,
-    `integration-test-aws-api-ecs`,
-    `integration-test-kubernetes-api`,
-    `integration-test-kubernetes-api-java`,
-    `integration-test-kubernetes-dns`,
-    `integration-test-marathon-api-docker`,
-    `cluster-http`,
-    `cluster-bootstrap`,
-    `lease-kubernetes`,
-    `lease-kubernetes-int-test`,
+    // in management should also be updated
+    discoveryAwsApi,
+    discoveryAwsApiAsync,
+    discoveryConsul,
+    discoveryKubernetesApi,
+    discoveryMarathonApi,
+    management,
+    managementPki,
+    loglevelsLogback,
+    loglevelsLog4j2,
+    integrationTestAwsApiEc2TagBased,
+    integrationTestLocal,
+    integrationTestAwsApiEcs,
+    integrationTestKubernetesApi,
+    integrationTestKubernetesApiJava,
+    integrationTestKubernetesDns,
+    integrationTestMarathonApiDocker,
+    clusterHttp,
+    clusterBootstrap,
+    leaseKubernetes,
+    leaseKubernetesIntTest,
     docs)
   .settings(
     GlobalScope / parallelExecution := false,
     publish / skip := true)
 
-lazy val mimaPreviousArtifactsSet =
-  mimaPreviousArtifacts := Set.empty // temporarily disable mima checks
+lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set.empty // temporarily disable mima checks
 
-lazy val `akka-discovery-kubernetes-api` = project
-  .in(file("discovery-kubernetes-api"))
+lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-discovery-kubernetes-api",
-    organization := "com.lightbend.akka.discovery",
+    name := "pekko-discovery-kubernetes-api",
     libraryDependencies := Dependencies.DiscoveryKubernetesApi,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
-  .dependsOn(`akka-management-pki`)
+  .dependsOn(managementPki)
 
-lazy val `akka-discovery-marathon-api` = project
-  .in(file("discovery-marathon-api"))
+lazy val discoveryMarathonApi = pekkoModule("discovery-marathon-api")
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-discovery-marathon-api",
-    organization := "com.lightbend.akka.discovery",
+    name := "pekko-discovery-marathon-api",
     libraryDependencies := Dependencies.DiscoveryMarathonApi,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
 
-lazy val `akka-discovery-aws-api` = project
-  .in(file("discovery-aws-api"))
+lazy val discoveryAwsApi = pekkoModule("discovery-aws-api")
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-discovery-aws-api",
-    organization := "com.lightbend.akka.discovery",
+    name := "pekko-discovery-aws-api",
     libraryDependencies := Dependencies.DiscoveryAwsApi,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
 
-lazy val `akka-discovery-aws-api-async` = project
-  .in(file("discovery-aws-api-async"))
+lazy val discoveryAwsApiAsync = pekkoModule("discovery-aws-api-async")
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-discovery-aws-api-async",
-    organization := "com.lightbend.akka.discovery",
+    name := "pekko-discovery-aws-api-async",
     libraryDependencies := Dependencies.DiscoveryAwsApiAsync,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
 
-lazy val `akka-discovery-consul` = project
-  .in(file("discovery-consul"))
+lazy val discoveryConsul = pekkoModule("discovery-consul")
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-discovery-consul",
-    organization := "com.lightbend.akka.discovery",
+    name := "pekko-discovery-consul",
     libraryDependencies := Dependencies.DiscoveryConsul,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
 
 // gathers all enabled routes and serves them (HTTP or otherwise)
-lazy val `akka-management` = project
-  .in(file("management"))
+lazy val management = pekkoModule("management")
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-management",
+    name := "pekko-management",
     libraryDependencies := Dependencies.ManagementHttp,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
 
-lazy val `akka-management-pki` = project
-  .in(file("management-pki"))
+lazy val managementPki = pekkoModule("management-pki")
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-management-pki",
+    name := "pekko-management-pki",
     libraryDependencies := Dependencies.ManagementPki,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
 
-lazy val `loglevels-logback` = project
-  .in(file("loglevels-logback"))
+lazy val loglevelsLogback = pekkoModule("loglevels-logback") // todo: rename project/folder to management-loglevels-logback
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-management-loglevels-logback",
+    name := "pekko-management-loglevels-logback",
     libraryDependencies := Dependencies.LoglevelsLogback,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
-  .dependsOn(`akka-management`)
+  .dependsOn(management)
 
-lazy val `loglevels-log4j2` = project
-  .in(file("loglevels-log4j2"))
+lazy val loglevelsLog4j2 = pekkoModule("loglevels-log4j2") // todo: rename project/folder to management-loglevels-log4j2
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .disablePlugins(MimaPlugin)
   .settings(
-    name := "akka-management-loglevels-log4j2",
+    name := "pekko-management-loglevels-log4j2",
     libraryDependencies := Dependencies.LoglevelsLog4j2)
   .settings(MetaInfLicenseNoticeCopy.settings)
-  .dependsOn(`akka-management`)
+  .dependsOn(management)
 
-lazy val `cluster-http` = project
-  .in(file("cluster-http"))
+lazy val clusterHttp = pekkoModule("cluster-http") // todo: rename project/folder to management-cluster-http
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-management-cluster-http",
+    name := "pekko-management-cluster-http",
     libraryDependencies := Dependencies.ClusterHttp,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
-  .dependsOn(`akka-management`)
+  .dependsOn(management)
 
-lazy val `cluster-bootstrap` = project
-  .in(file("cluster-bootstrap"))
+lazy val clusterBootstrap = pekkoModule("cluster-bootstrap") // todo: rename project/folder to management-cluster-bootstrap
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-management-cluster-bootstrap",
+    name := "pekko-management-cluster-bootstrap",
     libraryDependencies := Dependencies.ClusterBootstrap,
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
-  .dependsOn(`akka-management`)
+  .dependsOn(management)
 
-lazy val `lease-kubernetes` = project
-  .in(file("lease-kubernetes"))
+lazy val leaseKubernetes = pekkoModule("lease-kubernetes")
   .enablePlugins(AutomateHeaderPlugin)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
-    name := "akka-lease-kubernetes",
+    name := "pekko-lease-kubernetes",
     libraryDependencies := Dependencies.LeaseKubernetes,
     mimaPreviousArtifactsSet)
   .settings(Defaults.itSettings)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .configs(IntegrationTest)
-  .dependsOn(`akka-management-pki`)
+  .dependsOn(managementPki)
 
-lazy val `lease-kubernetes-int-test` = project
-  .in(file("lease-kubernetes-int-test"))
+lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
   .enablePlugins(JavaAppPackaging, DockerPlugin)
-  .dependsOn(`lease-kubernetes`)
+  .dependsOn(leaseKubernetes)
   .enablePlugins(AutomateHeaderPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
-    name := "akka-lease-kubernetes-int-test",
+    name := "pekko-lease-kubernetes-int-test",
     publish / skip := true,
     libraryDependencies := Dependencies.LeaseKubernetesTest,
     version ~= (_.replace('+', '-')),
@@ -182,11 +175,10 @@ lazy val `lease-kubernetes-int-test` = project
       Cmd("USER", "root"),
       Cmd("RUN", "chgrp -R 0 . && chmod -R g=u ."),
       Cmd("RUN", "/sbin/apk", "add", "--no-cache", "bash", "bind-tools", "busybox-extras", "curl", "strace"),
-      Cmd("RUN", "chmod +x /opt/docker/bin/akka-lease-kubernetes-int-test")))
+      Cmd("RUN", "chmod +x /opt/docker/bin/pekko-lease-kubernetes-int-test")))
   .settings(MetaInfLicenseNoticeCopy.settings)
 
-lazy val `integration-test-kubernetes-api` = project
-  .in(file("integration-test/kubernetes-api"))
+lazy val integrationTestKubernetesApi = pekkoIntTestModule("kubernetes-api")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
@@ -194,25 +186,9 @@ lazy val `integration-test-kubernetes-api` = project
     doc / sources := Seq.empty,
     libraryDependencies := Dependencies.BootstrapDemos)
   .settings(MetaInfLicenseNoticeCopy.settings)
-  .dependsOn(`akka-management`, `cluster-http`, `cluster-bootstrap`, `akka-discovery-kubernetes-api`)
+  .dependsOn(management, clusterHttp, clusterBootstrap, discoveryKubernetesApi)
 
-lazy val `integration-test-kubernetes-api-java` = project
-  .in(file("integration-test/kubernetes-api-java"))
-  .disablePlugins(MimaPlugin)
-  .enablePlugins(AutomateHeaderPlugin)
-  .settings(
-    publish / skip := true,
-    doc / sources := Seq.empty,
-    libraryDependencies := Dependencies.BootstrapDemos)
-  .settings(MetaInfLicenseNoticeCopy.settings)
-  .dependsOn(
-    `akka-management`,
-    `cluster-http`,
-    `cluster-bootstrap`,
-    `akka-discovery-kubernetes-api`)
-
-lazy val `integration-test-kubernetes-dns` = project
-  .in(file("integration-test/kubernetes-dns"))
+lazy val integrationTestKubernetesApiJava = pekkoIntTestModule("kubernetes-api-java")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
@@ -221,12 +197,25 @@ lazy val `integration-test-kubernetes-dns` = project
     libraryDependencies := Dependencies.BootstrapDemos)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
-    `akka-management`,
-    `cluster-http`,
-    `cluster-bootstrap`)
+    management,
+    clusterHttp,
+    clusterBootstrap,
+    discoveryKubernetesApi)
 
-lazy val `integration-test-aws-api-ec2-tag-based` = project
-  .in(file("integration-test/aws-api-ec2"))
+lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
+  .disablePlugins(MimaPlugin)
+  .enablePlugins(AutomateHeaderPlugin)
+  .settings(
+    publish / skip := true,
+    doc / sources := Seq.empty,
+    libraryDependencies := Dependencies.BootstrapDemos)
+  .settings(MetaInfLicenseNoticeCopy.settings)
+  .dependsOn(
+    management,
+    clusterHttp,
+    clusterBootstrap)
+
+lazy val integrationTestAwsApiEc2TagBased = pekkoIntTestModule("aws-api-ec2")
   .configs(IntegrationTest)
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
@@ -236,13 +225,12 @@ lazy val `integration-test-aws-api-ec2-tag-based` = project
     Defaults.itSettings)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
-    `akka-management`,
-    `cluster-http`,
-    `akka-discovery-aws-api`,
-    `cluster-bootstrap`)
+    management,
+    clusterHttp,
+    discoveryAwsApi,
+    clusterBootstrap)
 
-lazy val `integration-test-marathon-api-docker` = project
-  .in(file("integration-test/marathon-api-docker"))
+lazy val integrationTestMarathonApiDocker = pekkoIntTestModule("marathon-api-docker")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
@@ -251,13 +239,12 @@ lazy val `integration-test-marathon-api-docker` = project
     doc / sources := Seq.empty)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
-    `akka-management`,
-    `cluster-http`,
-    `cluster-bootstrap`,
-    `akka-discovery-marathon-api`)
+    management,
+    clusterHttp,
+    clusterBootstrap,
+    discoveryMarathonApi)
 
-lazy val `integration-test-aws-api-ecs` = project
-  .in(file("integration-test/aws-api-ecs"))
+lazy val integrationTestAwsApiEcs = pekkoIntTestModule("aws-api-ecs")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
@@ -265,18 +252,17 @@ lazy val `integration-test-aws-api-ecs` = project
     doc / sources := Seq.empty)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
-    `akka-management`,
-    `cluster-http`,
-    `cluster-bootstrap`,
-    `akka-discovery-aws-api-async`)
+    management,
+    clusterHttp,
+    clusterBootstrap,
+    discoveryAwsApiAsync)
   .enablePlugins(JavaAppPackaging, AshScriptPlugin, DockerPlugin)
   .settings(
     dockerBaseImage := "openjdk:10-jre-slim",
     Docker / com.typesafe.sbt.SbtNativePackager.autoImport.packageName := "ecs-integration-test-app",
     Docker / version := "1.0")
 
-lazy val `integration-test-local` = project
-  .in(file("integration-test/local"))
+lazy val integrationTestLocal = pekkoIntTestModule("local")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
@@ -286,9 +272,9 @@ lazy val `integration-test-local` = project
     libraryDependencies := Dependencies.BootstrapDemos)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
-    `akka-management`,
-    `cluster-http`,
-    `cluster-bootstrap`)
+    management,
+    clusterHttp,
+    clusterBootstrap)
   .enablePlugins(JavaAppPackaging, AshScriptPlugin)
 
 lazy val docs = project
@@ -296,31 +282,37 @@ lazy val docs = project
   .enablePlugins(AkkaParadoxPlugin, ParadoxSitePlugin, PreprocessPlugin, PublishRsyncPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
-    name := "Akka Management",
+    name := "Pekko Management",
     publish / skip := true,
     makeSite := makeSite.dependsOn(LocalRootProject / ScalaUnidoc / doc).value,
-    Preprocess / siteSubdirName := s"api/akka-management/${if (isSnapshot.value) "snapshot" else version.value}",
+    Preprocess / siteSubdirName := s"api/pekko-management/${if (isSnapshot.value) "snapshot" else version.value}",
     Preprocess / sourceDirectory := (LocalRootProject / ScalaUnidoc / unidoc / target).value,
     Preprocess / preprocessRules := Seq(
       ("\\.java\\.scala".r, _ => ".java")),
     previewPath := (Paradox / siteSubdirName).value,
     paradoxGroups := Map("Language" -> Seq("Java", "Scala")),
-    Paradox / siteSubdirName := s"docs/akka-management/${if (isSnapshot.value) "snapshot" else version.value}",
+    Paradox / siteSubdirName := s"docs/pekko-management/${if (isSnapshot.value) "snapshot" else version.value}",
     Compile / paradoxProperties ++= Map(
       "date.year" -> Common.currentYear,
-      "project.url" -> "https://doc.akka.io/docs/akka-management/current/",
-      "canonical.base_url" -> "https://doc.akka.io/docs/akka-management/current",
+      "project.url" -> "https://pekko.apache.org/docs/pekko-management/current/",
+      "canonical.base_url" -> "https://pekko.apache.org/docs/pekko-management/current",
       "scala.binary.version" -> scalaBinaryVersion.value,
       "akka.version" -> Dependencies.AkkaVersion,
-      "extref.akka.base_url" -> s"https://doc.akka.io/docs/akka/current/%s",
-      "scaladoc.akka.base_url" -> s"https://doc.akka.io/api/akka/current/",
-      "extref.akka-http.base_url" -> s"https://doc.akka.io/docs/akka-http/${Dependencies.AkkaHttpBinaryVersion}/%s",
-      "scaladoc.akka.http.base_url" -> s"https://doc.akka.io/api/akka-http/${Dependencies.AkkaHttpBinaryVersion}/",
-      "extref.akka-grpc.base_url" -> s"https://doc.akka.io/docs/akka-grpc/current/%s",
-      "extref.akka-enhancements.base_url" -> s"https://doc.akka.io/docs/akka-enhancements/current/%s",
+      "extref.akka.base_url" -> s"https://pekko.apache.org/docs/pekko/current/%s",
+      "scaladoc.akka.base_url" -> s"https://pekko.apache.org/api/pekko/current/",
+      "extref.akka-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/${Dependencies.AkkaHttpBinaryVersion}/%s",
+      "scaladoc.akka.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/${Dependencies.AkkaHttpBinaryVersion}/",
+      "extref.akka-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/current/%s",
+      "extref.akka-enhancements.base_url" -> s"https://pekko.apache.org/docs/pekko-enhancements/current/%s",
       "scaladoc.akka.management.base_url" -> s"/${(Preprocess / siteSubdirName).value}/"),
     publishRsyncArtifacts += makeSite.value -> "www/",
     publishRsyncHost := "akkarepo@gustav.akka.io")
+
+def pekkoModule(moduleName: String): Project =
+  Project(id = moduleName, base = file(moduleName))
+
+def pekkoIntTestModule(moduleName: String): Project =
+  Project(id = s"integration-test-$moduleName", base = file(s"integration-test/$moduleName"))
 
 TaskKey[Unit]("verifyCodeFmt") := {
   scalafmtCheckAll.all(ScopeFilter(inAnyProject)).result.value.toEither.left.foreach { _ =>

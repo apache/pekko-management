@@ -19,7 +19,7 @@ is bound to this port.
 
 ## Project Info
 
-@@project-info{ projectId="akka-discovery-marathon-api" }
+@@project-info{ projectId="discovery-marathon-api" }
 
 ### Dependencies and usage
 

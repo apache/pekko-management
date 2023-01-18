@@ -14,7 +14,7 @@ If you are using Consul to do the service discovery this would allow you to base
 
 ## Project Info
 
-@@project-info{ projectId="akka-discovery-consul" }
+@@project-info{ projectId="discovery-consul" }
 
 @@dependency[sbt,Gradle,Maven] {
   symbol1=AkkaManagementVersion

@@ -2,12 +2,12 @@
 
 set -exu
 
-VERSION=`sbt publishM2 | grep akka-management-cluster-bootstrap_2.12 | tail -1 | cut -d "/" -f 11`
+VERSION=`sbt publishM2 | grep pekko-management-cluster-bootstrap_2.12 | tail -1 | cut -d "/" -f 10`
 
 cd integration-test/kubernetes-api-java
 
 eval $(minikube -p minikube docker-env)
-mvn -Dakka-management.version=$VERSION clean package docker:build
+mvn -Dpekko-management.version=$VERSION clean package docker:build
 
 export NAMESPACE=akka-bootstrap-demo-ns
 

@@ -6,7 +6,7 @@ The typical way to consume a service in Kubernetes is to discover it through DNS
 
 ## Project Info
 
-@@project-info{ projectId="akka-discovery-kubernetes-api" }
+@@project-info{ projectId="discovery-kubernetes-api" }
 
 ### Dependencies and usage
 

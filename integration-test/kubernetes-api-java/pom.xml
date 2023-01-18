@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.lightbend</groupId>
+  <groupId>org.apache.pekko</groupId>
   <artifactId>integration-test-kubernetes-api-java</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>${project.artifactId}</name>
@@ -18,9 +18,9 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <akka.version>2.6.14</akka.version>
-    <akka.http.version>10.2.0</akka.http.version>
-    <akka-management.version>1.0.5</akka-management.version>
+    <akka.version>2.6.20</akka.version>
+    <akka.http.version>10.2.10</akka.http.version>
+    <pekko-management.version>0.0.0</pekko-management.version> <!-- set by build -->
     <scala.binary.version>2.12</scala.binary.version>
   </properties>
 
@@ -46,14 +46,14 @@
       <version>1.2.3</version>
     </dependency>
     <dependency>
-      <groupId>com.lightbend.akka.management</groupId>
-      <artifactId>akka-management-cluster-bootstrap_${scala.binary.version}</artifactId>
-      <version>${akka-management.version}</version>
+      <groupId>org.apache.pekko</groupId>
+      <artifactId>pekko-management-cluster-bootstrap_${scala.binary.version}</artifactId>
+      <version>${pekko-management.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.lightbend.akka.discovery</groupId>
-      <artifactId>akka-discovery-kubernetes-api_${scala.binary.version}</artifactId>
-      <version>${akka-management.version}</version>
+      <groupId>org.apache.pekko</groupId>
+      <artifactId>pekko-discovery-kubernetes-api_${scala.binary.version}</artifactId>
+      <version>${pekko-management.version}</version>
     </dependency>
     <dependency>
       <groupId>com.typesafe.akka</groupId>
@@ -154,7 +154,7 @@
                       <dependencySet>
                         <useProjectAttachments>true</useProjectAttachments>
                         <includes>
-                          <include>com.lightbend:integration-test-kubernetes-api-java:jar:allinone</include>
+                          <include>org.apache.pekko:integration-test-kubernetes-api-java:jar:allinone</include>
                         </includes>
                         <outputFileNameMapping>integration-test-kubernetes-api-java-allinone.jar</outputFileNameMapping>
                       </dependencySet>
