@@ -47,6 +47,7 @@ lazy val `akka-discovery-kubernetes-api` = project
     organization := "com.lightbend.akka.discovery",
     libraryDependencies := Dependencies.DiscoveryKubernetesApi,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(`akka-management-pki`)
 
 lazy val `akka-discovery-marathon-api` = project
@@ -57,6 +58,7 @@ lazy val `akka-discovery-marathon-api` = project
     organization := "com.lightbend.akka.discovery",
     libraryDependencies := Dependencies.DiscoveryMarathonApi,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
 
 lazy val `akka-discovery-aws-api` = project
   .in(file("discovery-aws-api"))
@@ -66,6 +68,7 @@ lazy val `akka-discovery-aws-api` = project
     organization := "com.lightbend.akka.discovery",
     libraryDependencies := Dependencies.DiscoveryAwsApi,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
 
 lazy val `akka-discovery-aws-api-async` = project
   .in(file("discovery-aws-api-async"))
@@ -75,6 +78,7 @@ lazy val `akka-discovery-aws-api-async` = project
     organization := "com.lightbend.akka.discovery",
     libraryDependencies := Dependencies.DiscoveryAwsApiAsync,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
 
 lazy val `akka-discovery-consul` = project
   .in(file("discovery-consul"))
@@ -84,6 +88,7 @@ lazy val `akka-discovery-consul` = project
     organization := "com.lightbend.akka.discovery",
     libraryDependencies := Dependencies.DiscoveryConsul,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
 
 // gathers all enabled routes and serves them (HTTP or otherwise)
 lazy val `akka-management` = project
@@ -93,6 +98,7 @@ lazy val `akka-management` = project
     name := "akka-management",
     libraryDependencies := Dependencies.ManagementHttp,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
 
 lazy val `akka-management-pki` = project
   .in(file("management-pki"))
@@ -101,6 +107,7 @@ lazy val `akka-management-pki` = project
     name := "akka-management-pki",
     libraryDependencies := Dependencies.ManagementPki,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
 
 lazy val `loglevels-logback` = project
   .in(file("loglevels-logback"))
@@ -109,6 +116,7 @@ lazy val `loglevels-logback` = project
     name := "akka-management-loglevels-logback",
     libraryDependencies := Dependencies.LoglevelsLogback,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(`akka-management`)
 
 lazy val `loglevels-log4j2` = project
@@ -118,6 +126,7 @@ lazy val `loglevels-log4j2` = project
   .settings(
     name := "akka-management-loglevels-log4j2",
     libraryDependencies := Dependencies.LoglevelsLog4j2)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(`akka-management`)
 
 lazy val `cluster-http` = project
@@ -127,6 +136,7 @@ lazy val `cluster-http` = project
     name := "akka-management-cluster-http",
     libraryDependencies := Dependencies.ClusterHttp,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(`akka-management`)
 
 lazy val `cluster-bootstrap` = project
@@ -136,6 +146,7 @@ lazy val `cluster-bootstrap` = project
     name := "akka-management-cluster-bootstrap",
     libraryDependencies := Dependencies.ClusterBootstrap,
     mimaPreviousArtifactsSet)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(`akka-management`)
 
 lazy val `lease-kubernetes` = project
@@ -145,8 +156,8 @@ lazy val `lease-kubernetes` = project
     name := "akka-lease-kubernetes",
     libraryDependencies := Dependencies.LeaseKubernetes,
     mimaPreviousArtifactsSet)
-  .settings(
-    Defaults.itSettings)
+  .settings(Defaults.itSettings)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .configs(IntegrationTest)
   .dependsOn(`akka-management-pki`)
 
@@ -172,6 +183,7 @@ lazy val `lease-kubernetes-int-test` = project
       Cmd("RUN", "chgrp -R 0 . && chmod -R g=u ."),
       Cmd("RUN", "/sbin/apk", "add", "--no-cache", "bash", "bind-tools", "busybox-extras", "curl", "strace"),
       Cmd("RUN", "chmod +x /opt/docker/bin/akka-lease-kubernetes-int-test")))
+  .settings(MetaInfLicenseNoticeCopy.settings)
 
 lazy val `integration-test-kubernetes-api` = project
   .in(file("integration-test/kubernetes-api"))
@@ -181,6 +193,7 @@ lazy val `integration-test-kubernetes-api` = project
     publish / skip := true,
     doc / sources := Seq.empty,
     libraryDependencies := Dependencies.BootstrapDemos)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(`akka-management`, `cluster-http`, `cluster-bootstrap`, `akka-discovery-kubernetes-api`)
 
 lazy val `integration-test-kubernetes-api-java` = project
@@ -191,6 +204,7 @@ lazy val `integration-test-kubernetes-api-java` = project
     publish / skip := true,
     doc / sources := Seq.empty,
     libraryDependencies := Dependencies.BootstrapDemos)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     `akka-management`,
     `cluster-http`,
@@ -205,6 +219,7 @@ lazy val `integration-test-kubernetes-dns` = project
     publish / skip := true,
     doc / sources := Seq.empty,
     libraryDependencies := Dependencies.BootstrapDemos)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     `akka-management`,
     `cluster-http`,
@@ -219,6 +234,7 @@ lazy val `integration-test-aws-api-ec2-tag-based` = project
     publish / skip := true,
     doc / sources := Seq.empty,
     Defaults.itSettings)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     `akka-management`,
     `cluster-http`,
@@ -233,6 +249,7 @@ lazy val `integration-test-marathon-api-docker` = project
     name := "integration-test-marathon-api-docker",
     publish / skip := true,
     doc / sources := Seq.empty)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     `akka-management`,
     `cluster-http`,
@@ -246,6 +263,7 @@ lazy val `integration-test-aws-api-ecs` = project
   .settings(
     publish / skip := true,
     doc / sources := Seq.empty)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     `akka-management`,
     `cluster-http`,
@@ -266,6 +284,7 @@ lazy val `integration-test-local` = project
     publish / skip := true,
     doc / sources := Seq.empty,
     libraryDependencies := Dependencies.BootstrapDemos)
+  .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     `akka-management`,
     `cluster-http`,
