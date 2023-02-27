@@ -51,7 +51,7 @@ Health checks are picked up from configuration. Modules are expected to provide 
 
 Application specific health checks can be added a `name = <fully qualified class name>` to `akka.management.health-checks.readiness-checks` or `akka.management.health-checks.liveness-checks` e.g.
 
-@@snip [reference.conf](/cluster-http/src/main/resources/reference.conf)  { #health }
+@@snip [reference.conf](/management-cluster-http/src/main/resources/reference.conf)  { #health }
 
 ## Hosting health checks as an Akka Management Route
 
