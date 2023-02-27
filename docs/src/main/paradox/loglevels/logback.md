@@ -4,7 +4,7 @@ Dynamic Log Levels for Logback hooks into Akka Management and provides a route w
 
 ## Project Info
 
-@@project-info{ projectId="loglevels-logback" }
+@@project-info{ projectId="management-loglevels-logback" }
 
 Requires @ref:[Akka Management](../akka-management.md) and that the application uses [Logback](http://logback.qos.ch) as logging backend.
 

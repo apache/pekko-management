@@ -18,8 +18,10 @@ lazy val root = project
     discoveryMarathonApi,
     management,
     managementPki,
-    loglevelsLogback,
-    loglevelsLog4j2,
+    managementClusterHttp,
+    managementClusterBootstrap,
+    managementLoglevelsLogback,
+    managementLoglevelsLog4j2,
     integrationTestAwsApiEc2TagBased,
     integrationTestLocal,
     integrationTestAwsApiEcs,
@@ -27,8 +29,6 @@ lazy val root = project
     integrationTestKubernetesApiJava,
     integrationTestKubernetesDns,
     integrationTestMarathonApiDocker,
-    clusterHttp,
-    clusterBootstrap,
     leaseKubernetes,
     leaseKubernetesIntTest,
     docs)
@@ -103,7 +103,7 @@ lazy val managementPki = pekkoModule("management-pki")
     mimaPreviousArtifactsSet)
   .settings(MetaInfLicenseNoticeCopy.settings)
 
-lazy val loglevelsLogback = pekkoModule("loglevels-logback") // todo: rename project/folder to management-loglevels-logback
+lazy val managementLoglevelsLogback = pekkoModule("management-loglevels-logback")
   .enablePlugins(AutomateHeaderPlugin)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
@@ -113,7 +113,7 @@ lazy val loglevelsLogback = pekkoModule("loglevels-logback") // todo: rename pro
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(management)
 
-lazy val loglevelsLog4j2 = pekkoModule("loglevels-log4j2") // todo: rename project/folder to management-loglevels-log4j2
+lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
   .enablePlugins(AutomateHeaderPlugin)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .disablePlugins(MimaPlugin)
@@ -123,7 +123,7 @@ lazy val loglevelsLog4j2 = pekkoModule("loglevels-log4j2") // todo: rename proje
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(management)
 
-lazy val clusterHttp = pekkoModule("cluster-http") // todo: rename project/folder to management-cluster-http
+lazy val managementClusterHttp = pekkoModule("management-cluster-http")
   .enablePlugins(AutomateHeaderPlugin)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
@@ -133,7 +133,7 @@ lazy val clusterHttp = pekkoModule("cluster-http") // todo: rename project/folde
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(management)
 
-lazy val clusterBootstrap = pekkoModule("cluster-bootstrap") // todo: rename project/folder to management-cluster-bootstrap
+lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap")
   .enablePlugins(AutomateHeaderPlugin)
   .settings(MetaInfLicenseNoticeCopy.settings)
   .settings(
@@ -186,7 +186,7 @@ lazy val integrationTestKubernetesApi = pekkoIntTestModule("kubernetes-api")
     doc / sources := Seq.empty,
     libraryDependencies := Dependencies.BootstrapDemos)
   .settings(MetaInfLicenseNoticeCopy.settings)
-  .dependsOn(management, clusterHttp, clusterBootstrap, discoveryKubernetesApi)
+  .dependsOn(management, managementClusterHttp, managementClusterBootstrap, discoveryKubernetesApi)
 
 lazy val integrationTestKubernetesApiJava = pekkoIntTestModule("kubernetes-api-java")
   .disablePlugins(MimaPlugin)
@@ -198,8 +198,8 @@ lazy val integrationTestKubernetesApiJava = pekkoIntTestModule("kubernetes-api-j
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     management,
-    clusterHttp,
-    clusterBootstrap,
+    managementClusterHttp,
+    managementClusterBootstrap,
     discoveryKubernetesApi)
 
 lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
@@ -212,8 +212,8 @@ lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     management,
-    clusterHttp,
-    clusterBootstrap)
+    managementClusterHttp,
+    managementClusterBootstrap)
 
 lazy val integrationTestAwsApiEc2TagBased = pekkoIntTestModule("aws-api-ec2")
   .configs(IntegrationTest)
@@ -226,9 +226,9 @@ lazy val integrationTestAwsApiEc2TagBased = pekkoIntTestModule("aws-api-ec2")
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     management,
-    clusterHttp,
+    managementClusterHttp,
     discoveryAwsApi,
-    clusterBootstrap)
+    managementClusterBootstrap)
 
 lazy val integrationTestMarathonApiDocker = pekkoIntTestModule("marathon-api-docker")
   .disablePlugins(MimaPlugin)
@@ -240,8 +240,8 @@ lazy val integrationTestMarathonApiDocker = pekkoIntTestModule("marathon-api-doc
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     management,
-    clusterHttp,
-    clusterBootstrap,
+    managementClusterHttp,
+    managementClusterBootstrap,
     discoveryMarathonApi)
 
 lazy val integrationTestAwsApiEcs = pekkoIntTestModule("aws-api-ecs")
@@ -253,8 +253,8 @@ lazy val integrationTestAwsApiEcs = pekkoIntTestModule("aws-api-ecs")
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     management,
-    clusterHttp,
-    clusterBootstrap,
+    managementClusterHttp,
+    managementClusterBootstrap,
     discoveryAwsApiAsync)
   .enablePlugins(JavaAppPackaging, AshScriptPlugin, DockerPlugin)
   .settings(
@@ -273,8 +273,8 @@ lazy val integrationTestLocal = pekkoIntTestModule("local")
   .settings(MetaInfLicenseNoticeCopy.settings)
   .dependsOn(
     management,
-    clusterHttp,
-    clusterBootstrap)
+    managementClusterHttp,
+    managementClusterBootstrap)
   .enablePlugins(JavaAppPackaging, AshScriptPlugin)
 
 lazy val docs = project

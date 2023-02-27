@@ -26,7 +26,7 @@ A discovery mechanism needs to be chosen. A good default choice is DNS.
 
 ## Project Info
 
-@@project-info{ projectId="cluster-bootstrap" }
+@@project-info{ projectId="management-cluster-bootstrap" }
 
 ## Dependency
 
@@ -95,10 +95,10 @@ If management or bootstrap configuration is incorrect, the autostart will log an
 **Programmatically**
 
 Scala
-:  @@snip [CompileOnly.scala](/cluster-bootstrap/src/test/scala/doc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.scala) { #start }
+:  @@snip [CompileOnly.scala](/management-cluster-bootstrap/src/test/scala/doc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.scala) { #start }
 
 Java
-:  @@snip [CompileOnly.java](/cluster-bootstrap/src/test/java/jdoc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.java) { #start }
+:  @@snip [CompileOnly.java](/management-cluster-bootstrap/src/test/java/jdoc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.java) { #start }
 
 `AkkaManagment().start()` will return a @Scala[`Future`]@Java[`CompletionStage`] that will fail if management cannot be started. It is 
 a good idea to act on such a failure, for example by logging an error and terminating the actor system.

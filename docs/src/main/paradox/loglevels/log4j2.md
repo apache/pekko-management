@@ -4,7 +4,7 @@ Dynamic Log Levels for Log4j2 hooks into Akka Management and provides a route wh
 
 ## Project Info
 
-@@project-info{ projectId="loglevels-log4j2" }
+@@project-info{ projectId="management-loglevels-log4j2" }
 
 Requires @ref:[Akka Management](../akka-management.md) and that the application uses [Log4j2](https://logging.apache.org/log4j/2.x/) as logging backend.
 

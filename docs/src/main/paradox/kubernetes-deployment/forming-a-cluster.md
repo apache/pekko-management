@@ -98,10 +98,10 @@ To ensure that Cluster Bootstrap is started, both the Cluster Bootstrap and the 
 This can be done by invoking the `start` method on both the `ClusterBoostrap` and `AkkaManagement` extensions when your application starts up.
 
 Scala
-:  @@snip [CompileOnly.scala](/cluster-bootstrap/src/test/scala/doc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.scala) { #start }
+:  @@snip [CompileOnly.scala](/management-cluster-bootstrap/src/test/scala/doc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.scala) { #start }
 
 Java
-:  @@snip [CompileOnly.java](/cluster-bootstrap/src/test/java/jdoc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.java) { #start }
+:  @@snip [CompileOnly.java](/management-cluster-bootstrap/src/test/java/jdoc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.java) { #start }
 
 ## Role-Based Access Control
 

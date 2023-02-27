@@ -9,7 +9,7 @@ The operations exposed are comparable to the Command Line Management tool or the
 
 ## Project Info
 
-@@project-info{ projectId="cluster-http" }
+@@project-info{ projectId="management-cluster-http" }
 
 ## Dependencies
 
@@ -48,10 +48,10 @@ a later version than $akka.version$ can be used.
 To make sure the Akka Cluster HTTP Management is running, register it with Akka Management:
 
 Scala
-:  @@snip [CompileOnlySpec.scala](/cluster-http/src/test/scala/doc/akka/cluster/http/management/CompileOnlySpec.scala) { #loading }
+:  @@snip [CompileOnlySpec.scala](/management-cluster-http/src/test/scala/doc/akka/cluster/http/management/CompileOnlySpec.scala) { #loading }
 
 Java
-:  @@snip [CompileOnlyTest.java](/cluster-http/src/test/java/jdoc/akka/cluster/http/management/CompileOnlyTest.java) { #loading }
+:  @@snip [CompileOnlyTest.java](/management-cluster-http/src/test/java/jdoc/akka/cluster/http/management/CompileOnlyTest.java) { #loading }
 
 ## API Definition
 
@@ -243,18 +243,18 @@ Starting `AkkaMangement` starts an Akka HTTP server and hosts the Cluster HTTP R
 to an existing Akka HTTP server. To access all the routes:
 
 Scala
-:  @@snip [CompileOnlySpec.scala](/cluster-http/src/test/scala/doc/akka/cluster/http/management/CompileOnlySpec.scala) { #all }
+:  @@snip [CompileOnlySpec.scala](/management-cluster-http/src/test/scala/doc/akka/cluster/http/management/CompileOnlySpec.scala) { #all }
 
 Java
-:  @@snip [CompileOnlyTest.java](/cluster-http/src/test/java/jdoc/akka/cluster/http/management/CompileOnlyTest.java) { #all }
+:  @@snip [CompileOnlyTest.java](/management-cluster-http/src/test/java/jdoc/akka/cluster/http/management/CompileOnlyTest.java) { #all }
 
 Just the read only routes can be accessed:
 
 Scala
-:  @@snip [CompileOnlySpec.scala](/cluster-http/src/test/scala/doc/akka/cluster/http/management/CompileOnlySpec.scala) { #read-only }
+:  @@snip [CompileOnlySpec.scala](/management-cluster-http/src/test/scala/doc/akka/cluster/http/management/CompileOnlySpec.scala) { #read-only }
 
 Java
-:  @@snip [CompileOnlyTest.java](/cluster-http/src/test/java/jdoc/akka/cluster/http/management/CompileOnlyTest.java) { #read-only }
+:  @@snip [CompileOnlyTest.java](/management-cluster-http/src/test/java/jdoc/akka/cluster/http/management/CompileOnlyTest.java) { #read-only }
 
 ## Disable routes
 
