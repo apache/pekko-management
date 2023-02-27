@@ -11,24 +11,25 @@ object Common extends AutoPlugin {
   override def trigger = allRequirements
   override def requires = plugins.JvmPlugin && HeaderPlugin && CiReleasePlugin
 
-  val currentYear = "2021"
+  val currentYear = "2023"
 
   override lazy val projectSettings: Seq[sbt.Def.Setting[_]] =
     Seq(
-      organization := "com.lightbend.akka.management",
-      organizationName := "Lightbend Inc.",
-      organizationHomepage := Some(url("https://www.lightbend.com/")),
-      startYear := Some(2017),
-      homepage := Some(url("https://akka.io/")),
+      organization := "org.apache.pekko",
+      organizationName := "Apache Software Foundation",
+      organizationHomepage := Some(url("https://www.apache.org/")),
+      startYear := Some(2022),
+      homepage := Some(url("https://pekko.apache.org/")),
       scmInfo := Some(
-        ScmInfo(url("https://github.com/akka/akka-management"), "git@github.com:akka/akka-management.git")),
+        ScmInfo(url("https://github.com/apache/incubator-pekko-management"),
+          "git@github.com:apache/incubator-pekko-management.git")),
       developers += Developer(
         "contributors",
         "Contributors",
-        "https://gitter.im/akka/dev",
-        url("https://github.com/akka/akka-management/graphs/contributors")),
+        "dev@pekko.apache.org",
+        url("https://github.com/apache/incubator-pekko-management/graphs/contributors")),
       licenses := Seq(("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))),
-      description := "Akka Management is a suite of tools for operating Akka Clusters.",
+      description := "Apache Pekko Management is a suite of tools for operating Apache Pekko Clusters.",
       headerLicense := Some(HeaderLicense.Custom(apacheHeader)),
       crossScalaVersions := Dependencies.CrossScalaVersions,
       projectInfoVersion := (if (isSnapshot.value) "snapshot" else version.value),
@@ -56,19 +57,19 @@ object Common extends AutoPlugin {
       ),
       Compile / doc / scalacOptions := scalacOptions.value ++ Seq(
         "-doc-title",
-        "Akka Management",
+        "Apache Pekko Management",
         "-doc-version",
         version.value,
         "-skip-packages",
-        "akka.pattern" // for some reason Scaladoc creates this
+        "pekko.pattern" // for some reason Scaladoc creates this
       ),
       Compile / doc / scalacOptions ++= Seq(
         "-doc-source-url", {
           val branch = if (isSnapshot.value) "master" else s"v${version.value}"
-          s"https://github.com/akka/akka-management/tree/${branch}€{FILE_PATH_EXT}#L€{FILE_LINE}"
+          s"https://github.com/apache/incubator-pekko-management/tree/${branch}€{FILE_PATH_EXT}#L€{FILE_LINE}"
         },
         "-doc-canonical-base-url",
-        "https://doc.akka.io/api/akka-management/current/"),
+        "https://pekko.apache.org/api/pekko-management/current/"),
       autoAPIMappings := true,
       // show full stack traces and test case durations
       Test / testOptions += Tests.Argument("-oDF"),

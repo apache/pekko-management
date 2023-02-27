@@ -5,7 +5,7 @@ management extensions.
 
 ## Project Info
 
-@@project-info{ projectId="akka-management" }
+@@project-info{ projectId="management" }
 
 ## Dependencies
 

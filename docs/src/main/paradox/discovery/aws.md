@@ -25,7 +25,7 @@ instead.
 
 ## Project Info
 
-@@project-info{ projectId="akka-discovery-aws-api" }
+@@project-info{ projectId="discovery-aws-api" }
 
 ### Discovery Method: AWS API - EC2 Tag-Based Discovery
 
