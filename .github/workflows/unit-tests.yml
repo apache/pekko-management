@@ -18,13 +18,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: adopt@1.8,      scala-version: 2.12.16, sbt-opts: '' }
-          - { java-version: adopt@1.11.0-9, scala-version: 2.12.16, sbt-opts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
-          - { java-version: adopt@1.8,      scala-version: 2.13.8,  sbt-opts: '' }
-          - { java-version: adopt@1.11.0-9, scala-version: 2.13.8,  sbt-opts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
+          - { java-version: 8,      scala-version: 2.12.16, sbt-opts: '' }
+          - { java-version: 11, scala-version: 2.12.16, sbt-opts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
+          - { java-version: 8,      scala-version: 2.13.8,  sbt-opts: '' }
+          - { java-version: 11, scala-version: 2.13.8,  sbt-opts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -34,9 +34,10 @@ jobs:
           git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
           git checkout scratch
 
-      - name: Setup JDK ${{ matrix.java-version }}
-        uses: olafurpg/setup-scala@v10
+      - name: Setup Java ${{ matrix.java-version }}
+        uses: actions/setup-java@v3
         with:
+          distribution: temurin
           java-version: ${{ matrix.java-version }}
 
       - name: Cache Coursier cache
