@@ -42,7 +42,7 @@
               "hostPort": 0,
               "servicePort": 10206,
               "protocol": "tcp",
-              "name": "akkamgmthttp",
+              "name": "pekkomgmthttp",
               "labels": {}
             }
           ],

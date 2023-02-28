@@ -13,9 +13,9 @@
 
 package docs;
 
-import akka.actor.ActorSystem;
-import akka.discovery.Discovery;
-import akka.discovery.ServiceDiscovery;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.discovery.Discovery;
+import org.apache.pekko.discovery.ServiceDiscovery;
 
 public class KubernetesApiDiscoveryDocsTest {
   public void loadKubernetesApiDiscovery() {

@@ -2,7 +2,7 @@
 
 @@@ warning
 
-This module is marked as @extref:[May Change](akka:common/may-change.html)
+This module is marked as @extref:[May Change](pekko:common/may-change.html)
 The API, configuration and behavior may change based on feedback from initial usage.
 
 @@@
@@ -14,32 +14,32 @@ that have been used to build a distributed lease/lock.
 
 A lease can be used for:
 
-* @extref[Split Brain Resolver](akka:split-brain-resolver.html#lease). An additional safety measure so that only one SBR instance can make the decision to remain up.
-* @extref:[Cluster Singleton](akka:typed/cluster-singleton.html#lease). A singleton manager can be configured to acquire a lease before creating the singleton.
-* @extref:[Cluster Sharding](akka:typed/cluster-sharding.html#lease). Each `Shard` can be configured to acquire a lease before creating entity actors.
+* @extref[Split Brain Resolver](pekko:split-brain-resolver.html#lease). An additional safety measure so that only one SBR instance can make the decision to remain up.
+* @extref:[Cluster Singleton](pekko:typed/cluster-singleton.html#lease). A singleton manager can be configured to acquire a lease before creating the singleton.
+* @extref:[Cluster Sharding](pekko:typed/cluster-sharding.html#lease). Each `Shard` can be configured to acquire a lease before creating entity actors.
 
 In all cases the use of the lease increases the consistency of the feature. However, as the Kubernetes API server 
 and its backing `etcd` cluster can also be subject to failure and network issues any use of this lease can reduce availability. 
 
 ### Lease Instances
 
-* With @extref[Split Brain Resolver](akka:split-brain-resolver.html#lease) there will be one lease per Akka Cluster
+* With @extref[Split Brain Resolver](pekko:split-brain-resolver.html#lease) there will be one lease per Akka Cluster
 * With multiple Akka Clusters using SBRs in the same namespace, e.g. multiple Lagom 
 applications, you must ensure different `ActorSystem` names because they all need a separate lease. 
 * With Cluster Sharding and Cluster Singleton there will be more leases 
-    - For @extref:[Cluster Singleton](akka:typed/cluster-singleton.html#lease) there will be one per singleton.
-    - For @extref:[Cluster Sharding](akka:typed/cluster-sharding.html#lease), there will be one per shard per type.
+    - For @extref:[Cluster Singleton](pekko:typed/cluster-singleton.html#lease) there will be one per singleton.
+    - For @extref:[Cluster Sharding](pekko:typed/cluster-sharding.html#lease), there will be one per shard per type.
 
 ### Configuring
 
 #### Dependency
 
 @@dependency[sbt,Maven,Gradle] {
-  symbol1=AkkaManagementVersion
+  symbol1=PekkoManagementVersion
   value1=$project.version$
   group="com.lightbend.akka.management"
-  artifact="akka-lease-kubernetes_$scala.binary.version$"
-  version=AkkaManagementVersion
+  artifact="pekko-lease-kubernetes_$scala.binary.version$"
+  version=PekkoManagementVersion
 }
 
 #### Creating the Custom Resource Definition for the lease
@@ -106,7 +106,7 @@ Where `sbr-lease.yml` contains:
 apiVersion: "akka.io/v1"
 kind: Lease
 metadata:
-  name: <YOUR_ACTORSYSTEM_NAME>-akka-sbr
+  name: <YOUR_ACTORSYSTEM_NAME>-pekko-sbr
 spec:
   owner: ""
   time: 0
@@ -125,13 +125,13 @@ To enable the lease for use within SBR:
 
 ```
 
-akka {
+pekko {
   cluster {
-    downing-provider-class = "akka.cluster.sbr.SplitBrainResolverProvider"
+    downing-provider-class = "org.apache.pekko.cluster.sbr.SplitBrainResolverProvider"
     split-brain-resolver {
       active-strategy = "lease-majority"
       lease-majority {
-        lease-implementation = "akka.coordination.lease.kubernetes"
+        lease-implementation = "pekko.coordination.lease.kubernetes"
       }
     }
   }
@@ -147,6 +147,6 @@ akka {
 
 Q. What happens if the node that holds the lease crashes?
 
-A. Each lease has a Time To Live (TTL) that is set `akka.coordination.lease.kubernetes.heartbeat-timeout` which defaults to 120s. A lease holder updates the lease every `1/10` of the timeout to keep the lease. If the TTL passes without
+A. Each lease has a Time To Live (TTL) that is set `pekko.coordination.lease.kubernetes.heartbeat-timeout` which defaults to 120s. A lease holder updates the lease every `1/10` of the timeout to keep the lease. If the TTL passes without
    the lease being updated another node is allowed to take the lease. For ultimate safety this timeout can be set very high but then an operator would need to come and clear the lease if a lease owner crashes with the lease taken.
    

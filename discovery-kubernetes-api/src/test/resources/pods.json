@@ -8,26 +8,26 @@
   "items": [
     {
       "metadata": {
-        "name": "akka-cluster-tooling-example-v0-1-0-7f854bcc78-dvm9q",
-        "generateName": "akka-cluster-tooling-example-v0-1-0-7f854bcc78-",
+        "name": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78-dvm9q",
+        "generateName": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78-",
         "namespace": "default",
-        "selfLink": "/api/v1/namespaces/default/pods/akka-cluster-tooling-example-v0-1-0-7f854bcc78-dvm9q",
+        "selfLink": "/api/v1/namespaces/default/pods/pekko-cluster-tooling-example-v0-1-0-7f854bcc78-dvm9q",
         "uid": "5fe7a41b-da9a-11e7-b064-0800270d668b",
         "resourceVersion": "6523",
         "creationTimestamp": "2017-12-06T15:30:22Z",
         "labels": {
-          "appName": "akka-cluster-tooling-example",
-          "appNameVersion": "akka-cluster-tooling-example-v0-1-0",
+          "appName": "pekko-cluster-tooling-example",
+          "appNameVersion": "pekko-cluster-tooling-example-v0-1-0",
           "pod-template-hash": "3941067734"
         },
         "annotations": {
-          "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\",\"namespace\":\"default\",\"name\":\"akka-cluster-tooling-example-v0-1-0-7f854bcc78\",\"uid\":\"5fdc6a1c-da9a-11e7-b064-0800270d668b\",\"apiVersion\":\"extensions\",\"resourceVersion\":\"3173\"}}\n"
+          "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\",\"namespace\":\"default\",\"name\":\"pekko-cluster-tooling-example-v0-1-0-7f854bcc78\",\"uid\":\"5fdc6a1c-da9a-11e7-b064-0800270d668b\",\"apiVersion\":\"extensions\",\"resourceVersion\":\"3173\"}}\n"
         },
         "ownerReferences": [
           {
             "apiVersion": "extensions/v1beta1",
             "kind": "ReplicaSet",
-            "name": "akka-cluster-tooling-example-v0-1-0-7f854bcc78",
+            "name": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78",
             "uid": "5fdc6a1c-da9a-11e7-b064-0800270d668b",
             "controller": true,
             "blockOwnerDeletion": true
@@ -46,8 +46,8 @@
         ],
         "containers": [
           {
-            "name": "akka-cluster-tooling-example",
-            "image": "akka-cluster-tooling-example/akka-cluster-tooling-example:0.1.0",
+            "name": "pekko-cluster-tooling-example",
+            "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "ports": [
               {
                 "name": "akka-remote",
@@ -72,7 +72,7 @@
               },
               {
                 "name": "RP_APP_NAME",
-                "value": "akka-cluster-tooling-example"
+                "value": "pekko-cluster-tooling-example"
               },
               {
                 "name": "RP_APP_TYPE",
@@ -248,7 +248,7 @@
               },
               {
                 "name": "RP_JAVA_OPTS",
-                "value": "-Dconfig.resource=rp-application.conf -Dakka.cluster.bootstrap.contact-point-discovery.effective-name=akka-cluster-tooling-example -Dakka.cluster.bootstrap.contact-point-discovery.required-contact-point-nr=3"
+                "value": "-Dconfig.resource=rp-application.conf -Dpekko.cluster.bootstrap.contact-point-discovery.effective-name=pekko-cluster-tooling-example -Dpekko.cluster.bootstrap.contact-point-discovery.required-contact-point-nr=3"
               },
               {
                 "name": "RP_KUBERNETES_POD_IP",
@@ -270,7 +270,7 @@
               },
               {
                 "name": "RP_MODULES",
-                "value": "akka-cluster-bootstrapping,common,service-discovery"
+                "value": "pekko-cluster-bootstrapping,common,service-discovery"
               },
               {
                 "name": "RP_PLATFORM",
@@ -330,7 +330,7 @@
         "startTime": "2017-12-06T15:30:22Z",
         "containerStatuses": [
           {
-            "name": "akka-cluster-tooling-example",
+            "name": "pekko-cluster-tooling-example",
             "state": {
               "running": {
                 "startedAt": "2017-12-06T17:36:57Z"
@@ -347,7 +347,7 @@
             },
             "ready": true,
             "restartCount": 1,
-            "image": "akka-cluster-tooling-example/akka-cluster-tooling-example:0.1.0",
+            "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "imageID": "docker://sha256:db3827171cfd7cea96f35e75e9df30e198f25b66a8e75e8167b09ad9e1a18c10",
             "containerID": "docker://d805076f4737166117229aaa4eaf5e7eb974da0b4c781b2f6ec126d5046a4c3f"
           }
@@ -357,26 +357,26 @@
     },
     {
       "metadata": {
-        "name": "akka-cluster-tooling-example-v0-1-0-7f854bcc78-m8dqb",
-        "generateName": "akka-cluster-tooling-example-v0-1-0-7f854bcc78-",
+        "name": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78-m8dqb",
+        "generateName": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78-",
         "namespace": "default",
-        "selfLink": "/api/v1/namespaces/default/pods/akka-cluster-tooling-example-v0-1-0-7f854bcc78-m8dqb",
+        "selfLink": "/api/v1/namespaces/default/pods/pekko-cluster-tooling-example-v0-1-0-7f854bcc78-m8dqb",
         "uid": "5fe22476-da9a-11e7-b064-0800270d668b",
         "resourceVersion": "6520",
         "creationTimestamp": "2017-12-06T15:30:22Z",
         "labels": {
-          "appNameVersion": "akka-cluster-tooling-example-v0-1-0",
+          "appNameVersion": "pekko-cluster-tooling-example-v0-1-0",
           "pod-template-hash": "3941067734",
-          "appName": "akka-cluster-tooling-example"
+          "appName": "pekko-cluster-tooling-example"
         },
         "annotations": {
-          "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\",\"namespace\":\"default\",\"name\":\"akka-cluster-tooling-example-v0-1-0-7f854bcc78\",\"uid\":\"5fdc6a1c-da9a-11e7-b064-0800270d668b\",\"apiVersion\":\"extensions\",\"resourceVersion\":\"3173\"}}\n"
+          "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\",\"namespace\":\"default\",\"name\":\"pekko-cluster-tooling-example-v0-1-0-7f854bcc78\",\"uid\":\"5fdc6a1c-da9a-11e7-b064-0800270d668b\",\"apiVersion\":\"extensions\",\"resourceVersion\":\"3173\"}}\n"
         },
         "ownerReferences": [
           {
             "apiVersion": "extensions/v1beta1",
             "kind": "ReplicaSet",
-            "name": "akka-cluster-tooling-example-v0-1-0-7f854bcc78",
+            "name": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78",
             "uid": "5fdc6a1c-da9a-11e7-b064-0800270d668b",
             "controller": true,
             "blockOwnerDeletion": true
@@ -395,8 +395,8 @@
         ],
         "containers": [
           {
-            "name": "akka-cluster-tooling-example",
-            "image": "akka-cluster-tooling-example/akka-cluster-tooling-example:0.1.0",
+            "name": "pekko-cluster-tooling-example",
+            "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "ports": [
               {
                 "name": "akka-remote",
@@ -421,7 +421,7 @@
               },
               {
                 "name": "RP_APP_NAME",
-                "value": "akka-cluster-tooling-example"
+                "value": "pekko-cluster-tooling-example"
               },
               {
                 "name": "RP_APP_TYPE",
@@ -597,7 +597,7 @@
               },
               {
                 "name": "RP_JAVA_OPTS",
-                "value": "-Dconfig.resource=rp-application.conf -Dakka.cluster.bootstrap.contact-point-discovery.effective-name=akka-cluster-tooling-example -Dakka.cluster.bootstrap.contact-point-discovery.required-contact-point-nr=3"
+                "value": "-Dconfig.resource=rp-application.conf -Dpekko.cluster.bootstrap.contact-point-discovery.effective-name=pekko-cluster-tooling-example -Dpekko.cluster.bootstrap.contact-point-discovery.required-contact-point-nr=3"
               },
               {
                 "name": "RP_KUBERNETES_POD_IP",
@@ -619,7 +619,7 @@
               },
               {
                 "name": "RP_MODULES",
-                "value": "akka-cluster-bootstrapping,common,service-discovery"
+                "value": "pekko-cluster-bootstrapping,common,service-discovery"
               },
               {
                 "name": "RP_PLATFORM",
@@ -679,7 +679,7 @@
         "startTime": "2017-12-06T15:30:22Z",
         "containerStatuses": [
           {
-            "name": "akka-cluster-tooling-example",
+            "name": "pekko-cluster-tooling-example",
             "state": {
               "running": {
                 "startedAt": "2017-12-06T17:36:57Z"
@@ -696,7 +696,7 @@
             },
             "ready": true,
             "restartCount": 1,
-            "image": "akka-cluster-tooling-example/akka-cluster-tooling-example:0.1.0",
+            "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "imageID": "docker://sha256:db3827171cfd7cea96f35e75e9df30e198f25b66a8e75e8167b09ad9e1a18c10",
             "containerID": "docker://ba80f96ce994517bc2d49d2930923c54b818bdd3a1aa8e60e42944e8ac4bf730"
           }
@@ -706,27 +706,27 @@
     },
     {
       "metadata": {
-        "name": "akka-cluster-tooling-example-v0-1-0-7f854bcc78-xncvj",
-        "generateName": "akka-cluster-tooling-example-v0-1-0-7f854bcc78-",
+        "name": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78-xncvj",
+        "generateName": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78-",
         "namespace": "default",
-        "selfLink": "/api/v1/namespaces/default/pods/akka-cluster-tooling-example-v0-1-0-7f854bcc78-xncvj",
+        "selfLink": "/api/v1/namespaces/default/pods/pekko-cluster-tooling-example-v0-1-0-7f854bcc78-xncvj",
         "uid": "5fe6b0c7-da9a-11e7-b064-0800270d668b",
         "resourceVersion": "6593",
         "creationTimestamp": "2017-12-06T15:30:22Z",
         "deletionTimestamp": "2017-12-06T16:30:22Z",
         "labels": {
           "pod-template-hash": "3941067734",
-          "appName": "akka-cluster-tooling-example",
-          "appNameVersion": "akka-cluster-tooling-example-v0-1-0"
+          "appName": "pekko-cluster-tooling-example",
+          "appNameVersion": "pekko-cluster-tooling-example-v0-1-0"
         },
         "annotations": {
-          "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\",\"namespace\":\"default\",\"name\":\"akka-cluster-tooling-example-v0-1-0-7f854bcc78\",\"uid\":\"5fdc6a1c-da9a-11e7-b064-0800270d668b\",\"apiVersion\":\"extensions\",\"resourceVersion\":\"3173\"}}\n"
+          "kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\",\"namespace\":\"default\",\"name\":\"pekko-cluster-tooling-example-v0-1-0-7f854bcc78\",\"uid\":\"5fdc6a1c-da9a-11e7-b064-0800270d668b\",\"apiVersion\":\"extensions\",\"resourceVersion\":\"3173\"}}\n"
         },
         "ownerReferences": [
           {
             "apiVersion": "extensions/v1beta1",
             "kind": "ReplicaSet",
-            "name": "akka-cluster-tooling-example-v0-1-0-7f854bcc78",
+            "name": "pekko-cluster-tooling-example-v0-1-0-7f854bcc78",
             "uid": "5fdc6a1c-da9a-11e7-b064-0800270d668b",
             "controller": true,
             "blockOwnerDeletion": true
@@ -745,8 +745,8 @@
         ],
         "containers": [
           {
-            "name": "akka-cluster-tooling-example",
-            "image": "akka-cluster-tooling-example/akka-cluster-tooling-example:0.1.0",
+            "name": "pekko-cluster-tooling-example",
+            "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "ports": [
               {
                 "name": "akka-remote",
@@ -771,7 +771,7 @@
               },
               {
                 "name": "RP_APP_NAME",
-                "value": "akka-cluster-tooling-example"
+                "value": "pekko-cluster-tooling-example"
               },
               {
                 "name": "RP_APP_TYPE",
@@ -947,7 +947,7 @@
               },
               {
                 "name": "RP_JAVA_OPTS",
-                "value": "-Dconfig.resource=rp-application.conf -Dakka.cluster.bootstrap.contact-point-discovery.effective-name=akka-cluster-tooling-example -Dakka.cluster.bootstrap.contact-point-discovery.required-contact-point-nr=3"
+                "value": "-Dconfig.resource=rp-application.conf -Dpekko.cluster.bootstrap.contact-point-discovery.effective-name=pekko-cluster-tooling-example -Dpekko.cluster.bootstrap.contact-point-discovery.required-contact-point-nr=3"
               },
               {
                 "name": "RP_KUBERNETES_POD_IP",
@@ -969,7 +969,7 @@
               },
               {
                 "name": "RP_MODULES",
-                "value": "akka-cluster-bootstrapping,common,service-discovery"
+                "value": "pekko-cluster-bootstrapping,common,service-discovery"
               },
               {
                 "name": "RP_PLATFORM",
@@ -1029,7 +1029,7 @@
         "startTime": "2017-12-06T15:30:22Z",
         "containerStatuses": [
           {
-            "name": "akka-cluster-tooling-example",
+            "name": "pekko-cluster-tooling-example",
             "state": {
               "running": {
                 "startedAt": "2017-12-06T17:37:16Z"
@@ -1046,7 +1046,7 @@
             },
             "ready": true,
             "restartCount": 1,
-            "image": "akka-cluster-tooling-example/akka-cluster-tooling-example:0.1.0",
+            "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "imageID": "docker://sha256:db3827171cfd7cea96f35e75e9df30e198f25b66a8e75e8167b09ad9e1a18c10",
             "containerID": "docker://075e85c889ffd715849f8d683702623790c44f93beeea5711a63a8b6ef9e5272"
           }
@@ -1056,16 +1056,16 @@
     },
     {
       "metadata": {
-        "name": "akka-cluster-tooling-example-job-mt4qt",
-        "generateName": "akka-cluster-tooling-example-job-",
+        "name": "pekko-cluster-tooling-example-job-mt4qt",
+        "generateName": "pekko-cluster-tooling-example-job-",
         "namespace": "default",
-        "selfLink": "/api/v1/namespaces/default/pods/akka-cluster-tooling-example-job-mt4qt",
+        "selfLink": "/api/v1/namespaces/default/pods/pekko-cluster-tooling-example-job-mt4qt",
         "uid": "01b49788-4f17-11e9-b630-0262c2d3ba30",
         "resourceVersion": "7406832",
         "creationTimestamp": "2019-03-25T15:59:44Z",
         "labels": {
-          "appName": "akka-cluster-tooling-example",
-          "appNameVersion": "akka-cluster-tooling-example-v0-1-0"
+          "appName": "pekko-cluster-tooling-example",
+          "appNameVersion": "pekko-cluster-tooling-example-v0-1-0"
         },
         "annotations": {
         },
@@ -1073,7 +1073,7 @@
           {
             "apiVersion": "batch/v1",
             "kind": "Job",
-            "name": "akka-cluster-tooling-example-job",
+            "name": "pekko-cluster-tooling-example-job",
             "uid": "01b337d0-4f17-11e9-b5d6-06521d8a9508",
             "controller": true,
             "blockOwnerDeletion": true
@@ -1086,10 +1086,10 @@
         ],
         "containers": [
           {
-            "name": "akka-cluster-tooling-example",
-            "image": "akka-cluster-tooling-example/akka-cluster-tooling-example:0.1.0",
+            "name": "pekko-cluster-tooling-example",
+            "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "command": [
-              "/opt/docker/bin/akka-cluster-tooling-example"
+              "/opt/docker/bin/pekko-cluster-tooling-example"
             ],
             "ports": [
               {
@@ -1174,7 +1174,7 @@
         "startTime": "2019-03-25T15:59:44Z",
         "containerStatuses": [
           {
-            "name": "akka-cluster-tooling-example",
+            "name": "pekko-cluster-tooling-example",
             "state": {
               "terminated": {
                 "exitCode": 0,
@@ -1189,8 +1189,8 @@
             },
             "ready": false,
             "restartCount": 0,
-            "image": "akka-cluster-tooling-example/akka-cluster-tooling-example:0.1.0",
-            "imageID": "docker-pullable://akka-cluster-tooling-example/akka-cluster-tooling-example@sha256:94d0f1283a3e4f3bb2c69d3209c60e7700e7a02fe34daad3052b11908916aee2",
+            "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
+            "imageID": "docker-pullable://pekko-cluster-tooling-example/pekko-cluster-tooling-example@sha256:94d0f1283a3e4f3bb2c69d3209c60e7700e7a02fe34daad3052b11908916aee2",
             "containerID": "docker://12d48773f0dd89624cd4e6b2ce66b0b2918e569d52440f4861f646539d54cd57"
           }
         ],

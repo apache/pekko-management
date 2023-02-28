@@ -19,7 +19,7 @@ annotations:
 
 ## Allowing inbound communication
 
-Inbound connections to Akka management and remoting also need to bypass the sidecar proxy. By default, Istio will redirect all incoming traffic to the ports listed in the containers port specification to the sidecar proxy. Hence, there are two ways to ensure that the Akka management and remoting traffic bypasses the proxy, either explicitly configure the incoming ports to redirect, or don't list the Akka management and remoting ports in the container's ports specification.
+Inbound connections to Pekko management and remoting also need to bypass the sidecar proxy. By default, Istio will redirect all incoming traffic to the ports listed in the containers port specification to the sidecar proxy. Hence, there are two ways to ensure that the Pekko management and remoting traffic bypasses the proxy, either explicitly configure the incoming ports to redirect, or don't list the Pekko management and remoting ports in the container's ports specification.
 
 The inbound ports to redirect can be configured using the `traffic.sidecar.istio.io/includeInboundPorts` annotation. If your service offers a REST endpoint on port 8080, then you might configure that like so:
 

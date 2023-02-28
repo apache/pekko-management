@@ -71,9 +71,9 @@ Resources:
               awslogs-stream-prefix: bootstrap-demo-aws-api-ecs
           Environment:
             - Name: JAVA_OPTS
-              Value: !Sub "-Dakka.management.cluster.bootstrap.\
+              Value: !Sub "-Dpekko.management.cluster.bootstrap.\
                 contact-point-discovery.service-name=${AWS::StackName}
-                -Dakka.discovery.aws-api-ecs-async.cluster=ecs-integration-test-app"
+                -Dpekko.discovery.aws-api-ecs-async.cluster=ecs-integration-test-app"
   ServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -87,7 +87,7 @@ Resources:
           FromPort: 8558
           ToPort: 8558
           CidrIpv6: "::/0"
-  ServiceSecurityGroupAkkaManagementSelfIngress:
+  ServiceSecurityGroupPekkoManagementSelfIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !GetAtt ServiceSecurityGroup.GroupId

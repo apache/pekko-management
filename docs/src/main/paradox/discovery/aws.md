@@ -30,7 +30,7 @@ instead.
 ### Discovery Method: AWS API - EC2 Tag-Based Discovery
 
 You can use tags to simply mark the instances that belong to the same cluster. Use a tag that
-has "service" as the key and set the value equal to the name of your service (same value as `akka.management.cluster.bootstrap.contact-point-discovery.service-name`
+has "service" as the key and set the value equal to the name of your service (same value as `pekko.management.cluster.bootstrap.contact-point-discovery.service-name`
 defined in `application.conf`, if you're using this module for bootstrapping your Akka cluster).
 
 Screenshot of two tagged EC2 instances:
@@ -50,33 +50,33 @@ ensure the "Tag New Instances" option is checked.
 This is a separate JAR file:
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol1=AkkaManagementVersion
+  symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="com.lightbend.akka.discovery"
-  artifact="akka-discovery-aws-api_$scala.binary.version$"
-  version=AkkaManagementVersion
+  group="com.lightbend.pekko.discovery"
+  artifact="pekko-discovery-aws-api_$scala.binary.version$"
+  version=PekkoManagementVersion
 }
 
-`akka-discovery-aws-api` can be used with Akka $akka.version$ or later.
+`pekko-discovery-aws-api` can be used with Akka $pekko.version$ or later.
 You have to override the following Akka dependencies by defining them explicitly in your build and
 define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
-a later version than $akka.version$ can be used.
+a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol=AkkaVersion
-  value=$akka.version$
-  group=com.typesafe.akka
-  artifact=akka-cluster_$scala.binary.version$
-  version=AkkaVersion
-  group2=com.typesafe.akka
-  artifact2=akka-discovery_$scala.binary.version$
-  version2=AkkaVersion
+  symbol=PekkoVersion
+  value=$pekko.version$
+  group=org.apache.pekko
+  artifact=pekko-cluster_$scala.binary.version$
+  version=PekkoVersion
+  group2=org.apache.pekko
+  artifact2=pekko-discovery_$scala.binary.version$
+  version2=PekkoVersion
 }
 
 And in your `application.conf`:
 
 ```
-akka.discovery {
+pekko.discovery {
   method = aws-api-ec2-tag-based
 }
 ```
@@ -93,10 +93,10 @@ Attach this IAM role to the EC2 instances that need to access the discovery impl
 same security group and [the proper rules have to be set](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-rules-reference.html#sg-rules-other-instances).
 
 * You can set additional filters (by instance type, region, other tags etc.) in your application.conf file, in the
-`akka.discovery.aws-api-ec2-tag-based.filters` key. The filters have to be key=value pairs separated by the semicolon
+`pekko.discovery.aws-api-ec2-tag-based.filters` key. The filters have to be key=value pairs separated by the semicolon
 character. For example:
     ```
-    akka {
+    pekko {
       discovery {
         aws-api-ec2-tag-based {
           filters = "instance-type=m1.small;tag:purpose=production"
@@ -109,11 +109,11 @@ character. For example:
   separates cluster members solely by their EC2 IP address. However, we can change the default configuration to indicate multiple ports per discovered EC2 IP, and achieve
 a setup with multiple Akka nodes (i.e. multiple JVMs) per EC2 instance.
     ```
-    akka {
+    pekko {
       discovery {
         aws-api-ec2-tag-based {
           ports = [8557, 8558, 8559] # 3 Akka nodes per EC2 instance
-          # note that the above need to be the ports associated with the *Akka Management* extension
+          # note that the above need to be the ports associated with the *Pekko Management* extension
         }
       }
     }
@@ -121,13 +121,13 @@ a setup with multiple Akka nodes (i.e. multiple JVMs) per EC2 instance.
     Note: this comes with the limitation that each EC2 instance has to have the same number of Akka nodes.
 
 * You can change the default tag key from "service" to something else. This can be done via `application.conf`, by
-setting `akka.discovery.aws-api-ec2-tag-based.tag-key` to something else.
+setting `pekko.discovery.aws-api-ec2-tag-based.tag-key` to something else.
     ```
-    akka.discovery.aws-api-ec2-tag-based.tag-key = "akka-cluster"
+    pekko.discovery.aws-api-ec2-tag-based.tag-key = "pekko-cluster"
     ```
 
-* If your service is running in a docker container, you will need to configure Akka Management with separate
-  IPs for binding and discovery. This is because Akka Management needs to _bind_ to the internal docker IP,
+* If your service is running in a docker container, you will need to configure Pekko Management with separate
+  IPs for binding and discovery. This is because Pekko Management needs to _bind_ to the internal docker IP,
   but will _discover_ the "host" IP (the EC2 private IP) on the AWS API. See @ref:[Basic
   Configuration](../akka-management.md) on how to separate the bind IP from the discovery IP.
 
@@ -144,7 +144,7 @@ If you're using ECS with
 mode networking, you can have all task instances of a given ECS service discover
 each other. If you're using this module for bootstrapping your Akka cluster that
 you'll do so by setting the value of
-`akka.management.cluster.bootstrap.contact-point-discovery.service-name` to that of the
+`pekko.management.cluster.bootstrap.contact-point-discovery.service-name` to that of the
 ECS service itself.
 
 Screenshot of two ECS task instances (the service name is
@@ -157,24 +157,24 @@ Screenshot of two ECS task instances (the service name is
 
 There are two "flavours" of the ECS Discovery module.
 
-##### akka-discovery-aws-api
+##### pekko-discovery-aws-api
 
 This uses the mainstream AWS SDK. The advantage here is that if you've already
 got the mainstream AWS SDK as a dependency you're not now also bringing in the
 preview SDK. The disadvantage is that the mainstream SDK does blocking IO.
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol1=AkkaManagementVersion
+  symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="com.lightbend.akka.discovery"
-  artifact="akka-discovery-aws-api_$scala.binary.version$"
-  version=AkkaManagementVersion
+  group="com.lightbend.pekko.discovery"
+  artifact="pekko-discovery-aws-api_$scala.binary.version$"
+  version=PekkoManagementVersion
 }
 
 And in your `application.conf`:
 
 ```
-akka.discovery {
+pekko.discovery {
   method = aws-api-ecs
   aws-api-ecs {
     # Defaults to "default" to match the AWS default cluster name if not overridden
@@ -184,7 +184,7 @@ akka.discovery {
 ```
 
 
-##### akka-discovery-aws-api-async
+##### pekko-discovery-aws-api-async
 
 This uses the preview AWS SDK. The advantage here is that the SDK does
 non-blocking IO, which you probably want. You might need to think carefully
@@ -192,15 +192,15 @@ before using this though if you've already got the mainstream AWS SDK as a
 dependency.
 
 Once the async AWS SDK is out of preview it is likely that the
-`akka-discovery-aws-api` module will be discontinued in favour of
-`akka-discovery-aws-api-async`.
+`pekko-discovery-aws-api` module will be discontinued in favour of
+`pekko-discovery-aws-api-async`.
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol1=AkkaManagementVersion
+  symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="com.lightbend.akka.discovery"
-  artifact="akka-discovery-aws-api-async_$scala.binary.version$"
-  version=AkkaManagementVersion
+  group="com.lightbend.pekko.discovery"
+  artifact="pekko-discovery-aws-api-async_$scala.binary.version$"
+  version=PekkoManagementVersion
 }
 
 We have 2 approaches in ECS: `aws-api-ecs-async` and `aws-api-ecs-task-set-async`.
@@ -210,7 +210,7 @@ We have 2 approaches in ECS: `aws-api-ecs-async` and `aws-api-ecs-task-set-async
 In your `application.conf`:
 
 ```
-akka.discovery {
+pekko.discovery {
   method = aws-api-ecs-async
   aws-api-ecs-async {
     # Defaults to "default" to match the AWS default cluster name if not overridden
@@ -224,7 +224,7 @@ akka.discovery {
 ```
 
 This will query the AWS API to retrieve all running tasks of the ESC service specified at
-`akka.management.cluster.bootstrap.contact-point-discovery.service-name`.
+`pekko.management.cluster.bootstrap.contact-point-discovery.service-name`.
 
 ###### aws-api-ecs-task-set-async
 
@@ -233,7 +233,7 @@ If you use AWS CodeDeploy, you probably want to use this method of discovery.
 In your `application.conf`:
 
 ```
-akka.discovery {
+pekko.discovery {
   method = aws-api-ecs-task-set-async
   aws-api-ecs-task-set-async {
     # Defaults to "default" to match the AWS default cluster name if not overridden
@@ -262,9 +262,9 @@ Notes:
   rules have to be set. See the docs for
   [Task Networking with the `awsvpc` Network Mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html).
 
-* akka-remote by default sets `akka.remote.netty.tcp.hostname` to the result of
+* akka-remote by default sets `pekko.remote.netty.tcp.hostname` to the result of
   `InetAddress.getLocalHost.getHostAddress`, and akka-management does the same
-  for `akka.management.http.hostname`. However,
+  for `pekko.management.http.hostname`. However,
   `InetAddress.getLocalHost.getHostAddress` throws an exception when running in
   awsvpc mode (because the container name cannot be resolved), so you will need
   to set this explicitly. An alternative host address discovery method is
@@ -275,16 +275,16 @@ Notes:
 
 * Because ECS service discovery is only able to discover IP addresses (not ports
   too) you'll need to set
-  `akka.management.cluster.bootstrap.contact-point.fallback-port = 8558`, where
+  `pekko.management.cluster.bootstrap.contact-point.fallback-port = 8558`, where
   8558 is whatever port you choose to bind akka-management to.
 
 * You can set additional filters to only discover nodes with specific tag values in 
-  your application.conf file, in the `akka.discovery.aws-api-ecs-async.tags` key. 
+  your application.conf file, in the `pekko.discovery.aws-api-ecs-async.tags` key. 
   An empty list of tags will not filter any nodes out.
 
   For example:
     ```
-    akka {
+    pekko {
       discovery {
         aws-api-ecs-async {
           tags = [

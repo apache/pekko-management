@@ -8,12 +8,12 @@ In preparation for production, we need to do two main things:
 The final configuration file and deployment spec are in the sample application.
 In this guide we will show snippets. Locations of the samples:
 
-* [Java](https://developer.lightbend.com/start/?group=akka&project=akka-sample-cluster-kubernetes-java) 
-* [Scala](https://developer.lightbend.com/start/?group=akka&project=akka-sample-cluster-kubernetes-scala)
+* [Java](https://developer.lightbend.com/start/?group=akka&project=pekko-sample-cluster-kubernetes-java) 
+* [Scala](https://developer.lightbend.com/start/?group=akka&project=pekko-sample-cluster-kubernetes-scala)
 
 ## Deployment Spec
 
-Create a deployment spec in `kubernetes/akka-cluster.yaml`. The following configuration uses:
+Create a deployment spec in `kubernetes/pekko-cluster.yaml`. The following configuration uses:
 
 * Application name / Actor system name: `appka`
 * Namespace: `appka-1`
@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
       - name: appka
-        image: akka-sample-cluster-kubernetes-scala:latest
+        image: pekko-sample-cluster-kubernetes-scala:latest
         readinessProbe:
           httpGet:
             path: /ready
@@ -68,18 +68,18 @@ Here are a few things to note:
 * We're using a Kubernetes deployment. Deployments are logical groupings of pods that represent a single service using the same template. 
   They support [configurable rolling updates](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#deploymentstrategy-v1-apps), 
   meaning the cluster will be gradually upgraded, rather than upgrading every node at once and incurring an outage.
-* We label the pod in the `template` with `app: appka`. This must match the ActorSystem name so that @ref[Akka Bootstrap](../bootstrap/index.md) finds the other nodes in the cluster.
-* The image we're using is `akka-sample-cluster-kubernetes:latest`. This corresponds to the name and version of the service in our build. 
+* We label the pod in the `template` with `app: appka`. This must match the ActorSystem name so that @ref[Pekko Bootstrap](../bootstrap/index.md) finds the other nodes in the cluster.
+* The image we're using is `pekko-sample-cluster-kubernetes:latest`. This corresponds to the name and version of the service in our build. 
   We will discuss how to select an appropriate version number below.
 * We've only requested minimal CPU to the pods for this service. This is suitable for a local deployment, but you may wish to increase it if you're 
   deploying to a real deployment. Note that we also haven't set a CPU limit, this is because it's 
   [recommended that JVMs do not set a CPU limit](https://doc.akka.io/docs/akka/current/additional/deploying.html#resource-limits).
-* We've configured a liveness probe and readiness probe. These are provided out of the box by Akka Management and are discussed later.
+* We've configured a liveness probe and readiness probe. These are provided out of the box by Pekko Management and are discussed later.
 
 ## Image version number
 
 We use a version tag of `latest` for the image. Not specifying a tag is the same as using the `latest` tag. We could have just specify
-`akka-sample-cluster-kubernetes`, and this would mean the same thing as `akka-sample-cluster-kubernetes:latest`.
+`pekko-sample-cluster-kubernetes`, and this would mean the same thing as `pekko-sample-cluster-kubernetes:latest`.
 
 For production, the use of the `latest` tag is bad practice. 
 For development, it's convenient and usually fine. We recommend if 

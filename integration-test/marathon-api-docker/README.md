@@ -6,13 +6,13 @@ network bridge mode with automatic host port allocation.
 
 Marathon API discovery mechanism uses Marathon API to find other application instances (contact points) to form Akka cluster.
 In order to identify contact points it uses a label assigned to the application in the application description and 
-a port name to identify Akka HTTP management port:
+a port name to identify Pekko HTTP management port:
 
 Label need to be defined in two places. 
 First place is the application configuration:
 see `integration-test/marathon-api-docker/src/main/resources/application.conf`:
 ```
-    akka.management.cluster.bootstrap.contact-point-discovery.effective-name = "marathon-api-docker-app-label"
+    pekko.management.cluster.bootstrap.contact-point-discovery.effective-name = "marathon-api-docker-app-label"
 ```
 
 > NOTE: if `effective-name` is not defined explicitly then Discovery Mechanism will use concatenation of
@@ -31,19 +31,19 @@ see `marathon/marathon-api-docker-app.json`:
 ```
 
 > NOTE: Discovery Mechanism uses `ACTOR_SYSTEM_NAME` label name as a part of Marathon API query param to find relevant contact points.
-> This default value can be overridden in the application config `akka.discovery.marathon-api.app-label-query`
+> This default value can be overridden in the application config `pekko.discovery.marathon-api.app-label-query`
 
-After Discovery mechanism found potential contact points by the label it needs to find Akka HTTP management port.
+After Discovery mechanism found potential contact points by the label it needs to find Pekko HTTP management port.
 
 It uses `app-port-name`:
 see `src/main/resources/application.conf`:
 ```
 ...
-akka.discovery.marathon-api.app-port-name = "akkamgmthttp"
+pekko.discovery.marathon-api.app-port-name = "pekkomgmthttp"
 ... 
 ``` 
 
-it should match with Akka HTTP management port name in Marathon application description docker port declaration:
+it should match with Pekko HTTP management port name in Marathon application description docker port declaration:
 see `marathon/marathon-api-docker-app.json`:
 ```
 ...
@@ -58,7 +58,7 @@ see `marathon/marathon-api-docker-app.json`:
           "hostPort": 0,
           "servicePort": 10206,
           "protocol": "tcp",
-          "name": "akkamgmthttp"
+          "name": "pekkomgmthttp"
 ...
 ```
 
@@ -69,7 +69,7 @@ How to Build
 
 `export DOCKER_USER=<your-docker-hub-account>`
 
-2. In order to build and publish this example into your docker hub repo run next command from `akka-management` work folder
+2. In order to build and publish this example into your docker hub repo run next command from `pekko-management` work folder
 
 `sbt integration-test-marathon-api-docker/docker:publish`
 

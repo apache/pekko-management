@@ -18,27 +18,35 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <akka.version>2.6.20</akka.version>
-    <akka.http.version>10.2.10</akka.http.version>
+    <pekko.version>0.0.0+26599-83545a33-SNAPSHOT</pekko.version>
+    <pekko.http.version>0.0.0+4298-26846a02-SNAPSHOT</pekko.http.version>
     <pekko-management.version>0.0.0</pekko-management.version> <!-- set by build -->
     <scala.binary.version>2.12</scala.binary.version>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>apache-snapshots</id>
+      <name>Apache Snapshots Repository</name>
+      <url>https://repository.apache.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
-      <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-stream_${scala.binary.version}</artifactId>
-      <version>${akka.version}</version>
+      <groupId>org.apache.pekko</groupId>
+      <artifactId>pekko-stream_${scala.binary.version}</artifactId>
+      <version>${pekko.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-cluster_${scala.binary.version}</artifactId>
-      <version>${akka.version}</version>
+      <groupId>org.apache.pekko</groupId>
+      <artifactId>pekko-cluster_${scala.binary.version}</artifactId>
+      <version>${pekko.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-slf4j_${scala.binary.version}</artifactId>
-      <version>${akka.version}</version>
+      <groupId>org.apache.pekko</groupId>
+      <artifactId>pekko-slf4j_${scala.binary.version}</artifactId>
+      <version>${pekko.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -56,19 +64,19 @@
       <version>${pekko-management.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-http-core_${scala.binary.version}</artifactId>
-      <version>${akka.http.version}</version>
+      <groupId>org.apache.pekko</groupId>
+      <artifactId>pekko-http-core_${scala.binary.version}</artifactId>
+      <version>${pekko.http.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-http_${scala.binary.version}</artifactId>
-      <version>${akka.http.version}</version>
+      <groupId>org.apache.pekko</groupId>
+      <artifactId>pekko-http_${scala.binary.version}</artifactId>
+      <version>${pekko.http.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.typesafe.akka</groupId>
-      <artifactId>akka-http-spray-json_${scala.binary.version}</artifactId>
-      <version>${akka.http.version}</version>
+      <groupId>org.apache.pekko</groupId>
+      <artifactId>pekko-http-spray-json_${scala.binary.version}</artifactId>
+      <version>${pekko.http.version}</version>
     </dependency>
   </dependencies>
 
@@ -98,7 +106,7 @@
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                  <manifestEntries>
-                   <Main-Class>akka.cluster.bootstrap.demo.DemoApp</Main-Class>
+                   <Main-Class>org.apache.pekko.cluster.bootstrap.demo.DemoApp</Main-Class>
                  </manifestEntries>
                 </transformer>
               </transformers>

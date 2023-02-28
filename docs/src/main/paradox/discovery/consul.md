@@ -3,7 +3,7 @@
 @@@ warning
 
 This module is community maintained and the Lightbend subscription doesn't cover support for this module.
-  It is also marked as @extref:[may change](akka:common/may-change.html).
+  It is also marked as @extref:[may change](pekko:common/may-change.html).
   That means that the API, configuration or semantics can change without warning or deprecation period.
 
 @@@
@@ -17,34 +17,34 @@ If you are using Consul to do the service discovery this would allow you to base
 @@project-info{ projectId="discovery-consul" }
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol1=AkkaManagementVersion
+  symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="com.lightbend.akka.discovery"
-  artifact="akka-discovery-consul_$scala.binary.version$"
-  version=AkkaManagementVersion
+  group="com.lightbend.pekko.discovery"
+  artifact="pekko-discovery-consul_$scala.binary.version$"
+  version=PekkoManagementVersion
 }
 
-`akka-discovery-consul` can be used with Akka $akka.version$ or later.
+`pekko-discovery-consul` can be used with Akka $pekko.version$ or later.
 You have to override the following Akka dependencies by defining them explicitly in your build and
 define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
-a later version than $akka.version$ can be used.
+a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol=AkkaVersion
-  value=$akka.version$
-  group=com.typesafe.akka
-  artifact=akka-cluster_$scala.binary.version$
-  version=AkkaVersion
-  group2=com.typesafe.akka
-  artifact2=akka-discovery_$scala.binary.version$
-  version2=AkkaVersion
+  symbol=PekkoVersion
+  value=$pekko.version$
+  group=org.apache.pekko
+  artifact=pekko-cluster_$scala.binary.version$
+  version=PekkoVersion
+  group2=org.apache.pekko
+  artifact2=pekko-discovery_$scala.binary.version$
+  version2=PekkoVersion
 }
 
 In your application conf add:
 ```
-akka.discovery {
-  method = akka-consul
-  akka-consul {
+pekko.discovery {
+  method = pekko-consul
+  pekko-consul {
 
     #How to connect to Consul to fetch services data
     consul-host = "127.0.0.1"
@@ -55,9 +55,9 @@ akka.discovery {
     # i.e. `system:test` will be found in cluster if the cluster system is named `test`
     application-name-tag-prefix = "system:"
 
-    # Prefix for tag containing port number where akka management is set up so that
-    # the seed nodes can be found, an example value for the tag would be `akka-management-port:19999`
-    application-akka-management-port-tag-prefix = "akka-management-port:"
+    # Prefix for tag containing port number where pekko management is set up so that
+    # the seed nodes can be found, an example value for the tag would be `pekko-management-port:19999`
+    application-pekko-management-port-tag-prefix = "pekko-management-port:"
   }
 }
 ```
@@ -66,6 +66,6 @@ Notes:
 
 * Since tags in Consul services are simple strings, prefixes are necessary to ensure that proper values are read.
 
-* If Akka management port tag is not found on service in Consul the implementation defaults to catalog service port.
+* If Pekko management port tag is not found on service in Consul the implementation defaults to catalog service port.
 
 

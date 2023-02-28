@@ -2,6 +2,7 @@ import com.typesafe.sbt.packager.docker.{ Cmd, ExecCmd }
 import sbt.Keys.parallelExecution
 
 ThisBuild / resolvers += Resolver.jcenterRepo
+ThisBuild / resolvers += "Apache Snapshots".at("https://repository.apache.org/content/repositories/snapshots/")
 
 // root
 lazy val root = project
@@ -282,7 +283,7 @@ lazy val docs = project
   .enablePlugins(AkkaParadoxPlugin, ParadoxSitePlugin, PreprocessPlugin, PublishRsyncPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
-    name := "Pekko Management",
+    name := "Apache Pekko Management",
     publish / skip := true,
     makeSite := makeSite.dependsOn(LocalRootProject / ScalaUnidoc / doc).value,
     Preprocess / siteSubdirName := s"api/pekko-management/${if (isSnapshot.value) "snapshot" else version.value}",
@@ -296,14 +297,15 @@ lazy val docs = project
       "date.year" -> Common.currentYear,
       "project.url" -> "https://pekko.apache.org/docs/pekko-management/current/",
       "canonical.base_url" -> "https://pekko.apache.org/docs/pekko-management/current",
+      "scaladoc.base_url" -> s"https://pekko.apache.org/api/pekko-management/current/",
       "scala.binary.version" -> scalaBinaryVersion.value,
-      "akka.version" -> Dependencies.AkkaVersion,
-      "extref.akka.base_url" -> s"https://pekko.apache.org/docs/pekko/current/%s",
-      "scaladoc.akka.base_url" -> s"https://pekko.apache.org/api/pekko/current/",
-      "extref.akka-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/${Dependencies.AkkaHttpBinaryVersion}/%s",
-      "scaladoc.akka.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/${Dependencies.AkkaHttpBinaryVersion}/",
-      "extref.akka-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/current/%s",
-      "extref.akka-enhancements.base_url" -> s"https://pekko.apache.org/docs/pekko-enhancements/current/%s",
+      "pekko.version" -> Dependencies.PekkoVersion,
+      "extref.pekko.base_url" -> s"https://pekko.apache.org/docs/pekko/current/%s",
+      "scaladoc.pekko.base_url" -> s"https://pekko.apache.org/api/pekko/current/",
+      "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/current/%s",
+      "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/current/",
+      "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/current/%s",
+      "extref.akka-enhancements.base_url" -> s"https://docs.akka.io/docs/pekko-enhancements/current/%s",
       "scaladoc.akka.management.base_url" -> s"/${(Preprocess / siteSubdirName).value}/"),
     publishRsyncArtifacts += makeSite.value -> "www/",
     publishRsyncHost := "akkarepo@gustav.akka.io")

@@ -87,10 +87,10 @@ When the cluster has fully formed you should see output like this:
 
 ```
 {
-    "leader": "akka.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
+    "leader": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
     "members": [
         {
-            "node": "akka.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
             "nodeUid": "-801839214",
             "roles": [
                 "dc-default"
@@ -98,7 +98,7 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         },
         {
-            "node": "akka.tcp://ecsBootstrapDemoApp@172.31.92.234:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.92.234:2552",
             "nodeUid": "-1965866076",
             "roles": [
                 "dc-default"
@@ -106,7 +106,7 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         },
         {
-            "node": "akka.tcp://ecsBootstrapDemoApp@172.31.41.181:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.41.181:2552",
             "nodeUid": "1441500118",
             "roles": [
                 "dc-default"
@@ -114,7 +114,7 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         },
         {
-            "node": "akka.tcp://ecsBootstrapDemoApp@172.31.58.83:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.58.83:2552",
             "nodeUid": "443867006",
             "roles": [
                 "dc-default"
@@ -122,7 +122,7 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         },
         {
-            "node": "akka.tcp://ecsBootstrapDemoApp@172.31.67.222:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.67.222:2552",
             "nodeUid": "-17061216",
             "roles": [
                 "dc-default"
@@ -130,16 +130,16 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         }
     ],
-    "oldest": "akka.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
-    "selfNode": "akka.tcp://ecsBootstrapDemoApp@172.31.58.83:2552",
+    "oldest": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
+    "selfNode": "pekko.tcp://ecsBootstrapDemoApp@172.31.58.83:2552",
     "unreachable": []
 }
 ```
 
 Nicely done!
 
-You can also observe the log output from akka-cluster-bootstrap and
-akka-cluster by navigating to the CloudWatch area of the AWS Management
+You can also observe the log output from pekko-cluster-bootstrap and
+pekko-cluster by navigating to the CloudWatch area of the AWS Management
 Console, opening the Logs tab, and selecting the demo Log Group:
 
 

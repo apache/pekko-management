@@ -14,7 +14,7 @@ metadata:
 subjects:
   # Uses the default service account.
   # Consider creating a dedicated service account to run your
-  # Akka Cluster services and binding the role to that one.
+  # Apache Pekko Cluster services and binding the role to that one.
   - kind: ServiceAccount
     name: default
 roleRef:
