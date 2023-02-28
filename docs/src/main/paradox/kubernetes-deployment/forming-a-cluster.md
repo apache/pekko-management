@@ -20,29 +20,29 @@ For a much more detailed description of this process, see the [Akka Cluster Boot
 
 Add the following dependencies to your application:
 
-* Akka Management Cluster HTTP: This provides HTTP management endpoints as well as a @ref[cluster health check](../cluster-http-management.md#health-checks)
+* Pekko Management Cluster HTTP: This provides HTTP management endpoints as well as a @ref[cluster health check](../cluster-http-management.md#health-checks)
 * @ref[Akka Discovery Kubernetes](../discovery/kubernetes.md): This provides a discovery mechanism that queries the Kubernetes API
-* @ref[Akka Bootstrap](../bootstrap/index.md): This bootstraps the cluster from nodes discovered via the Kubernetes API
+* @ref[Pekko Bootstrap](../bootstrap/index.md): This bootstraps the cluster from nodes discovered via the Kubernetes API
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol1=AkkaManagementVersion
+  symbol1=PekkoManagementVersion
   value1=$project.version$
   group=com.lightbend.akka.management
   artifact=akka-management-cluster-http_$scala.binary.version$
-  version=AkkaManagementVersion
+  version=PekkoManagementVersion
   group2=com.lightbend.akka.management
   artifact2=akka-management-cluster-bootstrap_$scala.binary.version$
-  version2=AkkaManagementVersion
-  group3="com.lightbend.akka.discovery"
-  artifact3="akka-discovery-kubernetes-api_$scala.binary.version$"
-  version3=AkkaManagementVersion
+  version2=PekkoManagementVersion
+  group3="com.lightbend.pekko.discovery"
+  artifact3="pekko-discovery-kubernetes-api_$scala.binary.version$"
+  version3=PekkoManagementVersion
 }
 
 ## Configuring Cluster Bootstrap
 
-There are three components that need to be configured: Akka Cluster, Akka Management HTTP, and Akka Cluster Bootstrap.
+There are three components that need to be configured: Akka Cluster, Pekko Management HTTP, and Akka Cluster Bootstrap.
 
-### Akka Cluster
+### Apache Pekko Cluster
 
 Set three things for Akka Cluster:
 
@@ -51,7 +51,7 @@ Set three things for Akka Cluster:
 * Exit the JVM on ActorSystem termination to allow Kubernetes to re-create it.
 
 ```HOCON
-akka {
+pekko {
     actor {
         provider = cluster
     }
@@ -62,11 +62,11 @@ akka {
     coordinated-shutdown.exit-jvm = on
 }
 ```
-### Akka Management HTTP
+### Apache Pekko Management HTTP
 
-The default configuration for Akka management HTTP is suitable for use in Kubernetes, it will bind to a default port of 8558 on the pods external IP address.
+The default configuration for Pekko management HTTP is suitable for use in Kubernetes, it will bind to a default port of 8558 on the pods external IP address.
 
-### Akka Cluster Bootstrap
+### Apache Pekko Cluster Bootstrap
 
 To configure Cluster Bootstrap, we need to tell it which discovery method will be used to discover the other nodes in the cluster. 
 This uses Akka Discovery to find nodes, however, the discovery method and configuration used in Cluster Bootstrap will often be different 
@@ -80,7 +80,7 @@ Hence, we need to use a different discovery method for Cluster Bootstrap, and fo
 use the Kubernetes API, which will return all nodes regardless of their readiness state. 
 
 ```
-akka.management {
+pekko.management {
   cluster.bootstrap {
     contact-point-discovery {
       discovery-method = kubernetes-api
@@ -94,14 +94,14 @@ You can optionally specify a `service-name` otherwise the name of the AkkaSystem
 
 ## Starting
 
-To ensure that Cluster Bootstrap is started, both the Cluster Bootstrap and the Akka Management extensions must be started. 
-This can be done by invoking the `start` method on both the `ClusterBoostrap` and `AkkaManagement` extensions when your application starts up.
+To ensure that Cluster Bootstrap is started, both the Cluster Bootstrap and the Pekko Management extensions must be started. 
+This can be done by invoking the `start` method on both the `ClusterBoostrap` and `PekkoManagement` extensions when your application starts up.
 
 Scala
-:  @@snip [CompileOnly.scala](/management-cluster-bootstrap/src/test/scala/doc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.scala) { #start }
+:  @@snip [CompileOnly.scala](/management-cluster-bootstrap/src/test/scala/doc/org/apache/pekko/management/cluster/bootstrap/ClusterBootstrapCompileOnly.scala) { #start }
 
 Java
-:  @@snip [CompileOnly.java](/management-cluster-bootstrap/src/test/java/jdoc/akka/management/cluster/bootstrap/ClusterBootstrapCompileOnly.java) { #start }
+:  @@snip [CompileOnly.java](/management-cluster-bootstrap/src/test/java/jdoc/org/apache/pekko/management/cluster/bootstrap/ClusterBootstrapCompileOnly.java) { #start }
 
 ## Role-Based Access Control
 
@@ -109,7 +109,7 @@ By default, pods are unable to use the Kubernetes API because they are not authe
 In order to allow the applications pods to form an Akka Cluster using the Kubernetes API, we need to define some Role-Based Access Control (RBAC) roles and bindings.
 
 RBAC allows the configuration of access control using two key concepts, roles, and role bindings. A role is a set of permissions to access something 
-in the Kubernetes API. For example, a `pod-reader` role may have permission to perform the `list`, `get` and `watch` operations on the `pods` resource in a particular namespace, by default the same namespace that the role is configured in. In fact, that's exactly what we are going to configure, as this is the permission that our pods need. Here's the spec for the `pod-reader` role to be added in `kubernetes/akka-cluster.yaml`:
+in the Kubernetes API. For example, a `pod-reader` role may have permission to perform the `list`, `get` and `watch` operations on the `pods` resource in a particular namespace, by default the same namespace that the role is configured in. In fact, that's exactly what we are going to configure, as this is the permission that our pods need. Here's the spec for the `pod-reader` role to be added in `kubernetes/pekko-cluster.yaml`:
 
 ```yaml
 ---
@@ -130,7 +130,7 @@ service account, otherwise, you can define your own service accounts. Kubernetes
 that pods filesystem, allowing the pod to use them to make authenticated requests on the Kubernetes API.
 
 Since we are just using the default service account, we need to bind our role to the default service account so that our pod will be able to 
-access the Kubernetes API as a `pod-reader`. In `kubernetes/akka-cluster.yaml`:
+access the Kubernetes API as a `pod-reader`. In `kubernetes/pekko-cluster.yaml`:
 
 ```yaml
 ---
@@ -164,17 +164,17 @@ the configuration overhead of doing this very high though, it's not what Kuberne
 
 ## Health Checks
 
-Akka management HTTP includes @ref[health check routes](../healthchecks.md) that will expose liveness and readiness health checks on `/alive` and `/ready` respectively. 
+Pekko management HTTP includes @ref[health check routes](../healthchecks.md) that will expose liveness and readiness health checks on `/alive` and `/ready` respectively. 
 
 In Kubernetes, if an application is live, it means it is running - it hasn't crashed. But it may not necessarily be ready to serve requests, for example, it might not yet have managed to connect to a database, or, in our case, it may not have formed a cluster yet. 
 
 By separating [liveness and readiness](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes), Kubernetes can distinguish between fatal errors, like crashing, and transient errors, like not being able to contact other resources that the application depends on, allowing Kubernetes to make more intelligent decisions about whether an application needs to be restarted, or if it just needs to be given time to sort itself out.
 
-These routes expose information which is the result of multiple internal checks. For example, by depending on `akka-management-cluster-http` the health checks will take cluster membership status into consideration and will be a check to ensure that a cluster has been formed.
+These routes expose information which is the result of multiple internal checks. For example, by depending on `pekko-management-cluster-http` the health checks will take cluster membership status into consideration and will be a check to ensure that a cluster has been formed.
 
-Finally, we need to configure the health checks. As mentioned earlier, Akka Management HTTP provides health check endpoints for us, both for readiness and liveness. Kubernetes just needs to be told about this. The first thing we do is configure a name for the management port, while not strictly necessary, this allows us to refer to it by name in the probes, rather than repeating the port number each time. We'll configure some of the numbers around here, we're going to tell Kubernetes to wait 20 seconds before attempting to probe anything, this gives our cluster a chance to start before Kubernetes starts trying to ask us if it's ready, and since in some scenarios, particularly if you haven't assigned a lot of CPU to your pods, it can take a long time for the cluster to start, so we'll give it a high failure threshold of 10.
+Finally, we need to configure the health checks. As mentioned earlier, Pekko Management HTTP provides health check endpoints for us, both for readiness and liveness. Kubernetes just needs to be told about this. The first thing we do is configure a name for the management port, while not strictly necessary, this allows us to refer to it by name in the probes, rather than repeating the port number each time. We'll configure some of the numbers around here, we're going to tell Kubernetes to wait 20 seconds before attempting to probe anything, this gives our cluster a chance to start before Kubernetes starts trying to ask us if it's ready, and since in some scenarios, particularly if you haven't assigned a lot of CPU to your pods, it can take a long time for the cluster to start, so we'll give it a high failure threshold of 10.
 
-Health check probes can be adjusted in `kubernetes/akka-cluster.yaml`:
+Health check probes can be adjusted in `kubernetes/pekko-cluster.yaml`:
 
 ```yaml
 ports:

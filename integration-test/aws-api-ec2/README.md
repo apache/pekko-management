@@ -21,11 +21,11 @@ ssh into them - you may need to install Java 8 ( you can use this [guide](https:
 Step 2: Create IAM Role
 -----------------------
 
-Since the `akka-discovery-aws-api` module uses the AWS HTTP API, we need to make sure that the proper security authorizations are 
+Since the `pekko-discovery-aws-api` module uses the AWS HTTP API, we need to make sure that the proper security authorizations are 
 in place. Hence, this step is about creating a IAM role. The IAM section is in the AWS Management Console, under "Services" and 
 under "Security, Identity & Compliance". Click "Create role" and select "AWS service" (for type of trusted entity) and EC2 
 (for the service that will use this role). Attach the "AmazonEC2ReadOnlyAccess" permission to this role. 
-This permission should be sufficient for the `akka-discovery-aws-api` module to do its job.
+This permission should be sufficient for the `pekko-discovery-aws-api` module to do its job.
 
 
 Step 3: Attach IAM Role
@@ -44,7 +44,7 @@ care about are 2552 and 8558. However, we don't want to open these ports to the 
 instances can *privately* communicate with each other if they are part of the same security group *and* if the proper inbound 
 rules are set. 
 
-Create a security group called "akka-cluster". Once the security group is created, select it and go to "edit inbound rules". 
+Create a security group called "pekko-cluster". Once the security group is created, select it and go to "edit inbound rules". 
 First, add a custom TCP rule to allow yourself ssh access (port: 22, source: My IP). Then, add two custom TCP rules (for ports 8558, 2552)
 using a custom source: the ID of the security group. 
 
@@ -55,7 +55,7 @@ See the screenshot below.
 Step 5: Attach Security Group
 -----------------------------
 
-Assign the 'akka-cluster' security group to your EC2 instances.
+Assign the 'pekko-cluster' security group to your EC2 instances.
 
 Step 6: Package the App
 -----------------------
@@ -76,7 +76,7 @@ Step 7: Tag Instances
 ---------------------
 
 Tag your instances with tag "service" -> "products-api". 
-The demo app is configured (via the "akka.discovery.aws-api-ec2-tag-based.filters" key, see the application.conf file) 
+The demo app is configured (via the "pekko.discovery.aws-api-ec2-tag-based.filters" key, see the application.conf file) 
 to require an additional tag "purpose" -> "demo". 
 
 ![tagging instances](screenshots/discovery-aws-ec2-tagged-instances.png)
@@ -93,7 +93,7 @@ Unzip the package and run the app like this on each instance:
 $ unzip app.zip
 $ cd app/bin
 $ MY_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`
-$ ./integration-test-aws-api-ec2-tag-based -Dakka.management.http.hostname=$MY_IP -Dakka.remote.netty.tcp.hostname=$MY_IP
+$ ./integration-test-aws-api-ec2-tag-based -Dpekko.management.http.hostname=$MY_IP -Dpekko.remote.netty.tcp.hostname=$MY_IP
 ```
 
 Follow the logs and watch for signs of successful cluster formation (e.g., a welcome message from one of the nodes). 

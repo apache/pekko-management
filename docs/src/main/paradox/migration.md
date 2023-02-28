@@ -5,54 +5,54 @@
 Version requirements:
 
 * Akka 2.5.19 or later
-* Akka HTTP 10.1.7 or later
+* Pekko HTTP 10.1.7 or later
 
 ### Source changes
 
-* `AkkaManagement` moved to package `akka.management.scaladsl.AkkaManagement`, if using from Java use `akka.management.javadsl.AkkaManagement`
-* If implementing custom ManagementRouteProvider the package changed to `akka.management.scaladsl.ManagementRouteProvider`/`akka.management.javadsl.ManagementRouteProvider`
-* `AkkaManagement.start` and `AkkaManagement.routes` may throw IllegalArgumentException instead of returning Try
-* Auth and HTTPS has changed by using overloaded methods of `AkkaManagement.start` and `AkkaManagement.routes`, see the @ref[docs for more details](akka-management.md#enabling-basic-authentication)
+* `PekkoManagement` moved to package `org.apache.pekko.management.scaladsl.PekkoManagement`, if using from Java use `org.apache.pekko.management.javadsl.PekkoManagement`
+* If implementing custom ManagementRouteProvider the package changed to `org.apache.pekko.management.scaladsl.ManagementRouteProvider`/`org.apache.pekko.management.javadsl.ManagementRouteProvider`
+* `PekkoManagement.start` and `PekkoManagement.routes` may throw IllegalArgumentException instead of returning Try
+* Auth and HTTPS has changed by using overloaded methods of `PekkoManagement.start` and `PekkoManagement.routes`, see the @ref[docs for more details](akka-management.md#enabling-basic-authentication)
 
 ### Configuration changes
 
-* `akka.management.cluster.http.healthcheck.ready-states` moved to `akka.management.cluster.health-check.ready-states`
-* `akka.management.cluster.bootstrap.form-new-cluster` renamed to `akka.management.cluster.bootstrap.new-cluster-enabled`
+* `org.apache.pekko.management.cluster.http.healthcheck.ready-states` moved to `org.apache.pekko.management.cluster.health-check.ready-states`
+* `org.apache.pekko.management.cluster.bootstrap.form-new-cluster` renamed to `org.apache.pekko.management.cluster.bootstrap.new-cluster-enabled`
 
 #### route-providers
 
-`akka.management.cluster.route-providers` changed from being a list of fully qualified class names to
-a configuration object `akka.management.cluster.routes` with named route providers. The reason for the
+`org.apache.pekko.management.cluster.route-providers` changed from being a list of fully qualified class names to
+a configuration object `org.apache.pekko.management.cluster.routes` with named route providers. The reason for the
 change was to be able to exclude a route provider that was included by a library (from reference.conf) by
 using `""` or `null` as the FQCN of the named entry, for example:
 
 ```
-akka.management.http.routes {
+pekko.management.http.routes {
   health-checks = ""
 }
 ```
 
-By default the `akka.management.HealthCheckRoutes` is enabled.
+By default the `org.apache.pekko.management.HealthCheckRoutes` is enabled.
 
-### Akka Discovery
+### Apache Pekko Discovery
 
-For Akka Management version 1.0 Service Discovery as well as the config, DNS and aggregate discovery methods 
-were made core Akka module. The following steps are required when upgrading to 1.0 of Akka Management.
+For Pekko Management version 1.0 Service Discovery as well as the config, DNS and aggregate discovery methods 
+were made core Akka module. The following steps are required when upgrading to 1.0 of Pekko Management.
 
 Remove dependencies for:
 
 @@dependency[sbt,Gradle,Maven] {
-  group="com.lightbend.akka.discovery"
-  artifact="akka-discovery"
+  group="com.lightbend.pekko.discovery"
+  artifact="pekko-discovery"
   version="old_akka_management_version"
-  group2="com.lightbend.akka.discovery"
-  artifact2="akka-discovery-dns"
+  group2="com.lightbend.pekko.discovery"
+  artifact2="pekko-discovery-dns"
   version2="old_akka_management_version"
-  group3="com.lightbend.akka.discovery"
-  artifact3="akka-discovery-config"
+  group3="com.lightbend.pekko.discovery"
+  artifact3="pekko-discovery-config"
   version3="old_akka_management_version"
-  group4="com.lightbend.akka.discovery"
-  artifact4="akka-discovery-aggregate"
+  group4="com.lightbend.pekko.discovery"
+  artifact4="pekko-discovery-aggregate"
   version4="old_akka_management_version"
 }
 
@@ -60,16 +60,16 @@ If using Cluster Bootstrap the new dependency will be brought in automatically.
 If using Service Discovery directly add the following dependency:
 
 @@dependency[sbt,Gradle,Maven] {
-  group="com.typesafe.akka"
-  artifact="akka-discovery"
+  group="org.apache.pekko"
+  artifact="pekko-discovery"
   version="latest_akka_version"
 }
 
-Setting the service discovery method now has to be the unqualified name e.g `kubernetes-api` rather than `akka.discovery.kubernets-api`.
-If using a custom discovery method the configuration for the discovery method must live under `akka.discovery`. 
+Setting the service discovery method now has to be the unqualified name e.g `kubernetes-api` rather than `pekko.discovery.kubernets-api`.
+If using a custom discovery method the configuration for the discovery method must live under `pekko.discovery`. 
 
-For bootstrap it is recommended to set the service discovery method via `akka.management.cluster.bootstrap.contact-point-discovery.discovery-method`
-rather then overriding the global service discovery mechanism with `akka.discovery.method` 
+For bootstrap it is recommended to set the service discovery method via `org.apache.pekko.management.cluster.bootstrap.contact-point-discovery.discovery-method`
+rather then overriding the global service discovery mechanism with `pekko.discovery.method` 
 
 ### DNS 
 
@@ -97,7 +97,7 @@ that is mounted to each Kubernetes container. The namespace can be overridden wi
 ### Cluster HTTP
 
 The `cluster-http` module now only exposes read only routes by default. To enable destructive operations such as downing members
-set `akka.management.http.route-providers-read-only` to `false.
+set `pekko.management.http.route-providers-read-only` to `false.
 
 
 

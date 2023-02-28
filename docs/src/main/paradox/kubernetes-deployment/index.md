@@ -7,8 +7,8 @@ Alternatively, you can deploy to Kubernetes according to this guide, but that re
 For this guide we will be using the Akka Cluster in Kubernetes sample. 
 It is available for both:
 
- * [Java](https://developer.lightbend.com/start/?group=akka&project=akka-sample-cluster-kubernetes-java) 
- * [Scala](https://developer.lightbend.com/start/?group=akka&project=akka-sample-cluster-kubernetes-scala)
+ * [Java](https://developer.lightbend.com/start/?group=akka&project=pekko-sample-cluster-kubernetes-java) 
+ * [Scala](https://developer.lightbend.com/start/?group=akka&project=pekko-sample-cluster-kubernetes-scala)
 
 @@toc { depth=2 }
 

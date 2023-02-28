@@ -4,10 +4,10 @@ An example project that can be deployed to kubernetes via `minikube` is in `inte
 
 The project shows how to:
 
-* Use Akka Bootstrap with `akka-dns` with cluster formation via DNS SRV records
-* Use a headless service for internal and Akka management/bootstrap so that readiness probes for prod traffic don't interfere with bootstrap
+* Use Pekko Bootstrap with `pekko-dns` with cluster formation via DNS SRV records
+* Use a headless service for internal and Pekko management/bootstrap so that readiness probes for prod traffic don't interfere with bootstrap
     * Note that this requires the use of the `publishNotReadyAddresses`, which replaces the `service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"` annotation , so bootstrap can see the pods before they are ready. Check your Kubernetes environment supports this feature
-* If required use a separate service and/or ingress for user-facing endpoints, for example @extref:[HTTP](akka-http:) or @extref:[gRPC](akka-grpc:)
+* If required use a separate service and/or ingress for user-facing endpoints, for example @extref:[HTTP](pekko-http:) or @extref:[gRPC](pekko-grpc:)
 
 ### Internal headless service for bootstrap
 
@@ -16,7 +16,7 @@ as there is no use case for load balancing across management/remoting ports.
 Set endpoints to be published before readiness checks pass as these endpoints are required to bootstrap the Cluster
 and make the application ready.
 
-@@snip [akka-cluster.yml](/integration-test/kubernetes-dns/kubernetes/akka-cluster.yml)  { #headless }
+@@snip [pekko-cluster.yml](/integration-test/kubernetes-dns/kubernetes/pekko-cluster.yml)  { #headless }
 
 Note there are currently two ways to specify that addresses should be published if not ready, the initial way via an annotation
 `service.alpha.kubernetes.io/tolerate-unready-endpoints` and via the new officially supported way as the property `publishNotReadyAddresses`.

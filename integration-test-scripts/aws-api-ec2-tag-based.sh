@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo Running integration tests for aws-api-ec2-tag-based
-echo You need to run this from the root folder of the akka-management project
+echo You need to run this from the root folder of the pekko-management project
 
 export BUILD_ID=$TRAVIS_JOB_NUMBER-$TRAVIS_JOB_ID
 

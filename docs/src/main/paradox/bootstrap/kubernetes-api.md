@@ -11,24 +11,24 @@ The following Kubernetes resources are created:
 
 An example deployment (used for integration testing):
 
-@@snip [akka-cluster.yml](/integration-test/kubernetes-api/kubernetes/akka-cluster.yml) { #deployment }
+@@snip [pekko-cluster.yml](/integration-test/kubernetes-api/kubernetes/pekko-cluster.yml) { #deployment }
 
 An example `Role` and `Rolebinding` to allow the nodes to query the Kubernetes API server:
 
-@@snip [akka-cluster.yml](/integration-test/kubernetes-api/kubernetes/akka-cluster.yml) { #rbac }
+@@snip [pekko-cluster.yml](/integration-test/kubernetes-api/kubernetes/pekko-cluster.yml) { #rbac }
 
 The User name includes the namespace, this will need updated for your namespace.
 
 The following configuration is required:
 
-* Set `akka.management.cluster.bootstrap.contact-point-discovery.discovery-method` to `kubernetes-api`
-* Set `akka.discovery.kubernetes-api.pod-label-selector` to a label selector that will match the Akka pods e.g. `app=%s`
+* Set `pekko.management.cluster.bootstrap.contact-point-discovery.discovery-method` to `kubernetes-api`
+* Set `pekko.discovery.kubernetes-api.pod-label-selector` to a label selector that will match the Akka pods e.g. `app=%s`
 
-@@snip [akka-cluster.yml](/integration-test/kubernetes-api/src/main/resources/application.conf) { #discovery-config }
+@@snip [pekko-cluster.yml](/integration-test/kubernetes-api/src/main/resources/application.conf) { #discovery-config }
 
 The lookup needs to know which namespace to look in. By default, this will be detected by reading the namespace
 from the service account secret, in `/var/run/secrets/kubernetes.io/serviceaccount/namespace`, but can be overridden by
-setting `akka.discovery.kubernetes-api.pod-namespace`.
+setting `pekko.discovery.kubernetes-api.pod-namespace`.
 
 For more details on how to configure the Kubernetes deployment see @ref:[recipes](recipes.md).
 

@@ -12,7 +12,7 @@ mvn -Dpekko-management.version=$VERSION clean package docker:build
 export NAMESPACE=akka-bootstrap-demo-ns
 
 kubectl create namespace $NAMESPACE || true
-kubectl -n $NAMESPACE apply -f kubernetes/akka-cluster.yml
+kubectl -n $NAMESPACE apply -f kubernetes/pekko-cluster.yml
 
 for i in {1..10}
 do

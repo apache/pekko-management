@@ -3,7 +3,7 @@
 @@@ warning
 
 This module is community maintained and the Lightbend subscription doesn't cover support for this module.
-  It is also marked as @extref:[may change](akka:common/may-change.html).
+  It is also marked as @extref:[may change](pekko:common/may-change.html).
   That means that the API, configuration or semantics can change without warning or deprecation period.
 
 @@@
@@ -14,7 +14,7 @@ If you're a Mesos or DC/OS user, you can use the provided Marathon API implement
 to your Marathon JSON (named `ACTOR_SYSTEM_NAME`  by default) and set the value equal to the name of the configured
 effective name, which defaults to your applications actor system name.
 
-You'll also have to add a named port, by default `akkamgmthttp`, and ensure that Akka Management's HTTP interface
+You'll also have to add a named port, by default `pekkomgmthttp`, and ensure that Pekko Management's HTTP interface
 is bound to this port.
 
 ## Project Info
@@ -26,33 +26,33 @@ is bound to this port.
 This is a separate JAR file:
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol1=AkkaManagementVersion
+  symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="com.lightbend.akka.discovery"
-  artifact="akka-discovery-marathon-api_$scala.binary.version$"
-  version=AkkaManagementVersion
+  group="com.lightbend.pekko.discovery"
+  artifact="pekko-discovery-marathon-api_$scala.binary.version$"
+  version=PekkoManagementVersion
 }
 
-`akka-discovery-marathon-api` can be used with Akka $akka.version$ or later.
+`pekko-discovery-marathon-api` can be used with Akka $pekko.version$ or later.
 You have to override the following Akka dependencies by defining them explicitly in your build and
 define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
-a later version than $akka.version$ can be used.
+a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
-  symbol=AkkaVersion
-  value=$akka.version$
-  group=com.typesafe.akka
-  artifact=akka-cluster_$scala.binary.version$
-  version=AkkaVersion
-  group2=com.typesafe.akka
-  artifact2=akka-discovery_$scala.binary.version$
-  version2=AkkaVersion
+  symbol=PekkoVersion
+  value=$pekko.version$
+  group=org.apache.pekko
+  artifact=pekko-cluster_$scala.binary.version$
+  version=PekkoVersion
+  group2=org.apache.pekko
+  artifact2=pekko-discovery_$scala.binary.version$
+  version2=PekkoVersion
 }
 
 And in your `application.conf`:
 
 ```
-akka.discovery {
+pekko.discovery {
   method = marathon-api
 }
 ```
@@ -61,7 +61,7 @@ And in your `marathon.json`:
 ```
 {
    ...
-   "cmd": "path-to-your-app -Dakka.remote.netty.tcp.hostname=$HOST -Dakka.remote.netty.tcp.port=$PORT_AKKAREMOTE -Dakka.management.http.hostname=$HOST -Dakka.management.http.port=$PORT_AKKAMGMTHTTP",
+   "cmd": "path-to-your-app -Dpekko.remote.netty.tcp.hostname=$HOST -Dpekko.remote.netty.tcp.port=$PORT_AKKAREMOTE -Dpekko.management.http.hostname=$HOST -Dpekko.management.http.port=$PORT_AKKAMGMTHTTP",
 
    "labels": {
      "ACTOR_SYSTEM_NAME": "my-system"
@@ -69,7 +69,7 @@ And in your `marathon.json`:
 
    "portDefinitions": [
      { "port": 0, "name": "akkaremote" },
-     { "port": 0, "name": "akkamgmthttp" }
+     { "port": 0, "name": "pekkomgmthttp" }
    ]
    ...
 }

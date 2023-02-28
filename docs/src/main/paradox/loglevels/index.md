@@ -1,6 +1,6 @@
 # Dynamic Log Levels
 
-Dynamic Log Levels for Akka Management provides a route where log levels can be read and set over HTTP.
+Dynamic Log Levels for Pekko Management provides a route where log levels can be read and set over HTTP.
 
 @@@ index
 
