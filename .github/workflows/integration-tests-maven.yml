@@ -39,11 +39,12 @@ jobs:
         uses: coursier/cache-action@v6.4.0
 
       - name: Setup Minikube
-        uses: manusa/actions-setup-minikube@v2.4.2
+        uses: manusa/actions-setup-minikube@v2.7.2
         with:
           minikube version: 'v1.21.0'
           kubernetes version: 'v1.21.0'
           driver: docker
+          github token: ${{ secrets.GITHUB_TOKEN }}
           start args: '--addons=ingress'
 
       - name: Start docker
