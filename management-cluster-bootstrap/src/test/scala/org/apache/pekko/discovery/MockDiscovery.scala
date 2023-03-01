@@ -20,6 +20,7 @@ import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.Resolved
 import pekko.event.Logging
 
+import scala.annotation.tailrec
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
@@ -30,12 +31,14 @@ object MockDiscovery {
   def set(name: Lookup, to: () => Future[Resolved]): Unit =
     set(name, _ => to())
 
+  @tailrec
   def set(name: Lookup, to: ActorSystem => Future[Resolved]): Unit = {
     val d = data.get()
     if (data.compareAndSet(d, d.updated(name, to))) ()
     else set(name, to) // retry
   }
 
+  @tailrec
   def remove(name: Lookup): Unit = {
     val d = data.get()
     if (data.compareAndSet(d, d - name)) ()
