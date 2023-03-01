@@ -36,6 +36,7 @@ import pekko.util.ManifestInfo
 
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicReference
+import scala.annotation.tailrec
 import scala.collection.immutable
 import scala.compat.java8.FutureConverters._
 import scala.compat.java8.OptionConverters._
@@ -216,6 +217,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
         "Double check your `pekko.management.http.routes` config.")
   }
 
+  @tailrec
   def stop(): Future[Done] = {
     val binding = bindingFuture.get()
 
