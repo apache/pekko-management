@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { java-version: 8,      scala-version: 2.12.16, sbt-opts: '' }
-          - { java-version: 11, scala-version: 2.12.16, sbt-opts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
-          - { java-version: 8,      scala-version: 2.13.8,  sbt-opts: '' }
-          - { java-version: 11, scala-version: 2.13.8,  sbt-opts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
+          - { javaVersion: 8,  scalaVersion: 2.12.17, sbtOpts: '' }
+          - { javaVersion: 11, scalaVersion: 2.12.17, sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
+          - { javaVersion: 8,  scalaVersion: 2.13.10, sbtOpts: '' }
+          - { javaVersion: 11, scalaVersion: 2.13.10, sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -34,11 +34,11 @@ jobs:
           git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
           git checkout scratch
 
-      - name: Setup Java ${{ matrix.java-version }}
+      - name: Setup Java ${{ matrix.javaVersion }}
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: ${{ matrix.java-version }}
+          java-version: ${{ matrix.javaVersion }}
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6.4.0
@@ -48,8 +48,8 @@ jobs:
         run: |
           echo -e "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)\t$(hostname -f) $(hostname -s)" | sudo tee -a /etc/hosts
 
-      - name: Run tests with Scala ${{ matrix.scala-version }} and Java ${{ matrix.java-version }}
-        run: sbt "++${{ matrix.scala-version }} test" ${{ matrix.sbt-opts }}
+      - name: Run tests with Scala ${{ matrix.scalaVersion }} and Java ${{ matrix.javaVersion }}
+        run: sbt "++${{ matrix.scalaVersion }} test" ${{ matrix.sbtOpts }}
 
       - name: Print logs on failure
         if: ${{ failure() }}
