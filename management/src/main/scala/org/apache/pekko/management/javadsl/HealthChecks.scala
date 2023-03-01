@@ -19,11 +19,12 @@ import java.util.function.{ Function => JFunction }
 import java.util.{ List => JList, Optional }
 import scala.compat.java8.FunctionConverters._
 import scala.compat.java8.FutureConverters._
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.actor.ExtendedActorSystem
-import org.apache.pekko.actor.setup.Setup
-import org.apache.pekko.management.HealthCheckSettings
-import org.apache.pekko.management.internal.HealthChecksImpl
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.actor.ExtendedActorSystem
+import pekko.actor.setup.Setup
+import pekko.management.HealthCheckSettings
+import pekko.management.internal.HealthChecksImpl
 
 /**
  * Can be used to instantiate health checks directly rather than rely on the

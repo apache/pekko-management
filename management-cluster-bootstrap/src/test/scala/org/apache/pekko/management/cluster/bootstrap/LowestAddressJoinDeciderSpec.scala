@@ -16,12 +16,13 @@ package org.apache.pekko.management.cluster.bootstrap
 import java.time.LocalDateTime
 import java.net.InetAddress
 import scala.concurrent.duration._
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.actor.Address
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
-import org.apache.pekko.event.NoLogging
-import org.apache.pekko.testkit.SocketUtil
-import org.apache.pekko.testkit.TestKit
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.actor.Address
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
+import pekko.event.NoLogging
+import pekko.testkit.SocketUtil
+import pekko.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 
 abstract class JoinDeciderSpec extends AbstractBootstrapSpec {

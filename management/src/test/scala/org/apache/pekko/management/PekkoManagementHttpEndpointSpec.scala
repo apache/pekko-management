@@ -14,19 +14,16 @@
 package org.apache.pekko.management
 
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.http.javadsl.server.directives.RouteAdapter
-import org.apache.pekko.http.scaladsl.{ ConnectionContext, Http, HttpsConnectionContext }
-import org.apache.pekko.http.scaladsl.model.{ HttpRequest, StatusCodes }
-import org.apache.pekko.http.scaladsl.model.headers.{ Authorization, BasicHttpCredentials }
-import org.apache.pekko.http.scaladsl.server.{ Directives, Route }
-import org.apache.pekko.http.scaladsl.server.directives.Credentials
-import org.apache.pekko.management.scaladsl.{
-  ManagementRouteProvider,
-  ManagementRouteProviderSettings,
-  PekkoManagement
-}
-import org.apache.pekko.testkit.SocketUtil
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.http.javadsl.server.directives.RouteAdapter
+import pekko.http.scaladsl.{ ConnectionContext, Http, HttpsConnectionContext }
+import pekko.http.scaladsl.model.{ HttpRequest, StatusCodes }
+import pekko.http.scaladsl.model.headers.{ Authorization, BasicHttpCredentials }
+import pekko.http.scaladsl.server.{ Directives, Route }
+import pekko.http.scaladsl.server.directives.Credentials
+import pekko.management.scaladsl.{ ManagementRouteProvider, ManagementRouteProviderSettings, PekkoManagement }
+import pekko.testkit.SocketUtil
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 

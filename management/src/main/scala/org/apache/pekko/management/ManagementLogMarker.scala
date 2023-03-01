@@ -13,9 +13,10 @@
 
 package org.apache.pekko.management
 
-import org.apache.pekko.annotation.ApiMayChange
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.event.LogMarker
+import org.apache.pekko
+import pekko.annotation.ApiMayChange
+import pekko.annotation.InternalApi
+import pekko.event.LogMarker
 
 /**
  * This is public with the purpose to document the used markers and properties of log events.

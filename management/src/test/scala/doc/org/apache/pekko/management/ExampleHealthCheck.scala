@@ -13,8 +13,9 @@
 
 package doc.org.apache.pekko.management
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.cluster.{ Cluster, MemberStatus }
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.cluster.{ Cluster, MemberStatus }
 
 import scala.concurrent.Future
 

@@ -14,13 +14,14 @@
 package org.apache.pekko.management.cluster.bootstrap.internal
 
 import java.util.concurrent.atomic.AtomicReference
-import org.apache.pekko.actor.{ ActorRef, ActorSystem, Props }
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.{ Lookup, MockDiscovery }
-import org.apache.pekko.http.scaladsl.model.Uri
+import org.apache.pekko
+import pekko.actor.{ ActorRef, ActorSystem, Props }
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.{ Lookup, MockDiscovery }
+import pekko.http.scaladsl.model.Uri
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.management.cluster.bootstrap.internal.BootstrapCoordinator.Protocol.InitiateBootstrapping
-import org.apache.pekko.management.cluster.bootstrap.{ ClusterBootstrapSettings, LowestAddressJoinDecider }
+import pekko.management.cluster.bootstrap.internal.BootstrapCoordinator.Protocol.InitiateBootstrapping
+import pekko.management.cluster.bootstrap.{ ClusterBootstrapSettings, LowestAddressJoinDecider }
 import org.scalatest.concurrent.Eventually
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.time.{ Millis, Seconds, Span }

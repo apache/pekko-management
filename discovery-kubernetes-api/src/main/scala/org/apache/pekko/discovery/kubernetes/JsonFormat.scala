@@ -13,8 +13,9 @@
 
 package org.apache.pekko.discovery.kubernetes
 
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.discovery.kubernetes.PodList.{
+import org.apache.pekko
+import pekko.annotation.InternalApi
+import pekko.discovery.kubernetes.PodList.{
   Container,
   ContainerPort,
   ContainerStatus,
@@ -23,7 +24,7 @@ import org.apache.pekko.discovery.kubernetes.PodList.{
   PodSpec,
   PodStatus
 }
-import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json._
 
 /**

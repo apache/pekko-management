@@ -14,10 +14,11 @@
 package org.apache.pekko.discovery
 
 import java.util.concurrent.atomic.AtomicReference
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.discovery.ServiceDiscovery.Resolved
-import org.apache.pekko.event.Logging
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.InternalApi
+import pekko.discovery.ServiceDiscovery.Resolved
+import pekko.event.Logging
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration

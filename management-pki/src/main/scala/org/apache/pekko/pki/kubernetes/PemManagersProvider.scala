@@ -23,9 +23,10 @@ import java.security.PrivateKey
 import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import scala.concurrent.blocking
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.pki.pem.DERPrivateKeyLoader
-import org.apache.pekko.pki.pem.PEMDecoder
+import org.apache.pekko
+import pekko.annotation.InternalApi
+import pekko.pki.pem.DERPrivateKeyLoader
+import pekko.pki.pem.PEMDecoder
 import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
 import scala.util.Random

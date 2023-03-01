@@ -13,13 +13,14 @@
 
 package org.apache.pekko.cluster.bootstrap
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.cluster.{ Cluster, MemberStatus }
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.server.Directives._
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap
-import org.apache.pekko.management.scaladsl.PekkoManagement
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.cluster.{ Cluster, MemberStatus }
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.server.Directives._
+import pekko.management.cluster.bootstrap.ClusterBootstrap
+import pekko.management.scaladsl.PekkoManagement
 
 object MarathonApiDockerDemoApp extends App {
   implicit val system = ActorSystem("my-system")

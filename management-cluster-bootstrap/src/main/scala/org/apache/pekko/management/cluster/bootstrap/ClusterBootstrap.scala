@@ -13,24 +13,25 @@
 
 package org.apache.pekko.management.cluster.bootstrap
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.actor.ClassicActorSystemProvider
-import org.apache.pekko.actor.ExtendedActorSystem
-import org.apache.pekko.actor.Extension
-import org.apache.pekko.actor.ExtensionId
-import org.apache.pekko.actor.ExtensionIdProvider
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.discovery.Discovery
-import org.apache.pekko.discovery.ServiceDiscovery
-import org.apache.pekko.event.Logging
-import org.apache.pekko.management.cluster.bootstrap.contactpoint.HttpClusterBootstrapRoutes
-import org.apache.pekko.management.cluster.bootstrap.internal.BootstrapCoordinator
-import org.apache.pekko.management.scaladsl.PekkoManagement
-import org.apache.pekko.management.scaladsl.ManagementRouteProvider
-import org.apache.pekko.management.scaladsl.ManagementRouteProviderSettings
-import org.apache.pekko.http.scaladsl.model.Uri
-import org.apache.pekko.http.scaladsl.server.Route
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.actor.ClassicActorSystemProvider
+import pekko.actor.ExtendedActorSystem
+import pekko.actor.Extension
+import pekko.actor.ExtensionId
+import pekko.actor.ExtensionIdProvider
+import pekko.annotation.InternalApi
+import pekko.cluster.Cluster
+import pekko.discovery.Discovery
+import pekko.discovery.ServiceDiscovery
+import pekko.event.Logging
+import pekko.management.cluster.bootstrap.contactpoint.HttpClusterBootstrapRoutes
+import pekko.management.cluster.bootstrap.internal.BootstrapCoordinator
+import pekko.management.scaladsl.PekkoManagement
+import pekko.management.scaladsl.ManagementRouteProvider
+import pekko.management.scaladsl.ManagementRouteProviderSettings
+import pekko.http.scaladsl.model.Uri
+import pekko.http.scaladsl.server.Route
 
 import java.util.concurrent.atomic.AtomicReference
 import scala.concurrent.duration._

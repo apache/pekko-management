@@ -13,11 +13,12 @@
 
 package org.apache.pekko.management.cluster.bootstrap.contactpoint
 
-import org.apache.pekko.cluster.{ Cluster, ClusterEvent }
-import org.apache.pekko.event.NoLogging
-import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrapSettings
-import org.apache.pekko.testkit.TestProbe
+import org.apache.pekko
+import pekko.cluster.{ Cluster, ClusterEvent }
+import pekko.event.NoLogging
+import pekko.http.scaladsl.testkit.ScalatestRouteTest
+import pekko.management.cluster.bootstrap.ClusterBootstrapSettings
+import pekko.testkit.TestProbe
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.matchers.should.Matchers

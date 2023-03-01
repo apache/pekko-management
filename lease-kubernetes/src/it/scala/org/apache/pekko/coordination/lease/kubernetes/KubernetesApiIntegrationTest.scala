@@ -1,9 +1,10 @@
 package org.apache.pekko.coordination.lease.kubernetes
 
-import org.apache.pekko.Done
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
-import org.apache.pekko.testkit.TestKit
+import org.apache.pekko
+import pekko.Done
+import pekko.actor.ActorSystem
+import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
+import pekko.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{ BeforeAndAfterAll, CancelAfterFailure }
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }

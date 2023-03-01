@@ -13,10 +13,11 @@
 
 package org.apache.pekko.management.cluster.scaladsl
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.cluster.{ Cluster, MemberStatus }
-import org.apache.pekko.util.Helpers
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.InternalApi
+import pekko.cluster.{ Cluster, MemberStatus }
+import pekko.util.Helpers
 import com.typesafe.config.Config
 
 import scala.collection.JavaConverters._

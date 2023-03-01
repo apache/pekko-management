@@ -19,12 +19,13 @@ import com.orbitz.consul.async.ConsulResponseCallback
 import com.orbitz.consul.model.ConsulResponse
 import com.orbitz.consul.model.catalog.CatalogService
 import com.orbitz.consul.option.QueryOptions
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.ApiMayChange
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.consul.ConsulServiceDiscovery._
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.pattern.after
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.ApiMayChange
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.consul.ConsulServiceDiscovery._
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.pattern.after
 
 import java.net.InetAddress
 import java.util

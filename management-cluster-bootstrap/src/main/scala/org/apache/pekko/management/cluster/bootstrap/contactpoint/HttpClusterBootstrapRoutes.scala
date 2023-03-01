@@ -13,24 +13,25 @@
 
 package org.apache.pekko.management.cluster.bootstrap.contactpoint
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.cluster.{ Cluster, Member }
-import org.apache.pekko.event.{ Logging, LoggingAdapter }
-import org.apache.pekko.http.javadsl.server.directives.RouteAdapter
-import org.apache.pekko.http.scaladsl.model.{ HttpRequest, Uri }
-import org.apache.pekko.http.scaladsl.server.Route
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrapSettings
-import org.apache.pekko.management.cluster.bootstrap.contactpoint.HttpBootstrapJsonProtocol.{ ClusterMember, SeedNodes }
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.cluster.{ Cluster, Member }
+import pekko.event.{ Logging, LoggingAdapter }
+import pekko.http.javadsl.server.directives.RouteAdapter
+import pekko.http.scaladsl.model.{ HttpRequest, Uri }
+import pekko.http.scaladsl.server.Route
+import pekko.management.cluster.bootstrap.ClusterBootstrapSettings
+import pekko.management.cluster.bootstrap.contactpoint.HttpBootstrapJsonProtocol.{ ClusterMember, SeedNodes }
 
 import scala.concurrent.duration._
 
 final class HttpClusterBootstrapRoutes(settings: ClusterBootstrapSettings) extends HttpBootstrapJsonProtocol {
 
-  import org.apache.pekko.http.scaladsl.server.Directives._
+  import pekko.http.scaladsl.server.Directives._
 
   private def routeGetSeedNodes: Route = extractClientIP { clientIp =>
     extractActorSystem { implicit system =>
-      import org.apache.pekko.cluster.MemberStatus
+      import pekko.cluster.MemberStatus
       val cluster = Cluster(system)
 
       def memberToClusterMember(m: Member): ClusterMember =
@@ -65,7 +66,7 @@ final class HttpClusterBootstrapRoutes(settings: ClusterBootstrapSettings) exten
     }
 
   /** Java API */
-  def getRoutes: org.apache.pekko.http.javadsl.server.Route = RouteAdapter(routes)
+  def getRoutes: pekko.http.javadsl.server.Route = RouteAdapter(routes)
 
   private def log(implicit sys: ActorSystem): LoggingAdapter =
     Logging(sys, classOf[HttpClusterBootstrapRoutes])
@@ -74,7 +75,7 @@ final class HttpClusterBootstrapRoutes(settings: ClusterBootstrapSettings) exten
 
 object ClusterBootstrapRequests {
 
-  import org.apache.pekko.http.scaladsl.client.RequestBuilding._
+  import pekko.http.scaladsl.client.RequestBuilding._
 
   def bootstrapSeedNodes(baseUri: Uri): HttpRequest =
     Get(baseUri + "/bootstrap/seed-nodes")

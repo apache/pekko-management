@@ -14,12 +14,13 @@
 package org.apache.pekko.management
 
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.actor.setup.ActorSystemSetup
-import org.apache.pekko.actor.{ ActorSystem, BootstrapSetup, ExtendedActorSystem }
-import org.apache.pekko.management.HealthChecksSpec.{ ctxException, failedCause }
-import org.apache.pekko.management.internal.{ CheckFailedException, CheckTimeoutException }
-import org.apache.pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup }
-import org.apache.pekko.testkit.TestKit
+import org.apache.pekko
+import pekko.actor.setup.ActorSystemSetup
+import pekko.actor.{ ActorSystem, BootstrapSetup, ExtendedActorSystem }
+import pekko.management.HealthChecksSpec.{ ctxException, failedCause }
+import pekko.management.internal.{ CheckFailedException, CheckTimeoutException }
+import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup }
+import pekko.testkit.TestKit
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers

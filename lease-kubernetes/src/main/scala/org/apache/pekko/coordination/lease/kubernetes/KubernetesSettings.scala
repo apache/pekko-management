@@ -13,10 +13,11 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.coordination.lease.TimeoutSettings
-import org.apache.pekko.util.JavaDurationConverters._
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.InternalApi
+import pekko.coordination.lease.TimeoutSettings
+import pekko.util.JavaDurationConverters._
 import com.typesafe.config.Config
 
 import scala.concurrent.duration.{ FiniteDuration, _ }

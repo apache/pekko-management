@@ -13,9 +13,10 @@
 
 package org.apache.pekko.discovery.consul
 
-import org.apache.pekko.actor.ClassicActorSystemProvider
-import org.apache.pekko.actor.{ ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider }
-import org.apache.pekko.annotation.ApiMayChange
+import org.apache.pekko
+import pekko.actor.ClassicActorSystemProvider
+import pekko.actor.{ ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider }
+import pekko.annotation.ApiMayChange
 
 @ApiMayChange
 final class ConsulSettings(system: ExtendedActorSystem) extends Extension {

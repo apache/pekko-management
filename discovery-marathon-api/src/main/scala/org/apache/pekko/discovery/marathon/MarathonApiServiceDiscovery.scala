@@ -14,10 +14,11 @@
 package org.apache.pekko.discovery.marathon
 
 import java.net.InetAddress
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.http.scaladsl._
-import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.http.scaladsl._
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.unmarshalling.Unmarshal
 
 import scala.collection.immutable.Seq
 import scala.concurrent.Future
@@ -25,10 +26,10 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 import AppList._
 import JsonFormat._
-import org.apache.pekko.annotation.ApiMayChange
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.event.Logging
+import pekko.annotation.ApiMayChange
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.event.Logging
 
 @ApiMayChange
 object MarathonApiServiceDiscovery {

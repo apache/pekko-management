@@ -14,8 +14,9 @@
 package org.apache.pekko.lease.kubernetes
 
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.coordination.lease.kubernetes.LeaseSpec
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.coordination.lease.kubernetes.LeaseSpec
 
 // For testing locally with a kubectl proxy 8080
 // the actual spec is run in kubernetes from Jenkins

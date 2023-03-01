@@ -13,17 +13,12 @@
 
 package org.apache.pekko.management.cluster
 
-import org.apache.pekko.actor.{
-  ActorSystem,
-  ClassicActorSystemProvider,
-  ExtendedActorSystem,
-  ExtensionId,
-  ExtensionIdProvider
-}
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.http.scaladsl.server.Route
-import org.apache.pekko.management.cluster.scaladsl.ClusterHttpManagementRoutes
-import org.apache.pekko.management.scaladsl.{ ManagementRouteProvider, ManagementRouteProviderSettings }
+import org.apache.pekko
+import pekko.actor.{ ActorSystem, ClassicActorSystemProvider, ExtendedActorSystem, ExtensionId, ExtensionIdProvider }
+import pekko.cluster.Cluster
+import pekko.http.scaladsl.server.Route
+import pekko.management.cluster.scaladsl.ClusterHttpManagementRoutes
+import pekko.management.scaladsl.{ ManagementRouteProvider, ManagementRouteProviderSettings }
 
 object ClusterHttpManagementRouteProvider
     extends ExtensionId[ClusterHttpManagementRouteProvider]
@@ -40,7 +35,7 @@ object ClusterHttpManagementRouteProvider
 }
 
 /**
- * Provides an HTTP management interface for [[org.apache.pekko.cluster.Cluster]].
+ * Provides an HTTP management interface for [[pekko.cluster.Cluster]].
  */
 final class ClusterHttpManagementRouteProvider(system: ExtendedActorSystem) extends ManagementRouteProvider {
 

@@ -12,14 +12,15 @@
  */
 package org.apache.pekko.cluster.bootstrap
 
-import org.apache.pekko.actor.{ Actor, ActorLogging, ActorSystem, Props }
-import org.apache.pekko.cluster.ClusterEvent.ClusterDomainEvent
-import org.apache.pekko.cluster.{ Cluster, ClusterEvent }
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.management.scaladsl.PekkoManagement
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap
-import org.apache.pekko.stream.scaladsl.Sink
-import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko
+import pekko.actor.{ Actor, ActorLogging, ActorSystem, Props }
+import pekko.cluster.ClusterEvent.ClusterDomainEvent
+import pekko.cluster.{ Cluster, ClusterEvent }
+import pekko.http.scaladsl.Http
+import pekko.management.scaladsl.PekkoManagement
+import pekko.management.cluster.bootstrap.ClusterBootstrap
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 
 object DemoApp extends App {
@@ -38,7 +39,7 @@ object DemoApp extends App {
   cluster
     .subscribe(system.actorOf(Props[ClusterWatcher]), ClusterEvent.InitialStateAsEvents, classOf[ClusterDomainEvent])
 
-  import org.apache.pekko.http.scaladsl.server.Directives._
+  import pekko.http.scaladsl.server.Directives._
   Http().bindAndHandle(complete("Hello world"), "0.0.0.0", 8080)
 
 }

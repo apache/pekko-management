@@ -15,13 +15,14 @@ package org.apache.pekko.coordination.lease.kubernetes
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.apache.pekko.actor.Status.Failure
-import org.apache.pekko.actor.{ ActorRef, ActorSystem }
-import org.apache.pekko.coordination.lease.kubernetes.LeaseActor._
-import org.apache.pekko.coordination.lease.{ LeaseException, LeaseSettings, TimeoutSettings }
-import org.apache.pekko.pattern.ask
-import org.apache.pekko.testkit.{ TestKit, TestProbe }
-import org.apache.pekko.util.{ ConstantFun, Timeout }
+import org.apache.pekko
+import pekko.actor.Status.Failure
+import pekko.actor.{ ActorRef, ActorSystem }
+import pekko.coordination.lease.kubernetes.LeaseActor._
+import pekko.coordination.lease.{ LeaseException, LeaseSettings, TimeoutSettings }
+import pekko.pattern.ask
+import pekko.testkit.{ TestKit, TestProbe }
+import pekko.util.{ ConstantFun, Timeout }
 import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
 

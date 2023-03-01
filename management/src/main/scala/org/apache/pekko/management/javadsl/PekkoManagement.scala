@@ -16,12 +16,13 @@ package org.apache.pekko.management.javadsl
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
 import scala.compat.java8.FutureConverters._
-import org.apache.pekko.Done
-import org.apache.pekko.actor.{ ActorSystem, ClassicActorSystemProvider }
-import org.apache.pekko.http.javadsl.model.Uri
-import org.apache.pekko.http.javadsl.server.directives.RouteAdapter
-import org.apache.pekko.management.PekkoManagementSettings
-import org.apache.pekko.management.scaladsl
+import org.apache.pekko
+import pekko.Done
+import pekko.actor.{ ActorSystem, ClassicActorSystemProvider }
+import pekko.http.javadsl.model.Uri
+import pekko.http.javadsl.server.directives.RouteAdapter
+import pekko.management.PekkoManagementSettings
+import pekko.management.scaladsl
 
 object PekkoManagement {
   def get(system: ActorSystem): PekkoManagement =
@@ -41,7 +42,7 @@ final class PekkoManagement(delegate: scaladsl.PekkoManagement) {
    * This method can be used to embed the Pekko management routes in an existing Pekko HTTP server.
    * @throws java.lang.IllegalArgumentException if routes not configured for pekko management
    */
-  def getRoutes: org.apache.pekko.http.javadsl.server.Route =
+  def getRoutes: pekko.http.javadsl.server.Route =
     RouteAdapter(delegate.routes)
 
   /**
@@ -53,7 +54,7 @@ final class PekkoManagement(delegate: scaladsl.PekkoManagement) {
    * @throws java.lang.IllegalArgumentException if routes not configured for pekko management
    */
   def getRoutes(transformSettings: JFunction[ManagementRouteProviderSettings, ManagementRouteProviderSettings])
-      : org.apache.pekko.http.javadsl.server.Route =
+      : pekko.http.javadsl.server.Route =
     RouteAdapter(delegate.routes(convertSettingsTransformation(transformSettings)))
 
   private def convertSettingsTransformation(

@@ -18,30 +18,28 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeoutException
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import org.apache.pekko.actor.Actor
-import org.apache.pekko.actor.ActorLogging
-import org.apache.pekko.actor.DeadLetterSuppression
-import org.apache.pekko.actor.Props
-import org.apache.pekko.actor.Status
-import org.apache.pekko.actor.Timers
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model.HttpResponse
-import org.apache.pekko.http.scaladsl.model.StatusCodes
-import org.apache.pekko.http.scaladsl.model.Uri
-import org.apache.pekko.http.scaladsl.model.Uri.Host
-import org.apache.pekko.http.scaladsl.settings.ConnectionPoolSettings
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrapSettings
-import org.apache.pekko.management.cluster.bootstrap.contactpoint.HttpBootstrapJsonProtocol.SeedNodes
-import org.apache.pekko.management.cluster.bootstrap.contactpoint.{
-  ClusterBootstrapRequests,
-  HttpBootstrapJsonProtocol
-}
-import org.apache.pekko.pattern.after
-import org.apache.pekko.pattern.pipe
+import org.apache.pekko
+import pekko.actor.Actor
+import pekko.actor.ActorLogging
+import pekko.actor.DeadLetterSuppression
+import pekko.actor.Props
+import pekko.actor.Status
+import pekko.actor.Timers
+import pekko.annotation.InternalApi
+import pekko.cluster.Cluster
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model.HttpResponse
+import pekko.http.scaladsl.model.StatusCodes
+import pekko.http.scaladsl.model.Uri
+import pekko.http.scaladsl.model.Uri.Host
+import pekko.http.scaladsl.settings.ConnectionPoolSettings
+import pekko.http.scaladsl.unmarshalling.Unmarshal
+import pekko.management.cluster.bootstrap.ClusterBootstrapSettings
+import pekko.management.cluster.bootstrap.contactpoint.HttpBootstrapJsonProtocol.SeedNodes
+import pekko.management.cluster.bootstrap.contactpoint.{ ClusterBootstrapRequests, HttpBootstrapJsonProtocol }
+import pekko.pattern.after
+import pekko.pattern.pipe
 
 @InternalApi
 private[bootstrap] object HttpContactPointBootstrap {

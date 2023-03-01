@@ -14,13 +14,14 @@
 package org.apache.pekko.management
 
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.cluster.{ Cluster, MemberStatus }
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model.{ HttpRequest, StatusCode, StatusCodes }
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap
-import org.apache.pekko.management.scaladsl.PekkoManagement
-import org.apache.pekko.testkit.{ SocketUtil, TestKit }
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.cluster.{ Cluster, MemberStatus }
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model.{ HttpRequest, StatusCode, StatusCodes }
+import pekko.management.cluster.bootstrap.ClusterBootstrap
+import pekko.management.scaladsl.PekkoManagement
+import pekko.testkit.{ SocketUtil, TestKit }
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.matchers.should.Matchers

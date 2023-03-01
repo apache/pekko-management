@@ -21,17 +21,18 @@ import scala.compat.java8.FutureConverters.toScala
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.ApiMayChange
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.awsapi.ecs.AsyncEcsTaskSetDiscovery.resolveTasks
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import org.apache.pekko.http.scaladsl.{ Http, HttpExt }
-import org.apache.pekko.pattern.after
-import org.apache.pekko.stream.Materializer
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.ApiMayChange
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.awsapi.ecs.AsyncEcsTaskSetDiscovery.resolveTasks
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.unmarshalling.Unmarshal
+import pekko.http.scaladsl.{ Http, HttpExt }
+import pekko.pattern.after
+import pekko.stream.Materializer
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.core.retry.RetryPolicy
 import software.amazon.awssdk.services.ecs._

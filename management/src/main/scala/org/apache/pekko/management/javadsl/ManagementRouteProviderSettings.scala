@@ -17,13 +17,14 @@ import java.util.Optional
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
 
-import org.apache.pekko.annotation.DoNotInherit
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.http.javadsl.HttpsConnectionContext
-import org.apache.pekko.http.javadsl.model.Uri
-import org.apache.pekko.http.javadsl.server.directives.SecurityDirectives.ProvidedCredentials
-import org.apache.pekko.management.scaladsl
-import org.apache.pekko.http.scaladsl.server.Directives.AsyncAuthenticator
+import org.apache.pekko
+import pekko.annotation.DoNotInherit
+import pekko.annotation.InternalApi
+import pekko.http.javadsl.HttpsConnectionContext
+import pekko.http.javadsl.model.Uri
+import pekko.http.javadsl.server.directives.SecurityDirectives.ProvidedCredentials
+import pekko.management.scaladsl
+import pekko.http.scaladsl.server.Directives.AsyncAuthenticator
 
 object ManagementRouteProviderSettings {
   def create(selfBaseUri: Uri): ManagementRouteProviderSettings = {
@@ -91,10 +92,10 @@ sealed abstract class ManagementRouteProviderSettings {
       selfBaseUri = selfBaseUri.scheme("https"),
       httpsConnectionContext = Optional.ofNullable(newHttpsConnectionContext))
 
-  def scaladslHttpsConnectionContext: Option[org.apache.pekko.http.scaladsl.HttpsConnectionContext] = {
+  def scaladslHttpsConnectionContext: Option[pekko.http.scaladsl.HttpsConnectionContext] = {
     if (httpsConnectionContext.isPresent) {
       httpsConnectionContext.get match {
-        case ctx: org.apache.pekko.http.scaladsl.HttpsConnectionContext => Option(ctx)
+        case ctx: pekko.http.scaladsl.HttpsConnectionContext => Option(ctx)
         case other =>
           throw new IllegalStateException(
             "org.apache.pekko.http.javadsl.HttpsConnectionContext should be a " +

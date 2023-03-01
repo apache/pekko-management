@@ -21,12 +21,13 @@ import scala.compat.java8.FutureConverters.toScala
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.ApiMayChange
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.awsapi.ecs.AsyncEcsServiceDiscovery.{ resolveTasks, Tag }
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.pattern.after
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.ApiMayChange
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.awsapi.ecs.AsyncEcsServiceDiscovery.{ resolveTasks, Tag }
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.pattern.after
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.core.retry.RetryPolicy
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient

@@ -14,14 +14,15 @@
 package org.apache.pekko.management.cluster.bootstrap.contactpoint
 
 import com.typesafe.config.{ Config, ConfigFactory }
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.cluster.ClusterEvent.{ CurrentClusterState, MemberUp }
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.{ Lookup, MockDiscovery }
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap
-import org.apache.pekko.testkit.{ SocketUtil, TestKit, TestProbe }
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.cluster.Cluster
+import pekko.cluster.ClusterEvent.{ CurrentClusterState, MemberUp }
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.{ Lookup, MockDiscovery }
+import pekko.http.scaladsl.Http
+import pekko.management.cluster.bootstrap.ClusterBootstrap
+import pekko.testkit.{ SocketUtil, TestKit, TestProbe }
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 

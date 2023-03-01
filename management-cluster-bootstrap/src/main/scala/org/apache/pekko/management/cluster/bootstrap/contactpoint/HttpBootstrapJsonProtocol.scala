@@ -13,8 +13,9 @@
 
 package org.apache.pekko.management.cluster.bootstrap.contactpoint
 
-import org.apache.pekko.actor.{ Address, AddressFromURIString }
-import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import org.apache.pekko
+import pekko.actor.{ Address, AddressFromURIString }
+import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json.{ DefaultJsonProtocol, JsString, JsValue, RootJsonFormat }
 
 trait HttpBootstrapJsonProtocol extends SprayJsonSupport with DefaultJsonProtocol {

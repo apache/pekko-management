@@ -13,14 +13,15 @@
 
 package org.apache.pekko.management.cluster.bootstrap.contactpoint
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.cluster.MemberStatus
-import org.apache.pekko.discovery.{ Lookup, MockDiscovery }
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.testkit.SocketUtil
-import org.apache.pekko.testkit.TestKit
-import org.apache.pekko.testkit.TestProbe
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.cluster.Cluster
+import pekko.cluster.MemberStatus
+import pekko.discovery.{ Lookup, MockDiscovery }
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.testkit.SocketUtil
+import pekko.testkit.TestKit
+import pekko.testkit.TestProbe
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures

@@ -13,16 +13,16 @@
 
 package org.apache.pekko.cluster.bootstrap
 
-import org.apache.pekko.actor.{ Actor, ActorLogging, ActorSystem, Props }
-import org.apache.pekko.cluster.ClusterEvent.ClusterDomainEvent
-import org.apache.pekko.cluster.{ Cluster, ClusterEvent }
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.server.Directives._
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap
-import org.apache.pekko.management.scaladsl.PekkoManagement
+import org.apache.pekko
+import pekko.actor.{ Actor, ActorLogging, ActorSystem, Props }
+import pekko.cluster.ClusterEvent.ClusterDomainEvent
+import pekko.cluster.{ Cluster, ClusterEvent }
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.server.Directives._
+import pekko.management.cluster.bootstrap.ClusterBootstrap
 //#start-akka-management
-
+import org.apache.pekko.management.scaladsl.PekkoManagement
 //#start-akka-management
 
 object DemoApp extends App {

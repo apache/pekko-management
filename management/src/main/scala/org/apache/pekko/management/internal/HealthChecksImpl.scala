@@ -17,18 +17,14 @@ import java.util.concurrent.CompletionStage
 import java.util.function.Supplier
 import java.util.{ List => JList }
 import java.lang.{ Boolean => JBoolean }
-import org.apache.pekko.actor.{ ActorSystem, ExtendedActorSystem }
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.event.Logging
-import org.apache.pekko.management.{
-  HealthCheckSettings,
-  InvalidHealthCheckException,
-  ManagementLogMarker,
-  NamedHealthCheck
-}
-import org.apache.pekko.management.javadsl.{ LivenessCheckSetup => JLivenessCheckSetup }
-import org.apache.pekko.management.javadsl.{ ReadinessCheckSetup => JReadinessCheckSetup }
-import org.apache.pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup }
+import org.apache.pekko
+import pekko.actor.{ ActorSystem, ExtendedActorSystem }
+import pekko.annotation.InternalApi
+import pekko.event.Logging
+import pekko.management.{ HealthCheckSettings, InvalidHealthCheckException, ManagementLogMarker, NamedHealthCheck }
+import pekko.management.javadsl.{ LivenessCheckSetup => JLivenessCheckSetup }
+import pekko.management.javadsl.{ ReadinessCheckSetup => JReadinessCheckSetup }
+import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup }
 
 import scala.collection.immutable
 import scala.collection.JavaConverters._
@@ -181,7 +177,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
   }
 
   private def check(checks: immutable.Seq[HealthCheck]): Future[Either[String, Unit]] = {
-    val timeout = org.apache.pekko.pattern.after(settings.checkTimeout, system.scheduler)(
+    val timeout = pekko.pattern.after(settings.checkTimeout, system.scheduler)(
       Future.failed(new RuntimeException) // will be enriched with which check timed out below
     )
 

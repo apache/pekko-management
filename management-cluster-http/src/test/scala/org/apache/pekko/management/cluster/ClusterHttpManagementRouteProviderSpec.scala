@@ -13,11 +13,12 @@
 
 package org.apache.pekko.management.cluster
 
-import org.apache.pekko.actor.ExtendedActorSystem
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.http.scaladsl.model.{ StatusCodes, Uri }
-import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
-import org.apache.pekko.management.scaladsl.ManagementRouteProviderSettings
+import org.apache.pekko
+import pekko.actor.ExtendedActorSystem
+import pekko.cluster.Cluster
+import pekko.http.scaladsl.model.{ StatusCodes, Uri }
+import pekko.http.scaladsl.testkit.ScalatestRouteTest
+import pekko.management.scaladsl.ManagementRouteProviderSettings
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

@@ -6,11 +6,12 @@ import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.coordination.lease.TimeoutSettings
-import org.apache.pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
-import org.apache.pekko.coordination.lease.scaladsl.LeaseProvider
-import org.apache.pekko.testkit.TestKit
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.coordination.lease.TimeoutSettings
+import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
+import pekko.coordination.lease.scaladsl.LeaseProvider
+import pekko.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.wordspec.AnyWordSpecLike

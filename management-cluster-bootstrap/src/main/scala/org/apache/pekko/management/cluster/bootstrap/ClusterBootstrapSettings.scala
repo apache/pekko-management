@@ -17,15 +17,16 @@ import java.util.Locale
 import java.util.Optional
 import java.util.concurrent.TimeUnit
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.event.LoggingAdapter
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.event.LoggingAdapter
 import com.typesafe.config.Config
 import scala.concurrent.duration.{ FiniteDuration, _ }
 import scala.compat.java8.OptionConverters._
-import org.apache.pekko.util.JavaDurationConverters._
+import pekko.util.JavaDurationConverters._
 
 final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
-  import org.apache.pekko.management.PekkoManagementSettings._
+  import pekko.management.PekkoManagementSettings._
 
   val managementBasePath: Option[String] =
     Option(config.getString("pekko.management.http.base-path")).filter(_.trim.nonEmpty)
