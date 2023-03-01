@@ -4,20 +4,17 @@ import de.heikoseeberger.sbtheader.HeaderPlugin
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport._
 import sbt.Keys._
 import sbt._
-import xerial.sbt.Sonatype.autoImport.sonatypeProfileName
+import org.mdedetrich.apache.sonatype.SonatypeApachePlugin
 
 object Common extends AutoPlugin {
 
   override def trigger = allRequirements
-  override def requires = plugins.JvmPlugin && HeaderPlugin && CiReleasePlugin
+  override def requires = plugins.JvmPlugin && HeaderPlugin && CiReleasePlugin && SonatypeApachePlugin
 
   val currentYear = "2023"
 
   override lazy val projectSettings: Seq[sbt.Def.Setting[_]] =
     Seq(
-      organization := "org.apache.pekko",
-      organizationName := "Apache Software Foundation",
-      organizationHomepage := Some(url("https://www.apache.org/")),
       startYear := Some(2022),
       homepage := Some(url("https://pekko.apache.org/")),
       scmInfo := Some(
@@ -28,7 +25,6 @@ object Common extends AutoPlugin {
         "Contributors",
         "dev@pekko.apache.org",
         url("https://github.com/apache/incubator-pekko-management/graphs/contributors")),
-      licenses := Seq(("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))),
       description := "Apache Pekko Management is a suite of tools for operating Apache Pekko Clusters.",
       headerLicense := Some(HeaderLicense.Custom(apacheHeader)),
       crossScalaVersions := Dependencies.crossScalaVersions,
@@ -76,8 +72,7 @@ object Common extends AutoPlugin {
       // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
       // -a Show stack traces and exception class name for AssertionErrors.
       testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
-      scalaVersion := Dependencies.scala212Version,
-      sonatypeProfileName := "com.lightbend")
+      scalaVersion := Dependencies.scala212Version)
 
   private def isJdk8 =
     VersionNumber(sys.props("java.specification.version")).matchesSemVer(SemanticSelector(s"=1.8"))
