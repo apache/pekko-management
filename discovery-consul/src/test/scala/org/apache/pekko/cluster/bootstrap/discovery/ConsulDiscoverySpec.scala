@@ -18,10 +18,11 @@ import com.orbitz.consul.Consul
 import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration
 import com.orbitz.consul.model.health.ImmutableService
 import com.pszymczyk.consul.{ ConsulProcess, ConsulStarterBuilder }
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
-import org.apache.pekko.discovery.consul.ConsulServiceDiscovery
-import org.apache.pekko.testkit.TestKitBase
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
+import pekko.discovery.consul.ConsulServiceDiscovery
+import pekko.testkit.TestKitBase
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers

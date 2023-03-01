@@ -14,12 +14,13 @@
 package org.apache.pekko.management.scaladsl
 import scala.collection.immutable
 import scala.concurrent.Future
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.actor.ExtendedActorSystem
-import org.apache.pekko.actor.setup.Setup
-import org.apache.pekko.annotation.DoNotInherit
-import org.apache.pekko.management.HealthCheckSettings
-import org.apache.pekko.management.internal.HealthChecksImpl
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.actor.ExtendedActorSystem
+import pekko.actor.setup.Setup
+import pekko.annotation.DoNotInherit
+import pekko.management.HealthCheckSettings
+import pekko.management.internal.HealthChecksImpl
 
 /**
  * Loads health checks from configuration and ActorSystem Setup

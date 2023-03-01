@@ -13,10 +13,11 @@
 
 package org.apache.pekko.management.cluster
 
-import org.apache.pekko.actor.Address
-import org.apache.pekko.cluster.{ ClusterEvent, Member, MemberStatus, UniqueAddress }
-import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import org.apache.pekko.http.scaladsl.model.sse.ServerSentEvent
+import org.apache.pekko
+import pekko.actor.Address
+import pekko.cluster.{ ClusterEvent, Member, MemberStatus, UniqueAddress }
+import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import pekko.http.scaladsl.model.sse.ServerSentEvent
 import spray.json.{ DefaultJsonProtocol, JsArray, JsNumber, JsObject, JsString, JsValue }
 
 /**

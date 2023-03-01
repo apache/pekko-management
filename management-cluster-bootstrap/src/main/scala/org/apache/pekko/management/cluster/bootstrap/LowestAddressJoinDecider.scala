@@ -16,10 +16,11 @@ package org.apache.pekko.management.cluster.bootstrap
 import java.time.Duration
 
 import scala.concurrent.Future
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.actor.Address
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
-import org.apache.pekko.util.unused
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.actor.Address
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
+import pekko.util.unused
 
 /**
  * The decision of joining "self" is made by deterministically sorting the discovered services

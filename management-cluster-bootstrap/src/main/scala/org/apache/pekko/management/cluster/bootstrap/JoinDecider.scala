@@ -17,8 +17,9 @@ import java.time.LocalDateTime
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
-import org.apache.pekko.actor.Address
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
+import org.apache.pekko
+import pekko.actor.Address
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
 
 /**
  * The decisions of joining existing seed-nodes or join self to form new

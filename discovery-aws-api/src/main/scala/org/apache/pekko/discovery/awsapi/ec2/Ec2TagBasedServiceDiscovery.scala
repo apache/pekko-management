@@ -18,13 +18,14 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.ec2.model.{ DescribeInstancesRequest, Filter, Reservation }
 import com.amazonaws.services.ec2.{ AmazonEC2, AmazonEC2ClientBuilder }
-import org.apache.pekko.actor.ExtendedActorSystem
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.awsapi.ec2.Ec2TagBasedServiceDiscovery.parseFiltersString
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.event.Logging
-import org.apache.pekko.pattern.after
+import org.apache.pekko
+import pekko.actor.ExtendedActorSystem
+import pekko.annotation.InternalApi
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.awsapi.ec2.Ec2TagBasedServiceDiscovery.parseFiltersString
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.event.Logging
+import pekko.pattern.after
 
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException

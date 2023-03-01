@@ -13,10 +13,11 @@
 
 package org.apache.pekko.management.cluster.bootstrap
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
-import org.apache.pekko.event.Logging
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.InternalApi
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
+import pekko.event.Logging
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -24,7 +25,7 @@ import scala.concurrent.duration._
 /**
  * INTERNAL API
  *
- * Class for further behavior in a [[org.apache.pekko.management.cluster.bootstrap.JoinDecider]]
+ * Class for further behavior in a [[pekko.management.cluster.bootstrap.JoinDecider]]
  * leveraging self host logic.
  */
 @InternalApi private[bootstrap] abstract class SelfAwareJoinDecider(
@@ -42,7 +43,7 @@ import scala.concurrent.duration._
 
   /**
    * The value `ClusterBootstrap(system).selfContactPoints` is set prior
-   * to HTTP binding, during [[org.apache.pekko.management.scaladsl.PekkoManagement.start()]], hence we
+   * to HTTP binding, during [[pekko.management.scaladsl.PekkoManagement.start()]], hence we
    * accept blocking on this initialization. If no value is received, the future will fail with
    * a `TimeoutException` and ClusterBootstrap will log an explanatory error to the user.
    */

@@ -13,8 +13,9 @@
 
 package org.apache.pekko.cluster.bootstrap
 
-import org.apache.pekko.actor.Actor
-import org.apache.pekko.actor.ActorLogging
+import org.apache.pekko
+import pekko.actor.Actor
+import pekko.actor.ActorLogging
 
 class NoisySingleton extends Actor with ActorLogging {
 

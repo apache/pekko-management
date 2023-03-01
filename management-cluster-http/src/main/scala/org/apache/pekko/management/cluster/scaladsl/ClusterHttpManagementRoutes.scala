@@ -13,13 +13,14 @@
 
 package org.apache.pekko.management.cluster.scaladsl
 
-import org.apache.pekko.actor.AddressFromURIString
-import org.apache.pekko.cluster.sharding.{ ClusterSharding, ShardRegion }
-import org.apache.pekko.cluster.{ Cluster, Member, MemberStatus }
-import org.apache.pekko.http.scaladsl.model.{ HttpMethod, HttpMethods, StatusCodes, Uri }
+import org.apache.pekko
+import pekko.actor.AddressFromURIString
+import pekko.cluster.sharding.{ ClusterSharding, ShardRegion }
+import pekko.cluster.{ Cluster, Member, MemberStatus }
+import pekko.http.scaladsl.model.{ HttpMethod, HttpMethods, StatusCodes, Uri }
 import Uri.Path
-import org.apache.pekko.http.scaladsl.server.Route
-import org.apache.pekko.management.cluster.{
+import pekko.http.scaladsl.server.Route
+import pekko.management.cluster.{
   ClusterDomainEventServerSentEventEncoder,
   ClusterHttpManagementJsonProtocol,
   ClusterHttpManagementMemberOperation,
@@ -32,17 +33,17 @@ import org.apache.pekko.management.cluster.{
   ShardEntityTypeKeys,
   ShardRegionInfo
 }
-import org.apache.pekko.management.cluster.cluster.ClusterReadViewAccess
-import org.apache.pekko.pattern.ask
-import org.apache.pekko.pattern.AskTimeoutException
-import org.apache.pekko.util.Timeout
+import pekko.management.cluster.cluster.ClusterReadViewAccess
+import pekko.pattern.ask
+import pekko.pattern.AskTimeoutException
+import pekko.util.Timeout
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 
 object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
-  import org.apache.pekko.management.cluster.ClusterHttpManagementHelper._
-  import org.apache.pekko.http.scaladsl.server.Directives._
+  import pekko.management.cluster.ClusterHttpManagementHelper._
+  import pekko.http.scaladsl.server.Directives._
 
   private def routeGetMembers(cluster: Cluster): Route =
     get {
@@ -135,12 +136,12 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
   }
 
   private def routeGetClusterDomainEvents(cluster: Cluster) = {
-    import org.apache.pekko.actor.ActorRef
-    import org.apache.pekko.cluster.ClusterEvent
-    import org.apache.pekko.http.scaladsl.marshalling.sse.EventStreamMarshalling._
-    import org.apache.pekko.http.scaladsl.model.sse.ServerSentEvent
-    import org.apache.pekko.stream.{ Materializer, OverflowStrategy }
-    import org.apache.pekko.stream.scaladsl.Source
+    import pekko.actor.ActorRef
+    import pekko.cluster.ClusterEvent
+    import pekko.http.scaladsl.marshalling.sse.EventStreamMarshalling._
+    import pekko.http.scaladsl.model.sse.ServerSentEvent
+    import pekko.stream.{ Materializer, OverflowStrategy }
+    import pekko.stream.scaladsl.Source
     import scala.concurrent.{ ExecutionContext, Promise }
 
     val eventClasses: Map[String, Class[_]] = Map(
@@ -268,7 +269,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
 
   /**
    * Creates an instance of [[ClusterHttpManagementRoutes]] to manage the specified
-   * [[org.apache.pekko.cluster.Cluster]] instance. This version does not provide Basic Authentication.
+   * [[pekko.cluster.Cluster]] instance. This version does not provide Basic Authentication.
    */
   def apply(cluster: Cluster): Route =
     pathPrefix("cluster") {

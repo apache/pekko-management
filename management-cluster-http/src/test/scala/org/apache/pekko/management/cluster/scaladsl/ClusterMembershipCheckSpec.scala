@@ -13,9 +13,10 @@
 
 package org.apache.pekko.management.cluster.scaladsl
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.cluster.MemberStatus
-import org.apache.pekko.testkit.TestKit
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.cluster.MemberStatus
+import pekko.testkit.TestKit
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers

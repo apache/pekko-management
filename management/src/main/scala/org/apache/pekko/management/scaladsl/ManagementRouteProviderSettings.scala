@@ -17,13 +17,14 @@ import java.util.Optional
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
 
-import org.apache.pekko.annotation.DoNotInherit
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.management.javadsl
-import org.apache.pekko.http.javadsl.server.directives.SecurityDirectives.ProvidedCredentials
-import org.apache.pekko.http.scaladsl.HttpsConnectionContext
-import org.apache.pekko.http.scaladsl.model.Uri
-import org.apache.pekko.http.scaladsl.server.Directives.AsyncAuthenticator
+import org.apache.pekko
+import pekko.annotation.DoNotInherit
+import pekko.annotation.InternalApi
+import pekko.management.javadsl
+import pekko.http.javadsl.server.directives.SecurityDirectives.ProvidedCredentials
+import pekko.http.scaladsl.HttpsConnectionContext
+import pekko.http.scaladsl.model.Uri
+import pekko.http.scaladsl.server.Directives.AsyncAuthenticator
 
 object ManagementRouteProviderSettings {
   def apply(selfBaseUri: Uri, readOnly: Boolean): ManagementRouteProviderSettings = {
@@ -85,7 +86,7 @@ object ManagementRouteProviderSettings {
       newHttpsConnectionContext: HttpsConnectionContext): ManagementRouteProviderSettings =
     copy(selfBaseUri = selfBaseUri.withScheme("https"), httpsConnectionContext = Option(newHttpsConnectionContext))
 
-  def javadslHttpsConnectionContext: Optional[org.apache.pekko.http.javadsl.HttpsConnectionContext] =
+  def javadslHttpsConnectionContext: Optional[pekko.http.javadsl.HttpsConnectionContext] =
     httpsConnectionContext match {
       case None      => Optional.empty()
       case Some(ctx) => Optional.of(ctx) // a scaladsl.HttpsConnectionContext is a javadsl.HttpsConnectionContext
@@ -95,7 +96,7 @@ object ManagementRouteProviderSettings {
 
   def asJava: javadsl.ManagementRouteProviderSettingsImpl =
     javadsl.ManagementRouteProviderSettingsImpl(
-      selfBaseUri = org.apache.pekko.http.javadsl.model.Uri.create(selfBaseUri),
+      selfBaseUri = pekko.http.javadsl.model.Uri.create(selfBaseUri),
       javadslAuth,
       scaladslAuth,
       javadslHttpsConnectionContext,

@@ -24,20 +24,21 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 import scala.util.control.NoStackTrace
 import scala.util.control.NonFatal
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.kubernetes.JsonFormat._
-import org.apache.pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.{ targets, KubernetesApiException }
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.event.Logging
-import org.apache.pekko.http.scaladsl.HttpsConnectionContext
-import org.apache.pekko.http.scaladsl._
-import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.model.headers.Authorization
-import org.apache.pekko.http.scaladsl.model.headers.OAuth2BearerToken
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import org.apache.pekko.pki.kubernetes.PemManagersProvider
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.InternalApi
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.kubernetes.JsonFormat._
+import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.{ targets, KubernetesApiException }
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.event.Logging
+import pekko.http.scaladsl.HttpsConnectionContext
+import pekko.http.scaladsl._
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.model.headers.Authorization
+import pekko.http.scaladsl.model.headers.OAuth2BearerToken
+import pekko.http.scaladsl.unmarshalling.Unmarshal
+import pekko.pki.kubernetes.PemManagersProvider
 
 import javax.net.ssl.KeyManager
 import javax.net.ssl.KeyManagerFactory

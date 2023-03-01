@@ -16,24 +16,25 @@ package org.apache.pekko.management.cluster.bootstrap.internal
 import java.time.LocalDateTime
 import java.util.concurrent.ThreadLocalRandom
 import scala.collection.immutable
-import org.apache.pekko.actor.Actor
-import org.apache.pekko.actor.ActorRef
-import org.apache.pekko.actor.Address
-import org.apache.pekko.actor.DeadLetterSuppression
-import org.apache.pekko.actor.Props
-import org.apache.pekko.actor.Status.Failure
-import org.apache.pekko.actor.Timers
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
-import org.apache.pekko.http.scaladsl.model.Uri
-import org.apache.pekko.pattern.pipe
+import org.apache.pekko
+import pekko.actor.Actor
+import pekko.actor.ActorRef
+import pekko.actor.Address
+import pekko.actor.DeadLetterSuppression
+import pekko.actor.Props
+import pekko.actor.Status.Failure
+import pekko.actor.Timers
+import pekko.annotation.InternalApi
+import pekko.cluster.Cluster
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
+import pekko.http.scaladsl.model.Uri
+import pekko.pattern.pipe
 
 import scala.concurrent.duration._
 import scala.util.Try
-import org.apache.pekko.event.Logging
-import org.apache.pekko.management.cluster.bootstrap.{
+import pekko.event.Logging
+import pekko.management.cluster.bootstrap.{
   BootstrapLogMarker,
   ClusterBootstrapSettings,
   JoinDecider,

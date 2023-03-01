@@ -13,8 +13,9 @@
 
 package org.apache.pekko.management.cluster.bootstrap.internal
 
-import org.apache.pekko.actor.ActorPath
-import org.apache.pekko.http.scaladsl.model.Uri.Host
+import org.apache.pekko
+import pekko.actor.ActorPath
+import pekko.http.scaladsl.model.Uri.Host
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

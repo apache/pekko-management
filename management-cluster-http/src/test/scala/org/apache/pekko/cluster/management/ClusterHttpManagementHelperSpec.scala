@@ -15,11 +15,12 @@ package org.apache.pekko.cluster.management
 
 // Accesses private[cluster] so has to be in this package
 
-import org.apache.pekko.actor.Address
-import org.apache.pekko.cluster.MemberStatus._
-import org.apache.pekko.cluster.{ Member, UniqueAddress }
-import org.apache.pekko.management.cluster.ClusterHttpManagementHelper
-import org.apache.pekko.util.Version
+import org.apache.pekko
+import pekko.actor.Address
+import pekko.cluster.MemberStatus._
+import pekko.cluster.{ Member, UniqueAddress }
+import pekko.management.cluster.ClusterHttpManagementHelper
+import pekko.util.Version
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

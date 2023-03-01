@@ -13,11 +13,12 @@
 
 package doc.org.apache.pekko.cluster.http.management
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.http.scaladsl.server.Route
-import org.apache.pekko.management.cluster.scaladsl.ClusterHttpManagementRoutes
-import org.apache.pekko.management.scaladsl.PekkoManagement
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.cluster.Cluster
+import pekko.http.scaladsl.server.Route
+import pekko.management.cluster.scaladsl.ClusterHttpManagementRoutes
+import pekko.management.scaladsl.PekkoManagement
 
 object CompileOnlySpec {
 

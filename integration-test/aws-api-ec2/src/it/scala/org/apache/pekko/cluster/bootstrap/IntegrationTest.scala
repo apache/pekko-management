@@ -16,12 +16,13 @@ import com.amazonaws.services.cloudformation.AmazonCloudFormationClientBuilder
 import com.amazonaws.services.cloudformation.model._
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder
 import com.amazonaws.services.ec2.model.{ DescribeInstancesRequest, Filter, Reservation }
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.event.Logging
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model.HttpRequest
-import org.apache.pekko.management.cluster.{ ClusterHttpManagementJsonProtocol, ClusterMembers }
-import org.apache.pekko.util.ByteString
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.event.Logging
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model.HttpRequest
+import pekko.management.cluster.{ ClusterHttpManagementJsonProtocol, ClusterMembers }
+import pekko.util.ByteString
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.PatienceConfiguration.{ Interval, Timeout }
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }

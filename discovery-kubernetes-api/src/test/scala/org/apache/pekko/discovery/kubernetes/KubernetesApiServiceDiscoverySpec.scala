@@ -15,9 +15,10 @@ package org.apache.pekko.discovery.kubernetes
 
 import java.net.InetAddress
 import PodList._
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.discovery.Discovery
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.discovery.Discovery
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

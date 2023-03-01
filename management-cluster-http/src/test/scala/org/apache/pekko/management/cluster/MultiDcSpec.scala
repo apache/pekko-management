@@ -13,13 +13,14 @@
 
 package org.apache.pekko.management.cluster
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model.{ HttpRequest, StatusCodes }
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import org.apache.pekko.testkit.SocketUtil
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model.{ HttpRequest, StatusCodes }
+import pekko.http.scaladsl.unmarshalling.Unmarshal
+import pekko.testkit.SocketUtil
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.management.scaladsl.ManagementRouteProviderSettings
+import pekko.management.scaladsl.ManagementRouteProviderSettings
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.matchers.should.Matchers

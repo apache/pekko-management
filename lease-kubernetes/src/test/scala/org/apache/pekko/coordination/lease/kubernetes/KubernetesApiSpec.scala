@@ -14,11 +14,12 @@
 package org.apache.pekko.coordination.lease.kubernetes
 
 import scala.concurrent.duration._
-import org.apache.pekko.Done
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
-import org.apache.pekko.http.scaladsl.model.StatusCodes
-import org.apache.pekko.testkit.TestKit
+import org.apache.pekko
+import pekko.Done
+import pekko.actor.ActorSystem
+import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
+import pekko.http.scaladsl.model.StatusCodes
+import pekko.testkit.TestKit
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._

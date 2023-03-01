@@ -14,11 +14,12 @@
 package org.apache.pekko.cluster.bootstrap
 
 import java.net.InetAddress
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.discovery.awsapi.ecs.AsyncEcsDiscovery
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.discovery.awsapi.ecs.AsyncEcsDiscovery
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap
-import org.apache.pekko.management.scaladsl.PekkoManagement
+import pekko.management.cluster.bootstrap.ClusterBootstrap
+import pekko.management.scaladsl.PekkoManagement
 
 object EcsApiDemoApp {
 

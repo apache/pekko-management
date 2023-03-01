@@ -13,10 +13,11 @@
 
 package org.apache.pekko.management.scaladsl
 
-import org.apache.pekko.actor.Extension
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.http.scaladsl.server.Route
-import org.apache.pekko.management.javadsl
+import org.apache.pekko
+import pekko.actor.Extension
+import pekko.annotation.InternalApi
+import pekko.http.scaladsl.server.Route
+import pekko.management.javadsl
 
 /** Extend this trait in your extension in order to allow it to contribute routes to Pekko Management starts its HTTP endpoint */
 trait ManagementRouteProvider extends Extension {

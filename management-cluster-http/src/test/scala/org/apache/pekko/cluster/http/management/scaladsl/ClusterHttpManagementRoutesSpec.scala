@@ -16,22 +16,23 @@ package org.apache.pekko.cluster.http.management.scaladsl
 // TODO has to be in pekko.cluster because it touches Reachability which is private[pekko.cluster]
 
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.actor.{ Actor, ActorSystem, Address, ExtendedActorSystem, Props }
-import org.apache.pekko.cluster.ClusterEvent.CurrentClusterState
-import org.apache.pekko.cluster.InternalClusterAction.LeaderActionsTick
-import org.apache.pekko.cluster.MemberStatus.{ Joining, Up }
-import org.apache.pekko.cluster._
-import org.apache.pekko.cluster.http.management.scaladsl.ClusterHttpManagementRoutesSpec.TestShardedActor
-import org.apache.pekko.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import org.apache.pekko.management.cluster.scaladsl.ClusterHttpManagementRoutes
-import org.apache.pekko.management.cluster._
-import org.apache.pekko.management.scaladsl.ManagementRouteProviderSettings
-import org.apache.pekko.stream.scaladsl.Sink
-import org.apache.pekko.util.{ ByteString, Timeout, Version }
+import org.apache.pekko
+import pekko.actor.{ Actor, ActorSystem, Address, ExtendedActorSystem, Props }
+import pekko.cluster.ClusterEvent.CurrentClusterState
+import pekko.cluster.InternalClusterAction.LeaderActionsTick
+import pekko.cluster.MemberStatus.{ Joining, Up }
+import pekko.cluster._
+import pekko.cluster.http.management.scaladsl.ClusterHttpManagementRoutesSpec.TestShardedActor
+import pekko.cluster.sharding.{ ClusterSharding, ClusterShardingSettings, ShardRegion }
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.testkit.ScalatestRouteTest
+import pekko.http.scaladsl.unmarshalling.Unmarshal
+import pekko.management.cluster.scaladsl.ClusterHttpManagementRoutes
+import pekko.management.cluster._
+import pekko.management.scaladsl.ManagementRouteProviderSettings
+import pekko.stream.scaladsl.Sink
+import pekko.util.{ ByteString, Timeout, Version }
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.PatienceConfiguration.{ Timeout => ScalatestTimeout }
@@ -333,7 +334,7 @@ class ClusterHttpManagementRoutesSpec
 
     "return shard type names" when {
       "calling GET /cluster/shards" in {
-        import org.apache.pekko.pattern.ask
+        import pekko.pattern.ask
 
         import scala.concurrent.duration._
 
@@ -395,7 +396,7 @@ class ClusterHttpManagementRoutesSpec
     "return shard region details" when {
 
       "calling GET /cluster/shards/{name}" in {
-        import org.apache.pekko.pattern.ask
+        import pekko.pattern.ask
 
         import scala.concurrent.duration._
 

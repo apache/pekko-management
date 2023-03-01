@@ -13,8 +13,9 @@
 
 package org.apache.pekko.management.javadsl
 
-import org.apache.pekko.actor.Extension
-import org.apache.pekko.http.javadsl.server.Route
+import org.apache.pekko
+import pekko.actor.Extension
+import pekko.http.javadsl.server.Route
 
 /** Extend this trait in your extension in order to allow it to contribute routes to Pekko Management starts its HTTP endpoint */
 trait ManagementRouteProvider extends Extension {

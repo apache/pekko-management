@@ -13,8 +13,9 @@
 
 package org.apache.pekko.discovery.marathon
 
-import org.apache.pekko.actor._
-import org.apache.pekko.annotation.ApiMayChange
+import org.apache.pekko
+import pekko.actor._
+import pekko.annotation.ApiMayChange
 
 @ApiMayChange
 final class Settings(system: ExtendedActorSystem) extends Extension {

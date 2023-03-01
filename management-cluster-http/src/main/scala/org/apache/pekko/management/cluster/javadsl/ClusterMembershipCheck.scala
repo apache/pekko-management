@@ -16,9 +16,10 @@ package org.apache.pekko.management.cluster.javadsl
 import java.util.concurrent.CompletionStage
 
 import scala.compat.java8.FutureConverters._
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.dispatch.ExecutionContexts
-import org.apache.pekko.management.cluster.scaladsl.{ ClusterMembershipCheck => ScalaClusterReadinessCheck }
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.dispatch.ExecutionContexts
+import pekko.management.cluster.scaladsl.{ ClusterMembershipCheck => ScalaClusterReadinessCheck }
 
 class ClusterMembershipCheck(system: ActorSystem)
     extends java.util.function.Supplier[CompletionStage[java.lang.Boolean]] {

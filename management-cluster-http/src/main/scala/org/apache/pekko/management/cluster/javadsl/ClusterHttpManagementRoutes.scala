@@ -13,26 +13,27 @@
 
 package org.apache.pekko.management.cluster.javadsl
 
-import org.apache.pekko.cluster.Cluster
-import org.apache.pekko.http.javadsl.server.directives.RouteAdapter
-import org.apache.pekko.management.cluster.scaladsl
+import org.apache.pekko
+import pekko.cluster.Cluster
+import pekko.http.javadsl.server.directives.RouteAdapter
+import pekko.management.cluster.scaladsl
 
 object ClusterHttpManagementRoutes {
 
   /**
    * Creates an instance of [[ClusterHttpManagementRoutes]] to manage the specified
-   * [[org.apache.pekko.cluster.Cluster]] instance. This version does not provide Basic Authentication. It uses
+   * [[pekko.cluster.Cluster]] instance. This version does not provide Basic Authentication. It uses
    * the specified path `pathPrefixName`.
    */
-  def all(cluster: Cluster): org.apache.pekko.http.javadsl.server.Route =
+  def all(cluster: Cluster): pekko.http.javadsl.server.Route =
     RouteAdapter(scaladsl.ClusterHttpManagementRoutes(cluster))
 
   /**
    * Creates an instance of [[ClusterHttpManagementRoutes]] to manage the specified
-   * [[org.apache.pekko.cluster.Cluster]] instance. This version does not provide Basic Authentication. It uses
+   * [[pekko.cluster.Cluster]] instance. This version does not provide Basic Authentication. It uses
    * the specified path `pathPrefixName`.
    */
-  def readOnly(cluster: Cluster): org.apache.pekko.http.javadsl.server.Route =
+  def readOnly(cluster: Cluster): pekko.http.javadsl.server.Route =
     RouteAdapter(scaladsl.ClusterHttpManagementRoutes.readOnly(cluster))
 
 }

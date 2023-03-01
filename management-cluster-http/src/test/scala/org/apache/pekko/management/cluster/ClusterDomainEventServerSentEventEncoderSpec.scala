@@ -11,13 +11,14 @@
  * Copyright (C) 2017-2021 Lightbend Inc. <https://www.lightbend.com>
  */
 
-import org.apache.pekko.actor.Address
-import org.apache.pekko.cluster.MemberStatus
-import org.apache.pekko.cluster.{ ClusterEvent, Member, UniqueAddress }
-import org.apache.pekko.http.scaladsl.model.sse.ServerSentEvent
+import org.apache.pekko
+import pekko.actor.Address
+import pekko.cluster.MemberStatus
+import pekko.cluster.{ ClusterEvent, Member, UniqueAddress }
+import pekko.http.scaladsl.model.sse.ServerSentEvent
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.apache.pekko.util.Version
+import pekko.util.Version
 
 package org.apache.pekko.cluster.management {
 
@@ -36,7 +37,7 @@ package org.apache.pekko.cluster.management {
 package org.apache.pekko.management.cluster {
 
   class ClusterDomainEventServerSentEventEncoderSpec extends AnyWordSpec with Matchers {
-    import org.apache.pekko.cluster.management.TestHelpers._
+    import pekko.cluster.management.TestHelpers._
 
     "Encoder" must {
       "work" in {

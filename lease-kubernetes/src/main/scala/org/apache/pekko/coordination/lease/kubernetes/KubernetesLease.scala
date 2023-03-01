@@ -19,18 +19,19 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import scala.concurrent.Future
 
-import org.apache.pekko.actor.ExtendedActorSystem
-import org.apache.pekko.coordination.lease.kubernetes.KubernetesLease.makeDNS1039Compatible
-import org.apache.pekko.coordination.lease.kubernetes.LeaseActor._
-import org.apache.pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
-import org.apache.pekko.coordination.lease.scaladsl.Lease
-import org.apache.pekko.coordination.lease.LeaseException
-import org.apache.pekko.coordination.lease.LeaseSettings
-import org.apache.pekko.coordination.lease.LeaseTimeoutException
-import org.apache.pekko.dispatch.ExecutionContexts
-import org.apache.pekko.pattern.AskTimeoutException
-import org.apache.pekko.util.ConstantFun
-import org.apache.pekko.util.Timeout
+import org.apache.pekko
+import pekko.actor.ExtendedActorSystem
+import pekko.coordination.lease.kubernetes.KubernetesLease.makeDNS1039Compatible
+import pekko.coordination.lease.kubernetes.LeaseActor._
+import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
+import pekko.coordination.lease.scaladsl.Lease
+import pekko.coordination.lease.LeaseException
+import pekko.coordination.lease.LeaseSettings
+import pekko.coordination.lease.LeaseTimeoutException
+import pekko.dispatch.ExecutionContexts
+import pekko.pattern.AskTimeoutException
+import pekko.util.ConstantFun
+import pekko.util.Timeout
 import org.slf4j.LoggerFactory
 
 object KubernetesLease {
@@ -64,7 +65,7 @@ object KubernetesLease {
 class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: AtomicBoolean, settings: LeaseSettings)
     extends Lease(settings) {
 
-  import org.apache.pekko.pattern.ask
+  import pekko.pattern.ask
   import system.dispatcher
 
   private val logger = LoggerFactory.getLogger(classOf[KubernetesLease])

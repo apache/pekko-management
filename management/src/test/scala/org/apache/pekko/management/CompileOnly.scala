@@ -13,9 +13,10 @@
 
 package org.apache.pekko.management
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.http.scaladsl.server.directives.Credentials
-import org.apache.pekko.management.scaladsl.PekkoManagement
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.http.scaladsl.server.directives.Credentials
+import pekko.management.scaladsl.PekkoManagement
 
 import scala.concurrent.Future
 

@@ -13,9 +13,10 @@
 
 package doc.org.apache.pekko.management.cluster.bootstrap
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap
-import org.apache.pekko.management.scaladsl.PekkoManagement
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.management.cluster.bootstrap.ClusterBootstrap
+import pekko.management.scaladsl.PekkoManagement
 
 object ClusterBootstrapCompileOnly {
 

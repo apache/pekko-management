@@ -13,8 +13,9 @@
 
 package org.apache.pekko.management.scaladsl
 
-import org.apache.pekko.Done
-import org.apache.pekko.actor.{
+import org.apache.pekko
+import pekko.Done
+import pekko.actor.{
   ActorSystem,
   ClassicActorSystemProvider,
   ExtendedActorSystem,
@@ -22,16 +23,16 @@ import org.apache.pekko.actor.{
   ExtensionId,
   ExtensionIdProvider
 }
-import org.apache.pekko.event.Logging
-import org.apache.pekko.http.javadsl.server.directives.SecurityDirectives.ProvidedCredentials
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model.Uri
-import org.apache.pekko.http.scaladsl.server.Directives.{ authenticateBasicAsync, pathPrefix, rawPathPrefix }
-import org.apache.pekko.http.scaladsl.server.{ Directive, Directives, PathMatchers, Route }
-import org.apache.pekko.http.scaladsl.server.directives.Credentials
-import org.apache.pekko.http.scaladsl.settings.ServerSettings
-import org.apache.pekko.management.{ javadsl, ManagementLogMarker, NamedRouteProvider, PekkoManagementSettings }
-import org.apache.pekko.util.ManifestInfo
+import pekko.event.Logging
+import pekko.http.javadsl.server.directives.SecurityDirectives.ProvidedCredentials
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model.Uri
+import pekko.http.scaladsl.server.Directives.{ authenticateBasicAsync, pathPrefix, rawPathPrefix }
+import pekko.http.scaladsl.server.{ Directive, Directives, PathMatchers, Route }
+import pekko.http.scaladsl.server.directives.Credentials
+import pekko.http.scaladsl.settings.ServerSettings
+import pekko.management.{ javadsl, ManagementLogMarker, NamedRouteProvider, PekkoManagementSettings }
+import pekko.util.ManifestInfo
 
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicReference

@@ -15,14 +15,15 @@ package org.apache.pekko.management.loglevels.log4j2
 
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.{ Level, LogManager }
-import org.apache.pekko.actor.{ ExtendedActorSystem, Extension, ExtensionId }
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.event.{ Logging => ClassicLogging }
-import org.apache.pekko.http.scaladsl.model.StatusCodes
-import org.apache.pekko.http.scaladsl.server.Directives._
-import org.apache.pekko.http.scaladsl.server.Route
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshaller
-import org.apache.pekko.management.scaladsl.{ ManagementRouteProvider, ManagementRouteProviderSettings }
+import org.apache.pekko
+import pekko.actor.{ ExtendedActorSystem, Extension, ExtensionId }
+import pekko.annotation.InternalApi
+import pekko.event.{ Logging => ClassicLogging }
+import pekko.http.scaladsl.model.StatusCodes
+import pekko.http.scaladsl.server.Directives._
+import pekko.http.scaladsl.server.Route
+import pekko.http.scaladsl.unmarshalling.Unmarshaller
+import pekko.management.scaladsl.{ ManagementRouteProvider, ManagementRouteProviderSettings }
 import org.slf4j.LoggerFactory
 
 object LogLevelRoutes extends ExtensionId[LogLevelRoutes] {

@@ -15,11 +15,12 @@ package org.apache.pekko.discovery.awsapi.ecs
 
 import java.net.{ InetAddress, NetworkInterface }
 import java.util.concurrent.TimeoutException
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.awsapi.ecs.EcsServiceDiscovery.resolveTasks
-import org.apache.pekko.pattern.after
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.awsapi.ecs.EcsServiceDiscovery.resolveTasks
+import pekko.pattern.after
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.retry.PredefinedRetryPolicies

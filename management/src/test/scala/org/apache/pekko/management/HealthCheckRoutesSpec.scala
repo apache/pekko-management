@@ -13,11 +13,12 @@
 
 package org.apache.pekko.management
 
-import org.apache.pekko.actor.ExtendedActorSystem
-import org.apache.pekko.http.scaladsl.model.{ StatusCodes, Uri }
-import org.apache.pekko.http.scaladsl.server._
-import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
-import org.apache.pekko.management.scaladsl.{ HealthChecks, ManagementRouteProviderSettings }
+import org.apache.pekko
+import pekko.actor.ExtendedActorSystem
+import pekko.http.scaladsl.model.{ StatusCodes, Uri }
+import pekko.http.scaladsl.server._
+import pekko.http.scaladsl.testkit.ScalatestRouteTest
+import pekko.management.scaladsl.{ HealthChecks, ManagementRouteProviderSettings }
 
 import scala.concurrent.Future
 import org.scalatest.matchers.should.Matchers
