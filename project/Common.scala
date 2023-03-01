@@ -31,7 +31,7 @@ object Common extends AutoPlugin {
       licenses := Seq(("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))),
       description := "Apache Pekko Management is a suite of tools for operating Apache Pekko Clusters.",
       headerLicense := Some(HeaderLicense.Custom(apacheHeader)),
-      crossScalaVersions := Dependencies.CrossScalaVersions,
+      crossScalaVersions := Dependencies.crossScalaVersions,
       projectInfoVersion := (if (isSnapshot.value) "snapshot" else version.value),
       crossVersion := CrossVersion.binary,
       scalacOptions ++= {
@@ -44,7 +44,7 @@ object Common extends AutoPlugin {
           "-Xlint",
           "-Ywarn-dead-code",
           "-target:jvm-1.8")
-        if (scalaVersion.value == Dependencies.Scala212)
+        if (scalaVersion.value == Dependencies.scala212Version)
           scalacOptionsBase ++: Seq("-Xfuture", "-Xfatal-warnings")
         else
           scalacOptionsBase
@@ -76,7 +76,7 @@ object Common extends AutoPlugin {
       // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
       // -a Show stack traces and exception class name for AssertionErrors.
       testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
-      scalaVersion := Dependencies.Scala212,
+      scalaVersion := Dependencies.scala212Version,
       sonatypeProfileName := "com.lightbend")
 
   private def isJdk8 =
