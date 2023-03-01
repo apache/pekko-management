@@ -48,9 +48,37 @@ jobs:
         run: |
           echo -e "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)\t$(hostname -f) $(hostname -s)" | sudo tee -a /etc/hosts
 
+      - name: Compile integration test
+        run: sbt "++${{ matrix.scalaVersion }} IntegrationTest/compile" ${{ matrix.sbtOpts }}
+
       - name: Run tests with Scala ${{ matrix.scalaVersion }} and Java ${{ matrix.javaVersion }}
         run: sbt "++${{ matrix.scalaVersion }} test" ${{ matrix.sbtOpts }}
 
       - name: Print logs on failure
         if: ${{ failure() }}
         run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
+  docs:
+    name: Docs compile
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout GitHub merge
+        if: github.event.pull_request
+        run: |-
+          git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
+          git checkout scratch
+      - name: Setup Java 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.4.0
+
+      - name: Create all API docs for artifacts/website and all reference docs
+        run: sbt "unidoc; docs/paradox"
