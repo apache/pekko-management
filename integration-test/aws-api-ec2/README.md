@@ -1,4 +1,4 @@
-Your Akka Cluster on Vanilla EC2 using Tag Based Discovery
+Your Pekko Cluster on Vanilla EC2 using Tag Based Discovery
 ==========================================================
 
 Note: these steps can be easily automated via CloudFormation or 
@@ -39,7 +39,7 @@ launched in Step 1. See screenshot below to see how to do this.
 Step 4: Create Security Group
 -----------------------------
 
-Since we want to run an an Akka cluster on these instances, they have to be able to talk to each other: the TCP ports we 
+Since we want to run a Pekko cluster on these instances, they have to be able to talk to each other: the TCP ports we 
 care about are 2552 and 8558. However, we don't want to open these ports to the whole wide world. In the Amazon Cloud,
 instances can *privately* communicate with each other if they are part of the same security group *and* if the proper inbound 
 rules are set. 

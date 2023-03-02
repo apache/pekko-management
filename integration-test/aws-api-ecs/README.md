@@ -1,4 +1,4 @@
-# Your Akka Cluster on ECS
+# Your Pekko Cluster on ECS
 
 **Note:**
 

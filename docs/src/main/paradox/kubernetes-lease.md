@@ -7,7 +7,7 @@ The API, configuration and behavior may change based on feedback from initial us
 
 @@@
 
-This module is an implementation of an [Akka Coordination Lease](https://doc.akka.io/docs/akka/current/coordination.html#lease) backed 
+This module is an implementation of a [Akka Coordination Lease](https://doc.akka.io/docs/akka/current/coordination.html#lease) backed 
 by a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in Kubernetes.
 Resources in Kubernetes offer [concurrency control and consistency](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) 
 that have been used to build a distributed lease/lock.
@@ -23,8 +23,8 @@ and its backing `etcd` cluster can also be subject to failure and network issues
 
 ### Lease Instances
 
-* With @extref[Split Brain Resolver](pekko:split-brain-resolver.html#lease) there will be one lease per Akka Cluster
-* With multiple Akka Clusters using SBRs in the same namespace, e.g. multiple Lagom 
+* With @extref[Split Brain Resolver](pekko:split-brain-resolver.html#lease) there will be one lease per Pekko Cluster
+* With multiple Pekko Clusters using SBRs in the same namespace, e.g. multiple Lagom 
 applications, you must ensure different `ActorSystem` names because they all need a separate lease. 
 * With Cluster Sharding and Cluster Singleton there will be more leases 
     - For @extref:[Cluster Singleton](pekko:typed/cluster-singleton.html#lease) there will be one per singleton.
@@ -37,7 +37,7 @@ applications, you must ensure different `ActorSystem` names because they all nee
 @@dependency[sbt,Maven,Gradle] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="com.lightbend.akka.management"
+  group="org.apache.pekko"
   artifact="pekko-lease-kubernetes_$scala.binary.version$"
   version=PekkoManagementVersion
 }
@@ -89,7 +89,7 @@ roleRef:
 This defines a `Role` that is allowed to `get`, `create` and `update` lease objects and a `RoleBinding`
 that gives the default service user this role in `<YOUR NAMESPACE>`.
 
-Future versions may also require `delete` access for cleaning up old resources. Current uses within Akka
+Future versions may also require `delete` access for cleaning up old resources. Current uses within Pekko
 only create a single lease so cleanup is not an issue.
 
 To avoid giving an application the access to create new leases an empty lease can be created in the same namespace as the application with:

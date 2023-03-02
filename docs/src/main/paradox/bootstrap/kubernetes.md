@@ -11,7 +11,7 @@ The project shows how to:
 
 ### Internal headless service for bootstrap
 
-For Akka Cluster / Management use a headless service. This allows the solution to not be coupled to k8s as well
+For Pekko Cluster / Management use a headless service. This allows the solution to not be coupled to k8s as well
 as there is no use case for load balancing across management/remoting ports.
 Set endpoints to be published before readiness checks pass as these endpoints are required to bootstrap the Cluster
 and make the application ready.
@@ -29,7 +29,7 @@ Then to configure your application:
 
 @@snip [application.conf](/integration-test/kubernetes-dns/src/main/resources/application.conf) { #management }
 
-The same configuration will work for any environment that has an SRV record for your Akka Clustered application.
+The same configuration will work for any environment that has an SRV record for your Pekko Clustered application.
 
 For more details on how to configure the Kubernetes deployment see @ref:[recipes](recipes.md).
 

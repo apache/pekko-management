@@ -21,9 +21,9 @@ import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.server.Directives._
 import pekko.management.cluster.bootstrap.ClusterBootstrap
-//#start-akka-management
+//#start-pekko-management
 import org.apache.pekko.management.scaladsl.PekkoManagement
-//#start-akka-management
+//#start-pekko-management
 
 object DemoApp extends App {
 
@@ -34,9 +34,9 @@ object DemoApp extends App {
 
   log.info(s"Started [$system], cluster.selfAddress = ${cluster.selfAddress}")
 
-  // #start-akka-management
+  // #start-pekko-management
   PekkoManagement(system).start()
-  // #start-akka-management
+  // #start-pekko-management
   ClusterBootstrap(system).start()
 
   cluster.subscribe(

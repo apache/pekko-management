@@ -186,13 +186,13 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
           engine
         })
 
-        // #start-akka-management-with-https-context
+        // #start-pekko-management-with-https-context
         val management = PekkoManagement(system)
 
         val httpsServer: HttpsConnectionContext = ConnectionContext.httpsServer(sslContext)
 
         val started = management.start(_.withHttpsConnectionContext(httpsServer))
-        // #start-akka-management-with-https-context
+        // #start-pekko-management-with-https-context
 
         Await.result(started, 10.seconds)
 

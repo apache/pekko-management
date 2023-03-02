@@ -1,4 +1,4 @@
-Your Akka Cluster on DC/OS
+Your Pekko Cluster on DC/OS
 ==========================
 
 Prerequisites

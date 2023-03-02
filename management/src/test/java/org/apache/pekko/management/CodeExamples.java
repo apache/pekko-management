@@ -31,12 +31,12 @@ public class CodeExamples {
 
   public void start() {
     SSLContext sslContext = null;
-    //#start-akka-management-with-https-context
+    //#start-pekko-management-with-https-context
     PekkoManagement management = PekkoManagement.get(system);
 
     HttpsConnectionContext https = ConnectionContext.https(sslContext);
     management.start(settings -> settings.withHttpsConnectionContext(https));
-    //#start-akka-management-with-https-context
+    //#start-pekko-management-with-https-context
   }
 
   public void basicAuth() {

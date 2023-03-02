@@ -33,9 +33,9 @@ This is a separate JAR file:
   version=PekkoManagementVersion
 }
 
-`pekko-discovery-marathon-api` can be used with Akka $pekko.version$ or later.
-You have to override the following Akka dependencies by defining them explicitly in your build and
-define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
+`pekko-discovery-marathon-api` can be used with Pekko $pekko.version$ or later.
+You have to override the following Pekko dependencies by defining them explicitly in your build and
+define the Pekko version to the one that you are using. Latest patch version of Pekko is recommended and
 a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
@@ -61,14 +61,14 @@ And in your `marathon.json`:
 ```
 {
    ...
-   "cmd": "path-to-your-app -Dpekko.remote.netty.tcp.hostname=$HOST -Dpekko.remote.netty.tcp.port=$PORT_AKKAREMOTE -Dpekko.management.http.hostname=$HOST -Dpekko.management.http.port=$PORT_AKKAMGMTHTTP",
+   "cmd": "path-to-your-app -Dpekko.remote.netty.tcp.hostname=$HOST -Dpekko.remote.netty.tcp.port=$PORT_PEKKOREMOTE -Dpekko.management.http.hostname=$HOST -Dpekko.management.http.port=$PORT_AKKAMGMTHTTP",
 
    "labels": {
      "ACTOR_SYSTEM_NAME": "my-system"
    },
 
    "portDefinitions": [
-     { "port": 0, "name": "akkaremote" },
+     { "port": 0, "name": "pekkoremote" },
      { "port": 0, "name": "pekkomgmthttp" }
    ]
    ...

@@ -13,23 +13,23 @@ The operations exposed are comparable to the Command Line Management tool or the
 
 ## Dependencies
 
-The Akka Cluster HTTP Management is a separate jar file.
-Make sure to include it along with the core akka-management library in your project:
+The Pekko Cluster HTTP Management is a separate jar file.
+Make sure to include it along with the core pekko-management library in your project:
 
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1="$project.version$"
-  group=com.lightbend.akka.management
-  artifact=akka-management_$scala.binary.version$
+  group=org.apache.pekko
+  artifact=pekko-management_$scala.binary.version$
   version=PekkoManagementVersion
-  group2=com.lightbend.akka.management
-  artifact2=akka-management-cluster-http_$scala.binary.version$
+  group2=org.apache.pekko
+  artifact2=pekko-management-cluster-http_$scala.binary.version$
   version2=PekkoManagementVersion
 }
 
-Akka Cluster HTTP Management can be used with Akka $pekko.version$ or later.
-You have to override the following Akka dependencies by defining them explicitly in your build and
-define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
+Pekko Cluster HTTP Management can be used with Apache Pekko $pekko.version$ or later.
+You have to override the following Pekko dependencies by defining them explicitly in your build and
+define the Pekko version to the one that you are using. Latest patch version of Pekko is recommended and
 a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
@@ -45,7 +45,7 @@ a later version than $pekko.version$ can be used.
 
 ## Running
 
-To make sure the Akka Cluster HTTP Management is running, register it with Pekko Management:
+To make sure the Pekko Cluster HTTP Management is running, register it with Pekko Management:
 
 Scala
 :  @@snip [CompileOnlySpec.scala](/management-cluster-http/src/test/scala/doc/org/apache/pekko/cluster/http/management/CompileOnlySpec.scala) { #loading }
@@ -109,7 +109,7 @@ Example request:
 Example response:
 
     HTTP/1.1 200 OK
-    Server: akka-http/10.2.2
+    Server: pekko-http/1.0.0
     Date: Mon, 11 Jan 2021 21:02:37 GMT
     Transfer-Encoding: chunked
     Content-Type: text/event-stream
@@ -239,7 +239,7 @@ Example response:
 
 ## Hosting the routes in an existing Pekko HTTP server
 
-Starting `AkkaMangement` starts a Pekko HTTP server and hosts the Cluster HTTP Routes. The routes can also be added
+Starting `PekkoMangement` starts a Pekko HTTP server and hosts the Cluster HTTP Routes. The routes can also be added
 to an existing Pekko HTTP server. To access all the routes:
 
 Scala
