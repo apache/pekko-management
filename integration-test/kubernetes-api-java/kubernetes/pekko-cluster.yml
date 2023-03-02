@@ -2,13 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: akka-bootstrap-demo
-  name: akka-bootstrap-demo
+    app: pekko-bootstrap-demo
+  name: pekko-bootstrap-demo
 spec:
   replicas: 3
   selector:
     matchLabels:
-     app: akka-bootstrap-demo
+     app: pekko-bootstrap-demo
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -18,8 +18,8 @@ spec:
   template:
     metadata:
       labels:
-        app: akka-bootstrap-demo
-        actorSystemName: akka-bootstrap-demo
+        app: pekko-bootstrap-demo
+        actorSystemName: pekko-bootstrap-demo
     spec:
       containers:
       - name: akka-boostrap-demo

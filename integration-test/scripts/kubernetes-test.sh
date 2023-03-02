@@ -5,7 +5,7 @@ sbt $PROJECT_NAME/docker:publishLocal
 
 docker images | head
 
-kubectl create namespace akka-bootstrap-demo-ns || true
+kubectl create namespace pekko-bootstrap-demo-ns || true
 kubectl -n $NAMESPACE apply -f $DEPLOYMENT
 
 for i in {1..10}
