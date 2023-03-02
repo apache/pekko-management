@@ -7,7 +7,7 @@ Version requirements:
 * Pekko HTTP 1.0 or later
 
 When migrating from Akka Management it is recommended to first upgrade to Akka 2.6.20 / Akka Management 1.1.4 before switching to Pekko/Pekko Management.
-Please refer to the Akka Management migration guide.
+Please refer to the [Akka Management migration guide](https://doc.akka.io/docs/akka-management/current/migration.html).
 
 
 

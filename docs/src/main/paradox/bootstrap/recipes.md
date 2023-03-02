@@ -3,10 +3,10 @@
 A set of integration tests projects can be found in [integration-test folder of the Pekko Management project](https://github.com/apache/incubator-pekko-management/tree/master/integration-test).
 These test various Pekko management features together in various environments such as Kubernetes.
 
-The following samples exist as standalone projects:
+The following samples exist as standalone projects for Akka as a starting point and can be easily adapted to Pekko:
 
-* [Pekko Cluster bootstrap using the Kubernetes API with Java/Maven](https://github.com/akka/akka-sample-cluster-kubernetes-java)
-* [Pekko Cluster bootstrap using DNS in Kubernetes](https://github.com/akka/akka-sample-cluster-kubernetes-dns-java)
+* [Akka Cluster bootstrap using the Kubernetes API with Java/Maven](https://github.com/akka/akka-sample-cluster-kubernetes-java)
+* [Akka Cluster bootstrap using DNS in Kubernetes](https://github.com/akka/akka-sample-cluster-kubernetes-dns-java)
 
 ## Local
 
@@ -22,10 +22,6 @@ The recommended approach is to:
 * Use a Deployment for creating the pods
 * Use either the Kubernetes API or DNS for contact point discovery (details below)
 * Optionally use a service or ingress for any for traffic coming from outside of the Pekko Cluster e.g. gRPC and HTTP
-
-### Example project
-
-To get started, it might be helpful to have a look at the [Akka Cluster on Kubernetes](https://developer.lightbend.com/start/?group=akka&project=pekko-sample-cluster-kubernetes-java) example project.
 
 ### Kubernetes Deployment
 

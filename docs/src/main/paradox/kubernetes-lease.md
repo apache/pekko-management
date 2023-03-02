@@ -7,7 +7,7 @@ The API, configuration and behavior may change based on feedback from initial us
 
 @@@
 
-This module is an implementation of a [Akka Coordination Lease](https://doc.akka.io/docs/akka/current/coordination.html#lease) backed 
+This module is an implementation of a [Pekko Coordination Lease](https://pekko.apache.org/docs/pekko/current/coordination.html#lease) backed 
 by a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in Kubernetes.
 Resources in Kubernetes offer [concurrency control and consistency](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) 
 that have been used to build a distributed lease/lock.
