@@ -31,12 +31,10 @@ See [CONTRIBUTING.md](https://github.com/apache/incubator-pekko-management/blob/
 Project Status
 --------------
 
-With the exception of the community maintained modules listed below version 1.0.0 or later of this library
+With the exception of the experimental modules listed below, version 1.0.0 or later of this library
 is ready to be used in production and APIs are stable.
 
-The following modules are maintained by the community and does not have to obey the rule of staying binary compatible
-between releases. Breaking API changes may be introduced without notice as we refine and simplify based on feedback.
-A module may be dropped in any release without prior deprecation.
+The following modules are considered experimental and require more work and testing to be considered production ready:
 
 * pekko-discovery-marathon-api
 * pekko-discovery-aws-api
