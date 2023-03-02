@@ -8,19 +8,19 @@
 @@@
 
 
-Akka Cluster Bootstrap helps forming (or joining to) a cluster by using @ref:[Akka Discovery](../discovery/index.md)
+Pekko Cluster Bootstrap helps forming (or joining to) a cluster by using @ref:[Pekko Discovery](../discovery/index.md)
 to discover peer nodes.  It is an alternative to configuring static `seed-nodes` in dynamic deployment environments
 such as on Kubernetes or AWS.
 
-It builds on the flexibility of Akka Discovery, leveraging a range of discovery mechanisms depending on the
+It builds on the flexibility of Pekko Discovery, leveraging a range of discovery mechanisms depending on the
 environment you want to run your cluster in.
 
 ## Prerequisites
 
 Bootstrap depends on:
 
- * @ref:[Akka Discovery](../discovery/index.md) to discover other members of the cluster
- * @ref:[Pekko Management](../akka-management.md) to host HTTP endpoints used during the bootstrap process
+ * @ref:[Pekko Discovery](../discovery/index.md) to discover other members of the cluster
+ * @ref:[Pekko Management](../pekko-management.md) to host HTTP endpoints used during the bootstrap process
 
 A discovery mechanism needs to be chosen. A good default choice is DNS.
 
@@ -40,17 +40,17 @@ and bootstrap extensions:
   value=$pekko.version$
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group=com.lightbend.akka.management
-  artifact=akka-management-cluster-bootstrap_$scala.binary.version$
+  group=org.apache.pekko
+  artifact=pekko-management-cluster-bootstrap_$scala.binary.version$
   version=PekkoManagementVersion
   group2=org.apache.pekko
   artifact2=pekko-discovery_$scala.binary.version$
   version2=PekkoVersion
 }
 
-Akka Cluster Bootstrap can be used with Akka $pekko.version$ or later.
-You have to override the following Akka dependencies by defining them explicitly in your build and
-define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
+Pekko Cluster Bootstrap can be used with Pekko $pekko.version$ or later.
+You have to override the following Pekko dependencies by defining them explicitly in your build and
+define the Pekko version to the one that you are using. Latest patch version of Pekko is recommended and
 a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
@@ -67,12 +67,12 @@ a later version than $pekko.version$ can be used.
 @@@ note
 
 `pekko-discovery` is already a transitive dependency of `pekko-management-cluster-bootstrap` but it can
-be good to define it explicitly in the build of the application to align the Akka versions with other
-dependencies from the application. The version must be the same across all Akka modules, e.g.
+be good to define it explicitly in the build of the application to align the Pekko versions with other
+dependencies from the application. The version must be the same across all Pekko modules, e.g.
 `pekko-actor`, `pekko-discovery` and `pekko-cluster` must be of the same version.
 
-The minimum supported Akka version is $pekko.version$. Use the same Akka version for `pekko-discovery`
-as for other Akka dependencies in the application. Latest patch version of Akka is recommended and
+The minimum supported Pekko version is $pekko.version$. Use the same Pekko version for `pekko-discovery`
+as for other Pekko dependencies in the application. Latest patch version of Pekko is recommended and
 a later version than $pekko.version$ can be used.
 
 @@@
@@ -105,11 +105,11 @@ a good idea to act on such a failure, for example by logging an error and termin
 
 Ensure that `seed-nodes` is not present in configuration and that either autoloading through config or `start()` is called on every node.
 
-The following configuration is required, more details for each and additional configuration can be found in [reference.conf](https://github.com/akka/akka-management/blob/master/cluster-bootstrap/src/main/resources/reference.conf):
+The following configuration is required, more details for each and additional configuration can be found in [reference.conf](https://github.com/apache/incubator-pekko-management/blob/master/cluster-bootstrap/src/main/resources/reference.conf):
 
 * `pekko.management.cluster.bootstrap.contact-point-discovery.service-name`: a unique name in the deployment environment for this cluster
   instance which is used to lookup peers in service discovery. If unset, it will be derived from the `ActorSystem` name.
-* `pekko.management.cluster.bootstrap.contact-point-discovery.discovery-method`: the intended service discovery mechanism (from what choices Akka Discovery provides).
+* `pekko.management.cluster.bootstrap.contact-point-discovery.discovery-method`: the intended service discovery mechanism (from what choices Pekko Discovery provides).
   If unset, falls back to the system-wide default from `pekko.discovery.method`.
 
 
@@ -130,7 +130,7 @@ See @ref[full bootstrap process and advanced configuration](details.md) for more
 
 ## Joining Mechanism Precedence
 
-As Akka Cluster allows nodes to join to a cluster using multiple different methods, the precedence of each method
+As Pekko Cluster allows nodes to join to a cluster using multiple different methods, the precedence of each method
 is strictly defined and is as follows:
 
 - If `pekko.cluster.seed-nodes` (in your `application.conf`) are non-empty, those nodes will be joined, and bootstrap
@@ -171,7 +171,7 @@ the initial joining, even in face of an flaky discovery mechanism!
 
 ### Recommended Configuration
 
-When using the bootstrap module, there are some underlying Akka Cluster settings that should be specified to ensure
+When using the bootstrap module, there are some underlying Pekko Cluster settings that should be specified to ensure
 that your deployment is robust.
 
 Since the target environments for this module are dynamic, that is, instances can come and go, failure needs to be
@@ -185,7 +185,7 @@ and the operation will (presumably) eventually succeed. You'll want to specify t
 
 #### Graceful shutdown 
 
-Akka Cluster can handle hard failures using a downing provider such as Lightbend's split brain resolver discussed below.
+Pekko Cluster can handle hard failures using a downing provider such as Lightbend's split brain resolver discussed below.
 However this should not be relied upon for regular rolling redeploys. Features such as `ClusterSingleton`s and `ClusterSharding`
 can safely restart actors on new nodes far quicker when it is certain that a node has shutdown rather than crashed. 
 
@@ -197,12 +197,12 @@ Upon receiving a `SIGTERM` Coordinated Shutdown will:
 
 * Perform a `Cluster(system).leave` on itself
 * The status of the member will be changed to Exiting while allowing any shards to be shutdown gracefully and 
-  `ClusterSingleton`s to be migrated if this was the oldest node. Finally the node is removed from the Akka Cluster membership.
+  `ClusterSingleton`s to be migrated if this was the oldest node. Finally the node is removed from the Pekko Cluster membership.
   
 
 #### Number of nodes to redeploy at once
 
-Akka bootstrap requires a `stable-period` where service discovery returns a stable set of contact points. When doing rolling
+Pekko bootstrap requires a `stable-period` where service discovery returns a stable set of contact points. When doing rolling
 updates it is best to wait for a node (or group of nodes) to finish joining the cluster before adding and removing other nodes.
 
 #### Cluster Singletons

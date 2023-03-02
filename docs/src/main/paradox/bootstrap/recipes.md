@@ -1,31 +1,27 @@
 # Bootstrap environments
 
-A set of integration tests projects can be found in [integration-test folder of the Pekko Management project](https://github.com/akka/akka-management/tree/master/integration-test).
+A set of integration tests projects can be found in [integration-test folder of the Pekko Management project](https://github.com/apache/incubator-pekko-management/tree/master/integration-test).
 These test various Pekko management features together in various environments such as Kubernetes.
 
-The following samples exist as standalone projects:
+The following samples exist as standalone projects for Akka as a starting point and can be easily adapted to Pekko:
 
-* [Akka Cluster bootstrap using the Kubernetes API with Java/Maven](https://github.com/akka/pekko-sample-cluster-kubernetes-java)
-* [Akka Cluster bootstrap using DNS in Kubernetes](https://github.com/akka/pekko-sample-cluster-kubernetes-dns-java)
+* [Akka Cluster bootstrap using the Kubernetes API with Java/Maven](https://github.com/akka/akka-sample-cluster-kubernetes-java)
+* [Akka Cluster bootstrap using DNS in Kubernetes](https://github.com/akka/akka-sample-cluster-kubernetes-dns-java)
 
 ## Local
 
 To run Bootstrap locally without any dependencies such as DNS or Kubernetes see the @ref[`local` example](local-config.md)
 
-## Running Akka Cluster in Kubernetes
+## Running Pekko Cluster in Kubernetes
 
-The goal of bootstrap is to support running Akka Cluster in Kubernetes as if it is a stateless application.
+The goal of bootstrap is to support running Pekko Cluster in Kubernetes as if it is a stateless application.
 The part bootstrap solves is creating the initial cluster and handling scaling and re-deploys gracefully.
 
 The recommended approach is to:
 
 * Use a Deployment for creating the pods
 * Use either the Kubernetes API or DNS for contact point discovery (details below)
-* Optionally use a service or ingress for any for traffic coming from outside of the Akka Cluster e.g. gRPC and HTTP
-
-### Example project
-
-To get started, it might be helpful to have a look at the [Akka Cluster on Kubernetes](https://developer.lightbend.com/start/?group=akka&project=pekko-sample-cluster-kubernetes-java) example project.
+* Optionally use a service or ingress for any for traffic coming from outside of the Pekko Cluster e.g. gRPC and HTTP
 
 ### Kubernetes Deployment
 
@@ -58,20 +54,20 @@ Note that the `app` is the same for both services as they both refer to the same
 ### Health checks
 
 `pekko-management` includes a HTTP route for readiness and liveness checks.
-`pekko-management-cluster-http` includes readiness check for the Akka Cluster membership. To use it
+`pekko-management-cluster-http` includes readiness check for the Pekko Cluster membership. To use it
 add the following dependency:
 
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group=com.lightbend.akka.management
-  artifact=akka-management-cluster-http_$scala.binary.version$
+  group=org.apache.pekko
+  artifact=pekko-management-cluster-http_$scala.binary.version$
   version=PekkoManagementVersion
 }
 
-Akka Cluster HTTP Management can be used with Akka $pekko.version$ or later.
-You have to override the following Akka dependencies by defining them explicitly in your build and
-define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
+Pekko Cluster HTTP Management can be used with Pekko $pekko.version$ or later.
+You have to override the following Pekko dependencies by defining them explicitly in your build and
+define the Pekko version to the one that you are using. Latest patch version of Pekko is recommended and
 a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
@@ -105,14 +101,14 @@ on additional resources required and how they work:
 * @ref[Kubernetes using `kubernetes-api` discovery](kubernetes-api.md)
 * @ref[Kubernetes using `pekko-dns` discovery](kubernetes.md)
 
-Kubernetes-api is the more battle tested mechanism, DNS was added in Akka 2.5.15 and Pekko Management 0.18.
+Kubernetes-api is the more battle tested mechanism, DNS was added in Pekko 2.5.15 and Pekko Management 0.18.
 DNS has the benefit that it is agnostic of Kubernetes so does not require pods be able to communicate with the API
 server. However it requires a headless service that supports the `publishNotReadyAddresses` feature. If your Kubernetes setup
 does not support `publishNotReadyAddresses` yet then use the `kubernetes-api` discovery mechanism.
 
 ### Running in Istio
 
-For considerations and configuration necessary for bootstrapping an Akka cluster in Istio, see @ref[Bootstrapping an Akka cluster in Istio](istio.md).
+For considerations and configuration necessary for bootstrapping a Pekko cluster in Istio, see @ref[Bootstrapping an Pekko cluster in Istio](istio.md).
 
 ### Running the Kubernetes demos
 
@@ -147,7 +143,7 @@ $ sbt shell
 
 You can run multiple different Pekko Bootstrap-based applications in the same namespace,
 alongside any other containers that belong to the same logical application.
-The resources in `kubernetes/pekko-cluster.yml` are configured to run in the `akka-bootstrap-demo-ns` namespace.
+The resources in `kubernetes/pekko-cluster.yml` are configured to run in the `pekko-bootstrap-demo-ns` namespace.
 Change that to the namespace you want to deploy to. If you do not have a namespace to run your application in yet,
 create it:
 

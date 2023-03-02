@@ -13,7 +13,7 @@ Having configured a DeploymentSpec, Role, and RoleBinding they can be created wi
 kubectl apply -f kubernetes/pekko-cluster.yaml
 ```
 
-Where akka `kubernetes/pekko-cluster.yaml` is location of the Kubernetes resources files in the samples.
+Where Pekko `kubernetes/pekko-cluster.yaml` is location of the Kubernetes resources files in the samples.
 
 @@@note
 If you haven't been creating the files as you go for the guide, but rather are relying on the existing 
@@ -100,7 +100,7 @@ An explanation of these messages is as follows.
 1. These are init messages, showing that remoting has started on port 25520. The IP address should be the pods IP address from which other pods can access it, while the port number should match the configured remoting number, defaulting to 25520.
 2. Init messages for Pekko management, once again, the IP address should be the pods IP address, while the port number should be the port number you've configured for Pekko management to use, defaulting to 8558.
    Pekko management is also hosting the readiness and liveness checks.
-3. Now the cluster bootstrap process is starting. The service name should match your Akka system name or configured service name in cluster bootstrap, and the port should match your configured port name. In this guide we kept these as the default values.
+3. Now the cluster bootstrap process is starting. The service name should match your Pekko system name or configured service name in cluster bootstrap, and the port should match your configured port name. In this guide we kept these as the default values.
    This and subsequent messages will be repeated many times as cluster bootstrap polls Kubernetes and the other pods to determine what pods have been started, and whether and where a cluster has been formed.
 4. This is the disocvery process. The bootstarp coordinator uses the Kubernetes discovery mechanism. The label selector should be one that will return your pods, and the namespace should match your applications namespace. The namespace is picked up automatically.
 5. Here the Kubernetes API has returned three services, including ourselves.
@@ -109,7 +109,7 @@ An explanation of these messages is as follows.
 
 Following these messages, you may still see some messages warning that messages can't be routed, it still may take some time for cluster singletons and other cluster features to decide which pod to start up on, but before long, the logs should go quiet as the cluster is started up.
 
-The logs above show those of a pod that wasn't the pod to start the cluster. As mentioned earlier, the default strategy that Akka Cluster Bootstrap uses when it starts and finds that there is no existing cluster is to get the pod with the lowest IP address to start the cluster. In the example above, that pod has an IP address of `172.17.0.6`, 
+The logs above show those of a pod that wasn't the pod to start the cluster. As mentioned earlier, the default strategy that Pekko Cluster Bootstrap uses when it starts and finds that there is no existing cluster is to get the pod with the lowest IP address to start the cluster. In the example above, that pod has an IP address of `172.17.0.6`, 
 and ends up joining a pod with IP `172.17.0.5` as it has a lower IP.
 
 If you look in the logs of that pod, you'll see a message like this:
@@ -150,7 +150,7 @@ for 'hello world':
 
     kubectl expose deployment appka --type=LoadBalancer --name=appka-service
 
-You can inspect the Akka Cluster membership status with the [Cluster HTTP Management](https://doc.akka.io/docs/akka-management/current/cluster-http-management.html).
+You can inspect the Pekko Cluster membership status with the [Cluster HTTP Management](https://doc.akka.io/docs/akka-management/current/cluster-http-management.html).
 
     curl http://127.0.0.1:8558/cluster/members/
 

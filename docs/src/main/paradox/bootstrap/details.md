@@ -3,7 +3,7 @@
 Below is a description of the bootstrap process in more detail.
 All configuration properties references below are in the `pekko.management.cluster.bootstrap` section. 
 
-- Each node discovers its "neighbours" using Akka Discovery
+- Each node discovers its "neighbours" using Pekko Discovery
     - Some initial negotiation between the nodes must take place to safely form a new cluster when there is no
       existing cluster.
 - The node starts to probe the Contact Points of the discovered nodes (which are HTTP endpoints, exposed via
@@ -39,17 +39,17 @@ presented here is very close to it. Please note that the often used claim of usi
 seed-nodes also is not 100% safe (sic!), since races could occur between the node having discovered a node from the strongly 
 consistent store and attempting the join operation.
 
-Akka bootstrap's solution is prone to very few and rather rare races. Built-in protection against the race cases exists
+Pekko bootstrap's solution is prone to very few and rather rare races. Built-in protection against the race cases exists
 in the form of the stable timeout, which means that if any changes are being observed in discovery, the decision making
 is delayed until the observation is stable again. This prevents initiating joining while discovery is still inconsistent.
 
 Note also that the bootstrap process does NOT rely on full consistency of the discovery mechanism when adding new nodes 
 to an existing cluster. This is very desirable, since this situation usually occurs when dynamically scaling up due to 
-increased load on your service, and some services may indeed not be fully consistent then. However, the Akka Cluster 
+increased load on your service, and some services may indeed not be fully consistent then. However, the Pekko Cluster 
 membership protocol IS strongly consistent, and it is the source of truth with regards what the cluster is consisting of,
 and no external system can have more reliable information about this (since it could be outdated). This is why the 
 Contact Point probing mechanism exists, and even if discovery would only return *partial* or even *different set of nodes
-for each lookup* the probing would allow the node still to join all the right nodes, thanks to how Akka Cluster's membership
+for each lookup* the probing would allow the node still to join all the right nodes, thanks to how Pekko Cluster's membership
 and gossip protocols work. Summing up, the bootstrap mechanism works well for adding nodes to the system, even under load,
 even if the DNS system is not completely consistent. 
 

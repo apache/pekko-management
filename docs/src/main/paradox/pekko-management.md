@@ -1,6 +1,6 @@
 # Apache Pekko Management
 
-Pekko Management is the core module of the management utilities which provides a central HTTP endpoint for Akka
+Pekko Management is the core module of the management utilities which provides a central HTTP endpoint for Pekko
 management extensions.
 
 ## Project Info
@@ -17,7 +17,7 @@ actually want to use (and load) in their project.
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1="$project.version$"
-  group="com.lightbend.akka.management"
+  group="org.apache.pekko"
   artifact="pekko-management_$scala.binary.version$"
   version=PekkoManagementVersion
 }
@@ -26,9 +26,9 @@ And in addition to that, include all of the dependencies for the features you'd 
 like `pekko-management-bootstrap` etc. Refer to each extensions documentation page to learn about how
 to configure and use it.
 
-Pekko Management can be used with Akka $pekko.version$ or later.
-You have to override the following Akka dependencies by defining them explicitly in your build and
-define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
+Pekko Management can be used with Apache Pekko $pekko.version$ or later.
+You have to override the following Pekko dependencies by defining them explicitly in your build and
+define the Pekko version to the one that you are using. Latest patch version of Pekko is recommended and
 a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
@@ -44,10 +44,10 @@ a later version than $pekko.version$ can be used.
 Remember that Pekko Management does not start automatically and the routes will only be exposed once you trigger:
 
 Scala
-:   @@snip[DemoApp.scala](/integration-test/kubernetes-api/src/main/scala/org/apache/pekko/cluster/bootstrap/DemoApp.scala){ #start-akka-management }
+:   @@snip[DemoApp.scala](/integration-test/kubernetes-api/src/main/scala/org/apache/pekko/cluster/bootstrap/DemoApp.scala){ #start-pekko-management }
 
 Java
-:   @@snip[DemoApp.java](/integration-test/kubernetes-api-java/src/main/java/org/apache/pekko/cluster/bootstrap/demo/DemoApp.java){ #start-akka-management }
+:   @@snip[DemoApp.java](/integration-test/kubernetes-api-java/src/main/java/org/apache/pekko/cluster/bootstrap/demo/DemoApp.java){ #start-pekko-management }
     
 This allows users to prepare anything further before exposing routes for 
 the bootstrap joining process and other purposes.
@@ -65,8 +65,8 @@ You can configure hostname and port to use for the HTTP Cluster management by ov
 Note that the default value for hostname is `InetAddress.getLocalHost.getHostAddress`, which may or may not evaluate to
 `127.0.0.1`.
 
-When running Akka nodes behind NATs or inside docker containers in bridge mode,
-it is necessary to set different hostname and port number to bind for the HTTP Server for Http Cluster Management:
+When running Pekko nodes behind NATs or inside docker containers in bridge mode,
+it is necessary to set different hostname and port number to bind for the HTTP Server for HTTP Cluster Management:
 
 application.conf
 :   ```hocon
@@ -88,7 +88,7 @@ application.conf
     ```
 
 In this example, with this configuration, then the Pekko Management routes will will be exposed at under the `/myClusterName/...`,
-base path. For example, when using Akka Cluster Management routes the members information would then be available under
+base path. For example, when using Pekko Cluster Management routes the members information would then be available under
 `/myClusterName/shards/{name}` etc.
 
 ## Read only routes
@@ -113,10 +113,10 @@ publicly.
 The non-secured usage of the module is as follows:
 
 Scala
-:   @@snip[DemoApp.scala](/integration-test/kubernetes-api/src/main/scala/org/apache/pekko/cluster/bootstrap/DemoApp.scala){ #start-akka-management }
+:   @@snip[DemoApp.scala](/integration-test/kubernetes-api/src/main/scala/org/apache/pekko/cluster/bootstrap/DemoApp.scala){ #start-pekko-management }
 
 Java
-:   @@snip[DemoApp.java](/integration-test/kubernetes-api-java/src/main/java/org/apache/pekko/cluster/bootstrap/demo/DemoApp.java){ #start-akka-management }
+:   @@snip[DemoApp.java](/integration-test/kubernetes-api-java/src/main/java/org/apache/pekko/cluster/bootstrap/demo/DemoApp.java){ #start-pekko-management }
 
 ### Enabling TLS/SSL (HTTPS) for Cluster HTTP Management
 
@@ -124,10 +124,10 @@ To enable SSL you need to provide an `SSLContext`. You can find more information
 @extref:[Server HTTPS Support](pekko-http:server-side/server-https-support.html).
 
 Scala
-:   @@snip[PekkoManagementHttpEndpointSpec.scala](/management/src/test/scala/org/apache/pekko/management/PekkoManagementHttpEndpointSpec.scala){ #start-akka-management-with-https-context }
+:   @@snip[PekkoManagementHttpEndpointSpec.scala](/management/src/test/scala/org/apache/pekko/management/PekkoManagementHttpEndpointSpec.scala){ #start-pekko-management-with-https-context }
 
 Java
-:   @@snip[CodeExamples.java](/management/src/test/java/org/apache/pekko/management/CodeExamples.java){ #start-akka-management-with-https-context }
+:   @@snip[CodeExamples.java](/management/src/test/java/org/apache/pekko/management/CodeExamples.java){ #start-pekko-management-with-https-context }
 
 You can also refer to [PekkoManagementHttpEndpointSpec](https://github.com/akka/akka-management/blob/119ad1871c3907c2ca528720361b8ccb20234c55/management/src/test/scala/org/apache/pekko/management/PekkoManagementHttpEndpointSpec.scala#L124-L148) where a full example configuring the HTTPS context is shown.
 

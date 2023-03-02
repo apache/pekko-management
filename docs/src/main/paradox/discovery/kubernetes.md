@@ -20,9 +20,9 @@ First, add the dependency on the component:
   version=PekkoManagementVersion
 }
 
-`pekko-discovery-kubernetes-api` can be used with Akka $pekko.version$ or later.
-You have to override the following Akka dependencies by defining them explicitly in your build and
-define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
+`pekko-discovery-kubernetes-api` can be used with Pekko $pekko.version$ or later.
+You have to override the following Pekko dependencies by defining them explicitly in your build and
+define the Pekko version to the one that you are using. Latest patch version of Pekko is recommended and
 a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
@@ -37,7 +37,7 @@ a later version than $pekko.version$ can be used.
 }
 
 As described above, it is uncommon to use the Kubernetes API discovery
-mechanism as your default discovery mechanism. When using it with Akka Cluster
+mechanism as your default discovery mechanism. When using it with Pekko Cluster
 Bootstrap, it is sufficient to configure it as described @ref[here](../bootstrap/kubernetes-api.md).
 Otherwise, to load it manually, use `loadServiceDiscovery` on the `Discovery` extension:
 
@@ -96,7 +96,7 @@ spec:
         image: example/image:1.0.0
         imagePullPolicy: IfNotPresent
         ports:
-        # akka remoting
+        # pekko remoting
         - name: remoting
           containerPort: 2552
           protocol: TCP

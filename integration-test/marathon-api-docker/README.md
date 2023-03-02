@@ -4,7 +4,7 @@ Marathon API Docker lookup example
 This example demonstrates Marathon API discovery mechanism when an application runs inside a docker container in 
 network bridge mode with automatic host port allocation.
 
-Marathon API discovery mechanism uses Marathon API to find other application instances (contact points) to form Akka cluster.
+Marathon API discovery mechanism uses Marathon API to find other application instances (contact points) to form a Pekko cluster.
 In order to identify contact points it uses a label assigned to the application in the application description and 
 a port name to identify Pekko HTTP management port:
 

@@ -1,50 +1,50 @@
-# Forming an Akka Cluster
+# Forming an Pekko Cluster
 
-Services that use Akka Cluster have additional requirements over stateless applications.
+Services that use Pekko Cluster have additional requirements over stateless applications.
 To form a cluster, each pod needs to know which other pods have been deployed as part of that service, 
-so that they can connect to each other. Akka provides a Cluster Bootstrap library that allows Akka applications in Kubernetes to 
+so that they can connect to each other. Pekko provides a Cluster Bootstrap library that allows Pekko applications in Kubernetes to 
 discover this automatically using the Kubernetes API. The process is roughly as follows:
 
 1. When the application starts, the application polls the Kubernetes API to find what pods are deployed, 
    until a configured minimum number of pods have been discovered.
-2. It then attempts to connect to those pods, using Akka's HTTP management interface, and queries whether any of those pods have already formed a cluster.
+2. It then attempts to connect to those pods, using Pekko's HTTP management interface, and queries whether any of those pods have already formed a cluster.
 3. If a cluster has already been formed, then the application will join the cluster.
 4. If a cluster has not yet been formed on any of the pods, a deterministic function is used to decide which pod will initiate the cluster -
    this function ensures that all pods that are currently going through this process will decide on the same pod.
 5. The pod that is decided to start the cluster forms a cluster with itself.
 6. The remaining pods poll that pod until it reports that it has formed a cluster, they then join it.
 
-For a much more detailed description of this process, see the [Akka Cluster Bootstrap documentation](https://developer.lightbend.com/docs/akka-management/current/bootstrap/details.html).
+For a much more detailed description of this process, see the [Pekko Cluster Bootstrap documentation](https://developer.lightbend.com/docs/akka-management/current/bootstrap/details.html).
 
 ## Bootstrap and Management dependencies
 
 Add the following dependencies to your application:
 
 * Pekko Management Cluster HTTP: This provides HTTP management endpoints as well as a @ref[cluster health check](../cluster-http-management.md#health-checks)
-* @ref[Akka Discovery Kubernetes](../discovery/kubernetes.md): This provides a discovery mechanism that queries the Kubernetes API
+* @ref[Pekko Discovery Kubernetes](../discovery/kubernetes.md): This provides a discovery mechanism that queries the Kubernetes API
 * @ref[Pekko Bootstrap](../bootstrap/index.md): This bootstraps the cluster from nodes discovered via the Kubernetes API
 
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group=com.lightbend.akka.management
-  artifact=akka-management-cluster-http_$scala.binary.version$
+  group=org.apache.pekko
+  artifact=pekko-management-cluster-http_$scala.binary.version$
   version=PekkoManagementVersion
-  group2=com.lightbend.akka.management
-  artifact2=akka-management-cluster-bootstrap_$scala.binary.version$
+  group2=org.apache.pekko
+  artifact2=pekko-management-cluster-bootstrap_$scala.binary.version$
   version2=PekkoManagementVersion
-  group3="com.lightbend.pekko.discovery"
+  group3="org.apache.pekko"
   artifact3="pekko-discovery-kubernetes-api_$scala.binary.version$"
   version3=PekkoManagementVersion
 }
 
 ## Configuring Cluster Bootstrap
 
-There are three components that need to be configured: Akka Cluster, Pekko Management HTTP, and Akka Cluster Bootstrap.
+There are three components that need to be configured: Pekko Cluster, Pekko Management HTTP, and Pekko Cluster Bootstrap.
 
 ### Apache Pekko Cluster
 
-Set three things for Akka Cluster:
+Set three things for Pekko Cluster:
 
 * Set the actor provider to `cluster`.
 * Shutdown if cluster formation doesn't work. This will cause Kubernetes to re-create the pod.
@@ -69,7 +69,7 @@ The default configuration for Pekko management HTTP is suitable for use in Kuber
 ### Apache Pekko Cluster Bootstrap
 
 To configure Cluster Bootstrap, we need to tell it which discovery method will be used to discover the other nodes in the cluster. 
-This uses Akka Discovery to find nodes, however, the discovery method and configuration used in Cluster Bootstrap will often be different 
+This uses Pekko Discovery to find nodes, however, the discovery method and configuration used in Cluster Bootstrap will often be different 
 to the method used for looking up other services. The reason for this is that during Cluster Bootstrap, we are interested in discovering 
 nodes even when they aren't ready to handle requests yet, for example, because they too are trying to form a cluster. If we were to use a 
 method such as DNS to lookup other services, the Kubernetes DNS server, by default, will only return services that are ready to serve requests, 
@@ -89,7 +89,7 @@ pekko.management {
 }
 ```
 
-You can optionally specify a `service-name` otherwise the name of the AkkaSystem is used that matches your label in the deployment spec.
+You can optionally specify a `service-name` otherwise the name of the PekkoSystem is used that matches your label in the deployment spec.
 
 
 ## Starting
@@ -106,7 +106,7 @@ Java
 ## Role-Based Access Control
 
 By default, pods are unable to use the Kubernetes API because they are not authenticated to do so. 
-In order to allow the applications pods to form an Akka Cluster using the Kubernetes API, we need to define some Role-Based Access Control (RBAC) roles and bindings.
+In order to allow the applications pods to form an Pekko Cluster using the Kubernetes API, we need to define some Role-Based Access Control (RBAC) roles and bindings.
 
 RBAC allows the configuration of access control using two key concepts, roles, and role bindings. A role is a set of permissions to access something 
 in the Kubernetes API. For example, a `pod-reader` role may have permission to perform the `list`, `get` and `watch` operations on the `pods` resource in a particular namespace, by default the same namespace that the role is configured in. In fact, that's exactly what we are going to configure, as this is the permission that our pods need. Here's the spec for the `pod-reader` role to be added in `kubernetes/pekko-cluster.yaml`:

@@ -3,7 +3,7 @@
 In preparation for production, we need to do two main things:
 
 1. Write a Kubernetes deployment spec
-1. Configure our Akka cluster application 
+1. Configure our Pekko cluster application 
 
 The final configuration file and deployment spec are in the sample application.
 In this guide we will show snippets. Locations of the samples:

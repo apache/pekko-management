@@ -6,7 +6,7 @@ Cluster Bootstrap process run locally within an IDE or from the command line.
 To use `config` service discovery set the following configuration:
 
 * `pekko.management.cluster.bootstrap.contact-point-discovery.discovery-method` to `config`
-* `pekko.discovery.config.services.[cluster-name]` to the endpoinds of the Akka nodes
+* `pekko.discovery.config.services.[cluster-name]` to the endpoinds of the Pekko nodes
 
 For example:
 
@@ -14,7 +14,7 @@ For example:
 
 This configuration will return three endpoints for a service called `local-cluster`.
 
-Akka bootstrap is then configured to lookup `local-cluster` in the `config`:
+Pekko bootstrap is then configured to lookup `local-cluster` in the `config`:
 
 @@snip [application.conf](/integration-test/local/src/main/resources/application.conf) { #bootstrap }
 

@@ -31,7 +31,7 @@ instead.
 
 You can use tags to simply mark the instances that belong to the same cluster. Use a tag that
 has "service" as the key and set the value equal to the name of your service (same value as `pekko.management.cluster.bootstrap.contact-point-discovery.service-name`
-defined in `application.conf`, if you're using this module for bootstrapping your Akka cluster).
+defined in `application.conf`, if you're using this module for bootstrapping your Pekko cluster).
 
 Screenshot of two tagged EC2 instances:
 
@@ -57,9 +57,9 @@ This is a separate JAR file:
   version=PekkoManagementVersion
 }
 
-`pekko-discovery-aws-api` can be used with Akka $pekko.version$ or later.
-You have to override the following Akka dependencies by defining them explicitly in your build and
-define the Akka version to the one that you are using. Latest patch version of Akka is recommended and
+`pekko-discovery-aws-api` can be used with Pekko $pekko.version$ or later.
+You have to override the following Pekko dependencies by defining them explicitly in your build and
+define the Pekko version to the one that you are using. Latest patch version of Pekko is recommended and
 a later version than $pekko.version$ can be used.
 
 @@dependency[sbt,Gradle,Maven] {
@@ -105,20 +105,20 @@ character. For example:
     }
     ```
 
-* By default, this module is configured for clusters with one Akka node per EC2 instance: it
+* By default, this module is configured for clusters with one Pekko node per EC2 instance: it
   separates cluster members solely by their EC2 IP address. However, we can change the default configuration to indicate multiple ports per discovered EC2 IP, and achieve
-a setup with multiple Akka nodes (i.e. multiple JVMs) per EC2 instance.
+a setup with multiple Pekko nodes (i.e. multiple JVMs) per EC2 instance.
     ```
     pekko {
       discovery {
         aws-api-ec2-tag-based {
-          ports = [8557, 8558, 8559] # 3 Akka nodes per EC2 instance
+          ports = [8557, 8558, 8559] # 3 Pekko nodes per EC2 instance
           # note that the above need to be the ports associated with the *Pekko Management* extension
         }
       }
     }
     ```
-    Note: this comes with the limitation that each EC2 instance has to have the same number of Akka nodes.
+    Note: this comes with the limitation that each EC2 instance has to have the same number of Pekko nodes.
 
 * You can change the default tag key from "service" to something else. This can be done via `application.conf`, by
 setting `pekko.discovery.aws-api-ec2-tag-based.tag-key` to something else.
@@ -129,11 +129,11 @@ setting `pekko.discovery.aws-api-ec2-tag-based.tag-key` to something else.
 * If your service is running in a docker container, you will need to configure Pekko Management with separate
   IPs for binding and discovery. This is because Pekko Management needs to _bind_ to the internal docker IP,
   but will _discover_ the "host" IP (the EC2 private IP) on the AWS API. See @ref:[Basic
-  Configuration](../akka-management.md) on how to separate the bind IP from the discovery IP.
+  Configuration](../pekko-management.md) on how to separate the bind IP from the discovery IP.
 
 Demo:
 
-* A working demo app is available in the [integration-test](https://github.com/akka/akka-management/tree/master/integration-test/aws-api-ec2)
+* A working demo app is available in the [integration-test](https://github.com/apache/incubator-pekko-management/tree/master/integration-test/aws-api-ec2)
 folder.
 
 
@@ -142,7 +142,7 @@ folder.
 If you're using ECS with
 [awsvpc](https://aws.amazon.com/blogs/compute/introducing-cloud-native-networking-for-ecs-containers/)
 mode networking, you can have all task instances of a given ECS service discover
-each other. If you're using this module for bootstrapping your Akka cluster that
+each other. If you're using this module for bootstrapping your Pekko cluster that
 you'll do so by setting the value of
 `pekko.management.cluster.bootstrap.contact-point-discovery.service-name` to that of the
 ECS service itself.
@@ -262,8 +262,8 @@ Notes:
   rules have to be set. See the docs for
   [Task Networking with the `awsvpc` Network Mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html).
 
-* akka-remote by default sets `pekko.remote.netty.tcp.hostname` to the result of
-  `InetAddress.getLocalHost.getHostAddress`, and akka-management does the same
+* pekko-remote by default sets `pekko.remote.netty.tcp.hostname` to the result of
+  `InetAddress.getLocalHost.getHostAddress`, and pekko-management does the same
   for `pekko.management.http.hostname`. However,
   `InetAddress.getLocalHost.getHostAddress` throws an exception when running in
   awsvpc mode (because the container name cannot be resolved), so you will need
@@ -276,7 +276,7 @@ Notes:
 * Because ECS service discovery is only able to discover IP addresses (not ports
   too) you'll need to set
   `pekko.management.cluster.bootstrap.contact-point.fallback-port = 8558`, where
-  8558 is whatever port you choose to bind akka-management to.
+  8558 is whatever port you choose to bind pekko-management to.
 
 * You can set additional filters to only discover nodes with specific tag values in 
   your application.conf file, in the `pekko.discovery.aws-api-ecs-async.tags` key. 
@@ -302,7 +302,7 @@ Notes:
 Demo:
 
 * A working demo app is available in the
-  [integration-test](https://github.com/akka/akka-management/tree/master/integration-test/aws-api-ecs)
+  [integration-test](https://github.com/apache/incubator-pekko-management/tree/master/integration-test/aws-api-ecs)
   folder. It includes CloudFormation templates with minimal permissions w.r.t to
   IAM policies and security group ingress, and so is a good starting point for
   any deployment that integrates the

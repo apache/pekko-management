@@ -23,7 +23,7 @@ A health check must extend @scala[`Function0[Future[Boolean]]`]@java[`Supplier[C
 with a single argument of type `ActorSystem.` A general type is used rather than a specific interface so that modules such as `pekko-cluster` can 
 provide health checks without depending on Pekko management.
 
-Having access to the `ActorSystem` allows loading of any external resource via an Akka extension e.g. `Cluster` or a database connection. Health checks
+Having access to the `ActorSystem` allows loading of any external resource via a Pekko extension e.g. `Cluster` or a database connection. Health checks
 return a @scala[`Future`]@java[`CompletionStage`] so that an asynchronous action can be taken.
 
 Scala

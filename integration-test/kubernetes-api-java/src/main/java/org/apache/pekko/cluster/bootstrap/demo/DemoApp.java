@@ -20,10 +20,10 @@ import org.apache.pekko.cluster.ClusterEvent;
 import org.apache.pekko.http.javadsl.ConnectHttp;
 import org.apache.pekko.http.javadsl.Http;
 import org.apache.pekko.http.javadsl.server.AllDirectives;
-//#start-akka-management
+//#start-pekko-management
 import org.apache.pekko.management.javadsl.PekkoManagement;
 
-//#start-akka-management
+//#start-pekko-management
 import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap;
 import org.apache.pekko.stream.Materializer;
 
@@ -37,9 +37,9 @@ public class DemoApp extends AllDirectives {
 
     system.log().info("Started [" + system + "], cluster.selfAddress = " + cluster.selfAddress() + ")");
 
-    //#start-akka-management
+    //#start-pekko-management
     PekkoManagement.get(system).start();
-    //#start-akka-management
+    //#start-pekko-management
     ClusterBootstrap.get(system).start();
 
     cluster
