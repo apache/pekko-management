@@ -9,7 +9,7 @@ cd integration-test/kubernetes-api-java
 eval $(minikube -p minikube docker-env)
 mvn -Dpekko-management.version=$VERSION clean package docker:build
 
-export NAMESPACE=akka-bootstrap-demo-ns
+export NAMESPACE=pekko-bootstrap-demo-ns
 
 kubectl create namespace $NAMESPACE || true
 kubectl -n $NAMESPACE apply -f kubernetes/pekko-cluster.yml
@@ -28,7 +28,7 @@ then
   exit -1
 fi
 
-POD=$(kubectl get pods -n $NAMESPACE | grep akka-bootstrap-demo | grep Running | head -n1 | awk '{ print $1 }')
+POD=$(kubectl get pods -n $NAMESPACE | grep pekko-bootstrap-demo | grep Running | head -n1 | awk '{ print $1 }')
 
 for i in {1..15}
 do
@@ -43,7 +43,7 @@ then
   echo "*** No 3 MemberUp log events found ***"
   kubectl get pods -n $NAMESPACE
   echo "=============================="
-  for POD in $(kubectl get pods -n $NAMESPACE | grep akka-bootstrap-demo | grep Running | awk '{ print $1 }')
+  for POD in $(kubectl get pods -n $NAMESPACE | grep pekko-bootstrap-demo | grep Running | awk '{ print $1 }')
   do
    echo "Logging for $POD"
     kubectl logs $POD -n $NAMESPACE
