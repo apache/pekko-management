@@ -35,6 +35,7 @@ lazy val root = project
     leaseKubernetesIntTest,
     docs)
   .settings(
+    name := "pekko-management-root",
     GlobalScope / parallelExecution := false,
     publish / skip := true)
 
@@ -252,7 +253,7 @@ lazy val docs = project
   .enablePlugins(AkkaParadoxPlugin, ParadoxSitePlugin, PreprocessPlugin, PublishRsyncPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
-    name := "Apache Pekko Management",
+    name := "pekko-management-docs",
     publish / skip := true,
     makeSite := makeSite.dependsOn(LocalRootProject / ScalaUnidoc / doc).value,
     Preprocess / siteSubdirName := s"api/pekko-management/${if (isSnapshot.value) "snapshot" else version.value}",
