@@ -123,7 +123,7 @@ object AsyncEcsTaskSetDiscovery {
       case HttpResponse(StatusCodes.OK, _, entity, _) =>
         val metadata = Unmarshal(entity).to[TaskMetadata].map(Option(_))
         metadata
-      case resp @ HttpResponse(_, _, _, _) =>
+      case resp: HttpResponse =>
         resp.discardEntityBytes()
         Future.successful(None)
     }
