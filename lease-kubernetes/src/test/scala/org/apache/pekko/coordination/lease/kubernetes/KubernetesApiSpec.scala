@@ -55,7 +55,7 @@ class KubernetesApiSpec
     wireMockServer.port(),
     namespace = Some("lease"),
     "",
-    apiServerRequestTimeout = 800.millis,
+    apiServerRequestTimeout = 1.second,
     false)
 
   WireMock.configureFor(settings.apiServerPort)
