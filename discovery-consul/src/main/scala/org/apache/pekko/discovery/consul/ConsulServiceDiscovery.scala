@@ -107,7 +107,7 @@ object ConsulServiceDiscovery {
 
   final case class ConsulResponseFutureCallback[T]() extends ConsulResponseCallback[T] {
 
-    private val promise = Promise[ConsulResponse[T]]
+    private val promise = Promise[ConsulResponse[T]]()
 
     def fail(exception: Throwable) = promise.failure(exception)
 

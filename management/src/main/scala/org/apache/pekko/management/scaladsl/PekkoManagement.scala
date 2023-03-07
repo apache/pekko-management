@@ -239,25 +239,25 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
           .recoverWith {
             case _ => dynamicAccess.createInstanceFor[ExtensionIdProvider](fqcn, Nil)
           }
-          .recoverWith {
+          .recoverWith[ExtensionIdProvider] {
             case _: ClassCastException | _: NoSuchMethodException =>
               dynamicAccess.createInstanceFor[ExtensionIdProvider](fqcn, (classOf[ExtendedActorSystem], system) :: Nil)
           }
-          .recoverWith {
+          .recoverWith[AnyRef] {
             case _: ClassCastException | _: NoSuchMethodException =>
               dynamicAccess.createInstanceFor[ManagementRouteProvider](fqcn, Nil)
           }
-          .recoverWith {
+          .recoverWith[AnyRef] {
             case _: ClassCastException | _: NoSuchMethodException =>
               dynamicAccess.createInstanceFor[ManagementRouteProvider](
                 fqcn,
                 (classOf[ExtendedActorSystem], system) :: Nil)
           }
-          .recoverWith {
+          .recoverWith[AnyRef] {
             case _: ClassCastException | _: NoSuchMethodException =>
               dynamicAccess.createInstanceFor[javadsl.ManagementRouteProvider](fqcn, Nil)
           }
-          .recoverWith {
+          .recoverWith[AnyRef] {
             case _: ClassCastException | _: NoSuchMethodException =>
               dynamicAccess
                 .createInstanceFor[javadsl.ManagementRouteProvider](fqcn, (classOf[ExtendedActorSystem], system) :: Nil)

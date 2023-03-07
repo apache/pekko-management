@@ -70,7 +70,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
 
   private def routePostMembers(cluster: Cluster): Route =
     post {
-      formField('address) { addressString =>
+      formField("address") { addressString =>
         complete {
           val address = AddressFromURIString(addressString)
           cluster.join(address)
@@ -96,7 +96,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
 
   private def routePutMember(cluster: Cluster, member: Member) =
     put {
-      formField('operation) { operation =>
+      formField("operation") { operation =>
         ClusterHttpManagementMemberOperation.fromString(operation) match {
           case Some(Down) =>
             cluster.down(member.uniqueAddress.address)
@@ -245,7 +245,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
     get {
       extractExecutionContext { implicit executor =>
         complete {
-          implicit val timeout = Timeout(5.seconds)
+          implicit val timeout: Timeout = Timeout(5.seconds)
           try {
             ClusterSharding(cluster.system)
               .shardRegion(shardRegionName)
@@ -297,7 +297,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
 
   private def routePutCluster(cluster: Cluster): Route = {
     put {
-      formField('operation) { operation =>
+      formField("operation") { operation =>
         if (operation.toLowerCase == "prepare-for-full-shutdown") {
           cluster.prepareForFullClusterShutdown()
           complete(ClusterHttpManagementMessage(s"Preparing for full cluster shutdown"))
