@@ -1,15 +1,16 @@
-import com.geirsson.CiReleasePlugin
 import com.lightbend.paradox.projectinfo.ParadoxProjectInfoPluginKeys._
 import de.heikoseeberger.sbtheader.HeaderPlugin
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport._
 import sbt.Keys._
 import sbt._
 import org.mdedetrich.apache.sonatype.SonatypeApachePlugin
+import sbtdynver.DynVerPlugin
+import sbtdynver.DynVerPlugin.autoImport.dynverSonatypeSnapshots
 
 object Common extends AutoPlugin {
 
   override def trigger = allRequirements
-  override def requires = plugins.JvmPlugin && HeaderPlugin && CiReleasePlugin && SonatypeApachePlugin
+  override def requires = plugins.JvmPlugin && HeaderPlugin && SonatypeApachePlugin && DynVerPlugin
 
   val currentYear = "2023"
 
@@ -73,6 +74,9 @@ object Common extends AutoPlugin {
       // -a Show stack traces and exception class name for AssertionErrors.
       testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
       scalaVersion := Dependencies.scala212Version)
+
+  override lazy val buildSettings = Seq(
+    dynverSonatypeSnapshots := true)
 
   private def isJdk8 =
     VersionNumber(sys.props("java.specification.version")).matchesSemVer(SemanticSelector(s"=1.8"))
