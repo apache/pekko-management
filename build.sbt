@@ -281,7 +281,6 @@ lazy val docs = project
       "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/current/%s",
       "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/current/",
       "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/current/%s",
-      "extref.akka-enhancements.base_url" -> s"https://docs.akka.io/docs/pekko-enhancements/current/%s",
       "scaladoc.akka.management.base_url" -> s"/${(Preprocess / siteSubdirName).value}/"))
 
 def pekkoModule(moduleName: String): Project =
