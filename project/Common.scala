@@ -27,7 +27,6 @@ object Common extends AutoPlugin {
         "dev@pekko.apache.org",
         url("https://github.com/apache/incubator-pekko-management/graphs/contributors")),
       description := "Apache Pekko Management is a suite of tools for operating Apache Pekko Clusters.",
-      headerLicense := Some(HeaderLicense.Custom(apacheHeader)),
       crossScalaVersions := Dependencies.crossScalaVersions,
       projectInfoVersion := (if (isSnapshot.value) "snapshot" else version.value),
       crossVersion := CrossVersion.binary,
@@ -80,13 +79,4 @@ object Common extends AutoPlugin {
 
   private def isJdk8 =
     VersionNumber(sys.props("java.specification.version")).matchesSemVer(SemanticSelector(s"=1.8"))
-
-  def apacheHeader: String =
-    """Licensed to the Apache Software Foundation (ASF) under one or more
-      |license agreements; and to You under the Apache License, version 2.0:
-      |
-      |  https://www.apache.org/licenses/LICENSE-2.0
-      |
-      |This file is part of the Apache Pekko project, derived from Akka.
-      |""".stripMargin
 }

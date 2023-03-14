@@ -248,10 +248,16 @@ lazy val integrationTestLocal = pekkoIntTestModule("local")
     managementClusterBootstrap)
   .enablePlugins(JavaAppPackaging, AshScriptPlugin)
 
+lazy val themeSettings = Seq(
+  // allow access to snapshots for pekko-sbt-paradox
+  resolvers += "Apache Nexus Snapshots".at("https://repository.apache.org/content/repositories/snapshots/"),
+  pekkoParadoxGithub := Some("https://github.com/apache/incubator-pekko-management"))
+
 lazy val docs = project
   .in(file("docs"))
-  .enablePlugins(AkkaParadoxPlugin, ParadoxSitePlugin, PreprocessPlugin, PublishRsyncPlugin)
+  .enablePlugins(ParadoxPlugin, PekkoParadoxPlugin, ParadoxSitePlugin, PreprocessPlugin)
   .disablePlugins(MimaPlugin)
+  .settings(themeSettings)
   .settings(
     name := "pekko-management-docs",
     publish / skip := true,
@@ -275,10 +281,7 @@ lazy val docs = project
       "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/current/%s",
       "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/current/",
       "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/current/%s",
-      "extref.akka-enhancements.base_url" -> s"https://docs.akka.io/docs/pekko-enhancements/current/%s",
-      "scaladoc.akka.management.base_url" -> s"/${(Preprocess / siteSubdirName).value}/"),
-    publishRsyncArtifacts += makeSite.value -> "www/",
-    publishRsyncHost := "akkarepo@gustav.akka.io")
+      "scaladoc.akka.management.base_url" -> s"/${(Preprocess / siteSubdirName).value}/"))
 
 def pekkoModule(moduleName: String): Project =
   Project(id = moduleName, base = file(moduleName))
