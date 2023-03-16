@@ -1,8 +1,9 @@
 name: Publish
 
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: "22 0 * * *"
 
 jobs:
   publish-artifacts:
@@ -11,7 +12,7 @@ jobs:
     if: github.repository == 'apache/incubator-pekko-management'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -25,7 +26,7 @@ jobs:
           java-version: 8
 
       - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.2
+        uses: coursier/cache-action@v6.4.0
 
       - name: Install graphviz
         run: sudo apt-get install -y graphviz
