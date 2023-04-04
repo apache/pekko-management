@@ -19,11 +19,11 @@ import org.junit.Test;
 
 public class ClusterHttpManagementJavaCompileTest {
 
-    public void test() {
-        ActorSystem actorSystem = ActorSystem.create("test");
-        ClusterHttpManagementRouteProvider x = ClusterHttpManagementRouteProvider.get(actorSystem);
-    }
+  public void test() {
+    ActorSystem actorSystem = ActorSystem.create("test");
+    ClusterHttpManagementRouteProvider x = ClusterHttpManagementRouteProvider.get(actorSystem);
+  }
 
-    @Test
-    public void compileOnly() {}
+  @Test
+  public void compileOnly() {}
 }
