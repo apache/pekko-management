@@ -13,7 +13,7 @@
 
 package org.apache.pekko.discovery.awsapi.ec2;
 
-//#custom-client-config
+// #custom-client-config
 // package com.example;
 
 import com.amazonaws.ClientConfiguration;
@@ -27,9 +27,9 @@ class MyConfiguration extends ClientConfiguration {
 
     setRetryPolicy(PredefinedRetryPolicies.NO_RETRY_POLICY);
     // If you're using this module for bootstrapping your Akka cluster,
-    // Cluster Bootstrap already has its own retry/back-off mechanism. To avoid RequestLimitExceeded errors from AWS,
+    // Cluster Bootstrap already has its own retry/back-off mechanism. To avoid RequestLimitExceeded
+    // errors from AWS,
     // disable retries in the EC2 client configuration.
   }
-
 }
-//#custom-client-config
+// #custom-client-config

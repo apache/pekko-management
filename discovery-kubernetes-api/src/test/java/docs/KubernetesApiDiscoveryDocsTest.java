@@ -20,8 +20,8 @@ import org.apache.pekko.discovery.ServiceDiscovery;
 public class KubernetesApiDiscoveryDocsTest {
   public void loadKubernetesApiDiscovery() {
     ActorSystem system = ActorSystem.create();
-    //#kubernetes-api-discovery
+    // #kubernetes-api-discovery
     ServiceDiscovery discovery = Discovery.get(system).loadServiceDiscovery("kubernetes-api");
-    //#kubernetes-api-discovery
+    // #kubernetes-api-discovery
   }
 }

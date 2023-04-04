@@ -25,6 +25,5 @@ public class ClusterBootstrapJavaCompileTest {
   }
 
   @Test
-  public void compileOnly() {
-  }
+  public void compileOnly() {}
 }

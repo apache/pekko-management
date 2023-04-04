@@ -20,10 +20,10 @@ import org.apache.pekko.cluster.ClusterEvent;
 import org.apache.pekko.http.javadsl.ConnectHttp;
 import org.apache.pekko.http.javadsl.Http;
 import org.apache.pekko.http.javadsl.server.AllDirectives;
-//#start-pekko-management
+// #start-pekko-management
 import org.apache.pekko.management.javadsl.PekkoManagement;
 
-//#start-pekko-management
+// #start-pekko-management
 import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap;
 import org.apache.pekko.stream.Materializer;
 
@@ -35,25 +35,31 @@ public class DemoApp extends AllDirectives {
     Materializer mat = Materializer.createMaterializer(system);
     Cluster cluster = Cluster.get(system);
 
-    system.log().info("Started [" + system + "], cluster.selfAddress = " + cluster.selfAddress() + ")");
+    system
+        .log()
+        .info("Started [" + system + "], cluster.selfAddress = " + cluster.selfAddress() + ")");
 
-    //#start-pekko-management
+    // #start-pekko-management
     PekkoManagement.get(system).start();
-    //#start-pekko-management
+    // #start-pekko-management
     ClusterBootstrap.get(system).start();
 
-    cluster
-      .subscribe(system.actorOf(Props.create(ClusterWatcher.class)), ClusterEvent.initialStateAsEvents(), ClusterEvent.ClusterDomainEvent.class);
+    cluster.subscribe(
+        system.actorOf(Props.create(ClusterWatcher.class)),
+        ClusterEvent.initialStateAsEvents(),
+        ClusterEvent.ClusterDomainEvent.class);
 
-    Http.get(system).bindAndHandle(complete("Hello world").flow(system, mat), ConnectHttp.toHost("0.0.0.0", 8080), mat);
+    Http.get(system)
+        .bindAndHandle(
+            complete("Hello world").flow(system, mat), ConnectHttp.toHost("0.0.0.0", 8080), mat);
 
-    cluster.registerOnMemberUp(() -> {
-      system.log().info("Cluster member is up!");
-    });
+    cluster.registerOnMemberUp(
+        () -> {
+          system.log().info("Cluster member is up!");
+        });
   }
 
   public static void main(String[] args) {
     new DemoApp();
   }
 }
-

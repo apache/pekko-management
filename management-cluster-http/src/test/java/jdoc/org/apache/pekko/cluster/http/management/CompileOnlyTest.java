@@ -16,26 +16,25 @@ package jdoc.org.apache.pekko.cluster.http.management;
 import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.management.scaladsl.PekkoManagement;
 import org.apache.pekko.cluster.Cluster;
-//#imports
+// #imports
 import org.apache.pekko.http.javadsl.server.Route;
 import org.apache.pekko.management.cluster.javadsl.ClusterHttpManagementRoutes;
-//#imports
+// #imports
 
 public class CompileOnlyTest {
-    public static void example() {
-        //#loading
-        ActorSystem system = ActorSystem.create();
-        PekkoManagement.get(system).start();
-        //#loading
+  public static void example() {
+    // #loading
+    ActorSystem system = ActorSystem.create();
+    PekkoManagement.get(system).start();
+    // #loading
 
+    // #all
+    Cluster cluster = Cluster.get(system);
+    Route allRoutes = ClusterHttpManagementRoutes.all(cluster);
+    // #all
 
-        //#all
-        Cluster cluster = Cluster.get(system);
-        Route allRoutes = ClusterHttpManagementRoutes.all(cluster);
-        //#all
-
-        //#read-only
-        Route readOnlyRoutes = ClusterHttpManagementRoutes.readOnly(cluster);
-        //#read-only
-    }
+    // #read-only
+    Route readOnlyRoutes = ClusterHttpManagementRoutes.readOnly(cluster);
+    // #read-only
+  }
 }

@@ -27,9 +27,10 @@ public class ClusterWatcher extends AbstractActor {
   @Override
   public Receive createReceive() {
     return ReceiveBuilder.create()
-      .matchAny(msg -> {
-        log.info("Cluster " + cluster.selfAddress() + " >>> " + msg);
-      })
-      .build();
+        .matchAny(
+            msg -> {
+              log.info("Cluster " + cluster.selfAddress() + " >>> " + msg);
+            })
+        .build();
   }
 }

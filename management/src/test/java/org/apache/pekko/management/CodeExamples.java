@@ -31,37 +31,39 @@ public class CodeExamples {
 
   public void start() {
     SSLContext sslContext = null;
-    //#start-pekko-management-with-https-context
+    // #start-pekko-management-with-https-context
     PekkoManagement management = PekkoManagement.get(system);
 
     HttpsConnectionContext https = ConnectionContext.https(sslContext);
     management.start(settings -> settings.withHttpsConnectionContext(https));
-    //#start-pekko-management-with-https-context
+    // #start-pekko-management-with-https-context
   }
 
   public void basicAuth() {
     PekkoManagement management = null;
 
-    //#basic-auth
-    final Function<Optional<SecurityDirectives.ProvidedCredentials>, CompletionStage<Optional<String>>>
-      myUserPassAuthenticator = opt -> {
-      if (opt.filter(c -> (c != null) && c.verify("p4ssw0rd")).isPresent()) {
-        return CompletableFuture.completedFuture(Optional.of(opt.get().identifier()));
-      } else {
-        return CompletableFuture.completedFuture(Optional.empty());
-      }
-    };
+    // #basic-auth
+    final Function<
+            Optional<SecurityDirectives.ProvidedCredentials>, CompletionStage<Optional<String>>>
+        myUserPassAuthenticator =
+            opt -> {
+              if (opt.filter(c -> (c != null) && c.verify("p4ssw0rd")).isPresent()) {
+                return CompletableFuture.completedFuture(Optional.of(opt.get().identifier()));
+              } else {
+                return CompletableFuture.completedFuture(Optional.empty());
+              }
+            };
     // ...
     management.start(settings -> settings.withAuth(myUserPassAuthenticator));
-    //#basic-auth
+    // #basic-auth
   }
 
   public void stop() {
-    //#stopping
+    // #stopping
     PekkoManagement httpClusterManagement = PekkoManagement.get(system);
     httpClusterManagement.start();
-    //...
+    // ...
     httpClusterManagement.stop();
-    //#stopping
+    // #stopping
   }
 }

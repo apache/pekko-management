@@ -18,16 +18,16 @@ import org.apache.pekko.management.scaladsl.PekkoManagement;
 import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap;
 
 public class ClusterBootstrapCompileOnly {
-    public static void bootstrap() {
+  public static void bootstrap() {
 
-        ActorSystem system = ActorSystem.create();
+    ActorSystem system = ActorSystem.create();
 
-        //#start
-        // Pekko Management hosts the HTTP routes used by bootstrap
-        PekkoManagement.get(system).start();
+    // #start
+    // Pekko Management hosts the HTTP routes used by bootstrap
+    PekkoManagement.get(system).start();
 
-        // Starting the bootstrap process needs to be done explicitly
-        ClusterBootstrap.get(system).start();
-        //#start
-    }
+    // Starting the bootstrap process needs to be done explicitly
+    ClusterBootstrap.get(system).start();
+    // #start
+  }
 }

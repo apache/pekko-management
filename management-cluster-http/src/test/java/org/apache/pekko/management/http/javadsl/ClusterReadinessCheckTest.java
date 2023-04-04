@@ -18,14 +18,13 @@ import org.apache.pekko.management.cluster.javadsl.ClusterMembershipCheck;
 
 import java.util.concurrent.CompletionStage;
 
-
 public class ClusterReadinessCheckTest {
 
-   private static ActorSystem system = null;
+  private static ActorSystem system = null;
 
-   // test type works
-   public static CompletionStage<Boolean> worksFromJava() throws Exception {
-      ClusterMembershipCheck check = new ClusterMembershipCheck(system);
-      return check.get();
-   }
+  // test type works
+  public static CompletionStage<Boolean> worksFromJava() throws Exception {
+    ClusterMembershipCheck check = new ClusterMembershipCheck(system);
+    return check.get();
+  }
 }

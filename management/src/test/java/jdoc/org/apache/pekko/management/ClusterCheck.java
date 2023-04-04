@@ -21,18 +21,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
-//#cluster
+// #cluster
 class ClusterCheck implements Supplier<CompletionStage<Boolean>> {
 
-    private final Cluster cluster;
+  private final Cluster cluster;
 
-    public ClusterCheck(ActorSystem system) {
-        cluster = Cluster.get(system);
-    }
+  public ClusterCheck(ActorSystem system) {
+    cluster = Cluster.get(system);
+  }
 
-    @Override
-    public CompletionStage<Boolean> get() {
-        return CompletableFuture.completedFuture(cluster.selfMember().status() == MemberStatus.up());
-    }
+  @Override
+  public CompletionStage<Boolean> get() {
+    return CompletableFuture.completedFuture(cluster.selfMember().status() == MemberStatus.up());
+  }
 }
-//#cluster
+// #cluster
