@@ -9,14 +9,14 @@ object Dependencies {
   val crossScalaVersions = Seq(scala212Version, scala213Version)
 
   // Align the versions in integration-test/kubernetes-api-java/pom.xml
-  val pekkoVersion = "0.0.0+26623-85c2a469-SNAPSHOT"
-  val pekkoHttpVersion = "0.0.0+4334-7826b8b0-SNAPSHOT"
+  val pekkoVersion = "0.0.0+26630-2c4d0ee0-SNAPSHOT"
+  val pekkoHttpVersion = "0.0.0+4339-868ca23e-SNAPSHOT"
 
   val scalaTestVersion = "3.2.14"
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"
 
   val awsSdkVersion = "1.12.210"
-  val jacksonVersion = "2.11.4"
+  val jacksonVersion = "2.14.2"
 
   val log4j2Version = "2.17.2"
 
