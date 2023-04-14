@@ -112,7 +112,7 @@ a setup with multiple Pekko nodes (i.e. multiple JVMs) per EC2 instance.
     pekko {
       discovery {
         aws-api-ec2-tag-based {
-          ports = [8557, 6262, 8559] # 3 Pekko nodes per EC2 instance
+          ports = [6261, 6262, 6263] # 3 Pekko nodes per EC2 instance
           # note that the above need to be the ports associated with the *Pekko Management* extension
         }
       }
