@@ -31,7 +31,7 @@ class JsonFormatSpec extends AnyWordSpec with Matchers {
             Some(PodSpec(List(Container(
               "pekko-cluster-tooling-example",
               Some(List(
-                ContainerPort(Some("akka-remote"), 10000),
+                ContainerPort(Some("pekko-remote"), 10000),
                 ContainerPort(Some("management"), 10001),
                 ContainerPort(Some("http"), 10002))))))),
             Some(
@@ -44,7 +44,7 @@ class JsonFormatSpec extends AnyWordSpec with Matchers {
             Some(PodSpec(List(Container(
               "pekko-cluster-tooling-example",
               Some(List(
-                ContainerPort(Some("akka-remote"), 10000),
+                ContainerPort(Some("pekko-remote"), 10000),
                 ContainerPort(Some("management"), 10001),
                 ContainerPort(Some("http"), 10002))))))),
             Some(
@@ -57,7 +57,7 @@ class JsonFormatSpec extends AnyWordSpec with Matchers {
             Some(PodSpec(List(Container(
               "pekko-cluster-tooling-example",
               Some(List(
-                ContainerPort(Some("akka-remote"), 10000),
+                ContainerPort(Some("pekko-remote"), 10000),
                 ContainerPort(Some("management"), 10001),
                 ContainerPort(Some("http"), 10002))))))),
             Some(

@@ -53,7 +53,7 @@ spec:
               fieldPath: metadata.namespace
         # The DNS-based discovery will use this service name to look for the headless
         # service defined below
-        - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
+        - name: PEKKO_CLUSTER_BOOTSTRAP_SERVICE_NAME
           value: "integration-test-kubernetes-dns-internal"
 
 ---

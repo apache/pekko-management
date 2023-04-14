@@ -55,8 +55,8 @@ class LeaseActorSpec
         ConfigFactory.parseString("""
     pekko.loggers = []
     pekko.loglevel = DEBUG
-    akka.stdout-loglevel = DEBUG
-    akka.actor.debug.fsm = true
+    pekko.stdout-loglevel = DEBUG
+    pekko.actor.debug.fsm = true
   """)))
     with AnyWordSpecLike
     with Matchers

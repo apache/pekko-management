@@ -34,7 +34,7 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
               Some(PodSpec(List(Container(
                 "pekko-cluster-tooling-example",
                 Some(List(
-                  ContainerPort(Some("akka-remote"), 10000),
+                  ContainerPort(Some("pekko-remote"), 10000),
                   ContainerPort(Some("management"), 10001),
                   ContainerPort(Some("http"), 10002))))))),
               Some(PodStatus(Some("172.17.0.4"), Some(Nil), Some("Running"))),
@@ -43,7 +43,7 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
               Some(PodSpec(List(Container(
                 "pekko-cluster-tooling-example",
                 Some(List(
-                  ContainerPort(Some("akka-remote"), 10000),
+                  ContainerPort(Some("pekko-remote"), 10000),
                   ContainerPort(Some("management"), 10001),
                   ContainerPort(Some("http"), 10002))))))),
               Some(PodStatus(None, Some(Nil), Some("Running"))),
@@ -64,7 +64,7 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
             Some(PodSpec(List(Container(
               "pekko-cluster-tooling-example",
               Some(List(
-                ContainerPort(Some("akka-remote"), 10000),
+                ContainerPort(Some("pekko-remote"), 10000),
                 ContainerPort(Some("management"), 10001),
                 ContainerPort(Some("http"), 10002))))))),
             Some(PodStatus(Some("172.17.0.4"), Some(Nil), Some("Running"))),
@@ -88,7 +88,7 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
               Some(PodSpec(List(Container(
                 "pekko-cluster-tooling-example",
                 Some(List(
-                  ContainerPort(Some("akka-remote"), 10000),
+                  ContainerPort(Some("pekko-remote"), 10000),
                   ContainerPort(Some("management"), 10001),
                   ContainerPort(Some("http"), 10002))))))),
               Some(PodStatus(Some("172.17.0.4"), Some(Nil), Some("Running"))),
@@ -103,7 +103,7 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
               Some(PodSpec(List(
                 Container(
                   "pekko-cluster-tooling-example",
-                  Some(List(ContainerPort(Some("akka-remote"), 10000), ContainerPort(Some("management"), 10001)))),
+                  Some(List(ContainerPort(Some("pekko-remote"), 10000), ContainerPort(Some("management"), 10001)))),
                 Container("sidecar", Some(List(ContainerPort(Some("http"), 10002))))))),
               Some(PodStatus(Some("172.17.0.6"), Some(Nil), Some("Running"))),
               Some(Metadata(deletionTimestamp = None)))))
@@ -130,7 +130,7 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
             Some(PodSpec(List(Container(
               "pekko-cluster-tooling-example",
               Some(List(
-                ContainerPort(Some("akka-remote"), 10000),
+                ContainerPort(Some("pekko-remote"), 10000),
                 ContainerPort(Some("management"), 10001),
                 ContainerPort(Some("http"), 10002))))))),
             Some(PodStatus(Some("172.17.0.4"), Some(Nil), Some("Succeeded"))),
@@ -186,7 +186,7 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
               Some(PodSpec(List(Container(
                 "pekko-cluster-tooling-example",
                 Some(List(
-                  ContainerPort(Some("akka-remote"), 10000),
+                  ContainerPort(Some("pekko-remote"), 10000),
                   ContainerPort(Some("management"), 10001),
                   ContainerPort(Some("http"), 10002))))))),
               Some(PodStatus(Some("172.17.0.4"), Some(Nil), Some("Running"))),
