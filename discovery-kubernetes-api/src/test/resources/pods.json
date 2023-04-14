@@ -84,7 +84,7 @@
               },
               {
                 "name": "RP_ENDPOINTS",
-                "value": "AKKA_REMOTE,AKKA_MGMT_HTTP,HTTP"
+                "value": "PEKKO_REMOTE,PEKKO_MGMT_HTTP,HTTP"
               },
               {
                 "name": "RP_ENDPOINTS_COUNT",
@@ -169,7 +169,7 @@
                 "value": "10002"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_BIND_HOST",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_BIND_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -178,11 +178,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_BIND_PORT",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_BIND_PORT",
                 "value": "10001"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_HOST",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -191,11 +191,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_PORT",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_PORT",
                 "value": "10001"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_BIND_HOST",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_BIND_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -204,11 +204,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_BIND_PORT",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_BIND_PORT",
                 "value": "10000"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_HOST",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -217,7 +217,7 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_PORT",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_PORT",
                 "value": "10000"
               },
               {
@@ -433,7 +433,7 @@
               },
               {
                 "name": "RP_ENDPOINTS",
-                "value": "AKKA_REMOTE,AKKA_MGMT_HTTP,HTTP"
+                "value": "PEKKO_REMOTE,PEKKO_MGMT_HTTP,HTTP"
               },
               {
                 "name": "RP_ENDPOINTS_COUNT",
@@ -518,7 +518,7 @@
                 "value": "10002"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_BIND_HOST",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_BIND_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -527,11 +527,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_BIND_PORT",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_BIND_PORT",
                 "value": "10001"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_HOST",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -540,11 +540,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_PORT",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_PORT",
                 "value": "10001"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_BIND_HOST",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_BIND_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -553,11 +553,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_BIND_PORT",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_BIND_PORT",
                 "value": "10000"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_HOST",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -566,7 +566,7 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_PORT",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_PORT",
                 "value": "10000"
               },
               {
@@ -783,7 +783,7 @@
               },
               {
                 "name": "RP_ENDPOINTS",
-                "value": "AKKA_REMOTE,AKKA_MGMT_HTTP,HTTP"
+                "value": "PEKKO_REMOTE,PEKKO_MGMT_HTTP,HTTP"
               },
               {
                 "name": "RP_ENDPOINTS_COUNT",
@@ -868,7 +868,7 @@
                 "value": "10002"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_BIND_HOST",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_BIND_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -877,11 +877,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_BIND_PORT",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_BIND_PORT",
                 "value": "10001"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_HOST",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -890,11 +890,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_MGMT_HTTP_PORT",
+                "name": "RP_ENDPOINT_PEKKO_MGMT_HTTP_PORT",
                 "value": "10001"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_BIND_HOST",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_BIND_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -903,11 +903,11 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_BIND_PORT",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_BIND_PORT",
                 "value": "10000"
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_HOST",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_HOST",
                 "valueFrom": {
                   "fieldRef": {
                     "apiVersion": "v1",
@@ -916,7 +916,7 @@
                 }
               },
               {
-                "name": "RP_ENDPOINT_AKKA_REMOTE_PORT",
+                "name": "RP_ENDPOINT_PEKKO_REMOTE_PORT",
                 "value": "10000"
               },
               {
