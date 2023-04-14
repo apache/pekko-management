@@ -50,7 +50,7 @@
             "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "ports": [
               {
-                "name": "akka-remote",
+                "name": "pekko-remote",
                 "containerPort": 10000,
                 "protocol": "TCP"
               },
@@ -399,7 +399,7 @@
             "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "ports": [
               {
-                "name": "akka-remote",
+                "name": "pekko-remote",
                 "containerPort": 10000,
                 "protocol": "TCP"
               },
@@ -749,7 +749,7 @@
             "image": "pekko-cluster-tooling-example/pekko-cluster-tooling-example:0.1.0",
             "ports": [
               {
-                "name": "akka-remote",
+                "name": "pekko-remote",
                 "containerPort": 10000,
                 "protocol": "TCP"
               },
