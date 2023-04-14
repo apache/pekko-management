@@ -32,7 +32,7 @@ object EcsApiDemoApp {
              |pekko {
              |  actor.provider = "cluster"
              |  management {
-             |    cluster.bootstrap.contact-point.fallback-port = 6262
+             |    cluster.bootstrap.contact-point.fallback-port = 6458
              |    http.hostname = "${privateAddress.getHostAddress}"
              |  }
              |  discovery.method = aws-api-ecs-async

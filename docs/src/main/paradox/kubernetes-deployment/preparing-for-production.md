@@ -51,7 +51,7 @@ spec:
             port: management
         ports:
         - name: management
-          containerPort: 6262
+          containerPort: 6458
           protocol: TCP
         - name: http
           containerPort: 8080

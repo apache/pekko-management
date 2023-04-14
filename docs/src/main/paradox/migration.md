@@ -11,5 +11,5 @@ Please refer to the [Akka Management migration guide](https://doc.akka.io/docs/a
 
 ### Management Port
 
-The default port has changed from Akka's 8558 to Pekko's 6262.
+The default port has changed from Akka's 8558 to Pekko's 6458.
 

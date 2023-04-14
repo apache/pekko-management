@@ -56,7 +56,7 @@ A HTTP `PUT` request to `loglevel/log4j2?logger=[logger name]&level=[level name]
 For example using curl:
 
 ```
-curl -X PUT "http://127.0.0.1:6262/loglevel/log4j2?logger=com.example.MyActor&level=DEBUG"
+curl -X PUT "http://127.0.0.1:6458/loglevel/log4j2?logger=com.example.MyActor&level=DEBUG"
 ```
 
 #### Classic and Internal Pekko Logger Level
@@ -72,5 +72,5 @@ Note that the allowed level for Pekko Classic logging is a subset of the logleve
 For example using curl:
 
 ```
-curl -X PUT "http://127.0.0.1:6262/loglevel/pekko?level=DEBUG"
+curl -X PUT "http://127.0.0.1:6458/loglevel/pekko?level=DEBUG"
 ```
