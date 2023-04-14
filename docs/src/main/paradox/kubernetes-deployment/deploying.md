@@ -88,16 +88,16 @@ make the logs quieter, but for now it will help us to understand what is happeni
 
 7  [INFO] [org.apache.pekko.cluster.Cluster] [] [Appka-pekko.actor.default-dispatcher-11] - Cluster Node [pekko://Appka@172.17.0.6:17355] - Welcome from [pekko://Appka@172.17.0.5:17355] MDC: {pekkoAddress=pekko://Appka@172.17.0.6:17355, sourceThread=Appka-pekko.actor.internal-dispatcher-2, pekkoSource=Cluster(pekko://Appka), sourceActorSystem=Appka, pekkoTimestamp=10:05:01.918UTC}
    [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberUp(Member(address = pekko://Appka@172.17.0.5:17355, status = Up)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:17355, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
-   [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberJoined(Member(address = pekko://Appka@172.17.0.6:17355, status = Joining)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:25520, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
-   [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberJoined(Member(address = pekko://Appka@172.17.0.7:25520, status = Joining)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:25520, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
-   [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberUp(Member(address = pekko://Appka@172.17.0.6:25520, status = Up)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:25520, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
-   [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberUp(Member(address = pekko://Appka@172.17.0.7:25520, status = Up)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:25520, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
+   [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberJoined(Member(address = pekko://Appka@172.17.0.6:17355, status = Joining)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:17355, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
+   [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberJoined(Member(address = pekko://Appka@172.17.0.7:17355, status = Joining)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:17355, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
+   [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberUp(Member(address = pekko://Appka@172.17.0.6:17355, status = Up)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:17355, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
+   [INFO] [org.apache.pekko.cluster.bootstrap.demo.DemoApp] [] [Appka-pekko.actor.default-dispatcher-19] - MemberEvent: MemberUp(Member(address = pekko://Appka@172.17.0.7:17355, status = Up)) MDC: {pekkoAddress=pekko://Appka@172.17.0.6:17355, pekkoSource=pekko://Appka/user, sourceActorSystem=Appka}
 ```
 @@@
 
 An explanation of these messages is as follows.
 
-1. These are init messages, showing that remoting has started on port 25520. The IP address should be the pods IP address from which other pods can access it, while the port number should match the configured remoting number, defaulting to 25520.
+1. These are init messages, showing that remoting has started on port 17355. The IP address should be the pods IP address from which other pods can access it, while the port number should match the configured remoting number, defaulting to 17355.
 2. Init messages for Pekko management, once again, the IP address should be the pods IP address, while the port number should be the port number you've configured for Pekko management to use, defaulting to 6262.
    Pekko management is also hosting the readiness and liveness checks.
 3. Now the cluster bootstrap process is starting. The service name should match your Pekko system name or configured service name in cluster bootstrap, and the port should match your configured port name. In this guide we kept these as the default values.
@@ -115,7 +115,7 @@ and ends up joining a pod with IP `172.17.0.5` as it has a lower IP.
 If you look in the logs of that pod, you'll see a message like this:
 
 ```
-[INFO] [org.apache.pekko.management.cluster.bootstrap.internal.BootstrapCoordinator] [pekkoBootstrapJoinSelf] [Appka-pekko.actor.default-dispatcher-19] - Initiating new cluster, self-joining [pekko://Appka@172.17.0.5:25520]. Other nodes are expected to locate this cluster via continued contact-point probing. MDC: {pekkoAddress=pekko://Appka@172.17.0.5:25520, sourceThread=Appka-pekko.actor.default-dispatcher-11, pekkoSource=pekko://Appka/system/bootstrapCoordinator, sourceActorSystem=Appka, pekkoTimestamp=10:05:00.873UTC}
+[INFO] [org.apache.pekko.management.cluster.bootstrap.internal.BootstrapCoordinator] [pekkoBootstrapJoinSelf] [Appka-pekko.actor.default-dispatcher-19] - Initiating new cluster, self-joining [pekko://Appka@172.17.0.5:17355]. Other nodes are expected to locate this cluster via continued contact-point probing. MDC: {pekkoAddress=pekko://Appka@172.17.0.5:17355, sourceThread=Appka-pekko.actor.default-dispatcher-11, pekkoSource=pekko://Appka/system/bootstrapCoordinator, sourceActorSystem=Appka, pekkoTimestamp=10:05:00.873UTC}
 ```
 
 This message will appear after a timeout called the stable margin, which defaults to 5 seconds, at that point, the pod has seen that there have been no changes to the number of pods deployed for 5 seconds, and so given that it has the lowest IP address, it considers it safe for it to start a new cluster.

@@ -228,7 +228,7 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactC,
-            Address("pekko", "join-decider-spec-system", "c", 2552),
+            Address("pekko", "join-decider-spec-system", "c", 7355),
             Set.empty)))
       decider.decide(info).futureValue should ===(JoinSelf)
     }
@@ -256,17 +256,17 @@ class SelfAwareJoinDeciderSpec extends JoinDeciderSpec {
         new SeedNodesObservation(
           now.minusSeconds(1),
           contactA,
-          Address("pekko", "join-decider-spec-system-selfaware", "10.0.0.2", 2552),
+          Address("pekko", "join-decider-spec-system-selfaware", "10.0.0.2", 7355),
           Set.empty),
         new SeedNodesObservation(
           now.minusSeconds(1),
           contactB,
-          Address("pekko", "join-decider-spec-system-selfaware", "b", 2552),
+          Address("pekko", "join-decider-spec-system-selfaware", "b", 7355),
           Set.empty),
         new SeedNodesObservation(
           now.minusSeconds(1),
           contactC,
-          Address("pekko", "join-decider-spec-system-selfaware", "c", 2552),
+          Address("pekko", "join-decider-spec-system-selfaware", "c", 7355),
           Set.empty)))
   }
 
@@ -331,17 +331,17 @@ class SelfAwareJoinDeciderIPv6Spec extends JoinDeciderSpec {
         new SeedNodesObservation(
           now.minusSeconds(1),
           contactIPv6A,
-          Address("pekko", "join-decider-spec-system-selfaware-ipv6", "[240b:c0e0:202:5e2b:b424:2:0:450]", 2552),
+          Address("pekko", "join-decider-spec-system-selfaware-ipv6", "[240b:c0e0:202:5e2b:b424:2:0:450]", 7355),
           Set.empty),
         new SeedNodesObservation(
           now.minusSeconds(1),
           contactIPv6B,
-          Address("pekko", "join-decider-spec-system-selfaware-ipv6", "[240b:c0e0:202:5e2b:b424:2:0:cc4]", 2552),
+          Address("pekko", "join-decider-spec-system-selfaware-ipv6", "[240b:c0e0:202:5e2b:b424:2:0:cc4]", 7355),
           Set.empty),
         new SeedNodesObservation(
           now.minusSeconds(1),
           contactIPv6C,
-          Address("pekko", "join-decider-spec-system-selfaware-ipv6", "c", 2552),
+          Address("pekko", "join-decider-spec-system-selfaware-ipv6", "c", 7355),
           Set.empty)))
   }
 
