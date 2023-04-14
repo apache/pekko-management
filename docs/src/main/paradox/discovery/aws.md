@@ -112,7 +112,7 @@ a setup with multiple Pekko nodes (i.e. multiple JVMs) per EC2 instance.
     pekko {
       discovery {
         aws-api-ec2-tag-based {
-          ports = [6457, 6458, 6459] # 3 Pekko nodes per EC2 instance
+          ports = [7625, 7626, 7627] # 3 Pekko nodes per EC2 instance
           # note that the above need to be the ports associated with the *Pekko Management* extension
         }
       }
@@ -275,8 +275,8 @@ Notes:
 
 * Because ECS service discovery is only able to discover IP addresses (not ports
   too) you'll need to set
-  `pekko.management.cluster.bootstrap.contact-point.fallback-port = 6458`, where
-  6458 is whatever port you choose to bind pekko-management to.
+  `pekko.management.cluster.bootstrap.contact-point.fallback-port = 7626`, where
+  7626 is whatever port you choose to bind pekko-management to.
 
 * You can set additional filters to only discover nodes with specific tag values in 
   your application.conf file, in the `pekko.discovery.aws-api-ecs-async.tags` key. 

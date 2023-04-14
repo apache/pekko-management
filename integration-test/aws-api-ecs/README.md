@@ -69,10 +69,10 @@ just delegates to `aws cloudformation create-stack`):
 ## Watch it form
 
 The security group that the stack defines and associates with the task
-definition includes a rule to allow public access to port 6458 so that the
+definition includes a rule to allow public access to port 7626 so that the
 formation of the cluster can be observed as follows:
 
-`watch -n 1 -c "curl http://$TASK_INSTANCE_IP:6458/cluster/members/ | python
+`watch -n 1 -c "curl http://$TASK_INSTANCE_IP:7626/cluster/members/ | python
 -mjson.tool"`
 
 `$taskInstanceIp` should be replaced with the public IP of any of the five task

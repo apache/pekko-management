@@ -9,7 +9,7 @@ dockerCommands :=
     case v                                => Seq(v)
   }
 
-dockerExposedPorts := Seq(8080, 6458, 7355)
+dockerExposedPorts := Seq(8080, 7626, 7355)
 dockerBaseImage := "openjdk:8-jre-alpine"
 
 dockerCommands ++= Seq(

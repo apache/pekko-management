@@ -10,11 +10,11 @@ Booting a Pekko cluster in Istio requires a minimum Istio version of 1.2.0, as i
 
 ## Allowing outbound communication
 
-By default, Istio redirects all outbound communication to its proxy. To prevent it from doing this for Pekko cluster communication, both the remoting and management ports need to be excluded from redirection. This can be done using the `traffic.sidecar.istio.io/excludeOutboundPorts` annotation in the deployment pod template. If your remoting port is 7355, and management port is 6458, this can be done like so:
+By default, Istio redirects all outbound communication to its proxy. To prevent it from doing this for Pekko cluster communication, both the remoting and management ports need to be excluded from redirection. This can be done using the `traffic.sidecar.istio.io/excludeOutboundPorts` annotation in the deployment pod template. If your remoting port is 7355, and management port is 7626, this can be done like so:
 
 ```yaml
 annotations:
-  traffic.sidecar.istio.io/excludeOutboundPorts: "7355,6458"
+  traffic.sidecar.istio.io/excludeOutboundPorts: "7355,7626"
 ```
 
 ## Allowing inbound communication
@@ -50,7 +50,7 @@ spec:
         app: my-service
       annotations:
         traffic.sidecar.istio.io/includeInboundPorts: "8080"
-        traffic.sidecar.istio.io/excludeOutboundPorts: "7355,6458"
+        traffic.sidecar.istio.io/excludeOutboundPorts: "7355,7626"
     spec:
       containers:
       - name: my-service
@@ -61,7 +61,7 @@ spec:
           name: http
         - containerPort: 7355
           name: remoting
-        - containerPort: 6458
+        - containerPort: 7626
           name: management
 
         readinessProbe:

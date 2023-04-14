@@ -72,12 +72,12 @@ application.conf
 :   ```hocon
   # Get hostname from environmental variable HOST
   pekko.management.http.hostname = ${HOST}
-  # Use port 6458 by default, but use environment variable PORT_6458 if it is defined
-  pekko.management.http.port = 6458
-  pekko.management.http.port = ${?PORT_6458}
-  # Bind to 0.0.0.0:6458 'internally': 
+  # Use port 7626 by default, but use environment variable PORT_7626 if it is defined
+  pekko.management.http.port = 7626
+  pekko.management.http.port = ${?PORT_7626}
+  # Bind to 0.0.0.0:7626 'internally': 
   pekko.management.http.bind-hostname = 0.0.0.0
-  pekko.management.http.bind-port = 6458
+  pekko.management.http.bind-port = 7626
     ```
 
 It is also possible to modify the base path of the API, by setting the appropriate value in application.conf:

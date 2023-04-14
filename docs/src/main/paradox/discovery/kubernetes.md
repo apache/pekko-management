@@ -104,7 +104,7 @@ spec:
         # pekko.management.cluster.bootstrap.contact-point-discovery.port-name
         # is defined, it must correspond to this name:
         - name: management
-          containerPort: 6458
+          containerPort: 7626
           protocol: TCP
 ```
 

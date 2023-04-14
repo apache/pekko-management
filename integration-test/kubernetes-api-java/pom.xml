@@ -146,7 +146,7 @@
                 <from>openjdk:8-jre-alpine</from>
                 <ports>
                   <port>8080</port>
-                  <port>6458</port>
+                  <port>7626</port>
                   <port>7355</port>
                 </ports>
                 <entryPoint>

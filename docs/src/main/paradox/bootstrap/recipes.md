@@ -206,9 +206,9 @@ $ kubectl logs $POD --follow | less
 [DEBUG] [12/13/2018 07:13:42.936] [default-pekko.actor.default-dispatcher-2] [DnsSimpleServiceDiscovery(pekko://default)] Lookup [Lookup(integration-test-kubernetes-dns-internal.akka-bootstrap-demo-ns.svc.cluster.local,Some(management),Some(tcp))] translated to SRV query [_management._tcp.integration-test-kubernetes-dns-internal.akka-bootstrap-demo-ns.svc.cluster.local] as contains portName and protocol
 [DEBUG] [12/13/2018 07:13:42.995] [default-pekko.actor.default-dispatcher-18] [pekko.tcp://default@172.17.0.7:7355/system/IO-DNS] Resolution request for _management._tcp.integration-test-kubernetes-dns-internal.akka-bootstrap-demo-ns.svc.cluster.local Srv from Actor[pekko://default/temp/$a]
 [DEBUG] [12/13/2018 07:13:43.011] [default-pekko.actor.default-dispatcher-6] [pekko.tcp://default@172.17.0.7:7355/system/IO-DNS/async-dns/$a] Attempting to resolve _management._tcp.integration-test-kubernetes-dns-internal.akka-bootstrap-demo-ns.svc.cluster.local with Actor[pekko://default/system/IO-DNS/async-dns/$a/$a#1272991285]
-[DEBUG] [12/13/2018 07:13:43.049] [default-pekko.actor.default-dispatcher-18] [pekko.tcp://default@172.17.0.7:7355/system/IO-TCP/selectors/$a/0] Successfully bound to /0.0.0.0:6458
+[DEBUG] [12/13/2018 07:13:43.049] [default-pekko.actor.default-dispatcher-18] [pekko.tcp://default@172.17.0.7:7355/system/IO-TCP/selectors/$a/0] Successfully bound to /0.0.0.0:7626
 [DEBUG] [12/13/2018 07:13:43.134] [default-pekko.actor.default-dispatcher-18] [pekko.tcp://default@172.17.0.7:7355/system/IO-DNS/async-dns/$a/$a] Resolving [_management._tcp.integration-test-kubernetes-dns-internal.akka-bootstrap-demo-ns.svc.cluster.local] (SRV)
-[INFO] [12/13/2018 07:13:43.147] [default-pekko.actor.default-dispatcher-6] [PekkoManagement(pekko://default)] Bound Pekko Management (HTTP) endpoint to: 0.0.0.0:6458
+[INFO] [12/13/2018 07:13:43.147] [default-pekko.actor.default-dispatcher-6] [PekkoManagement(pekko://default)] Bound Pekko Management (HTTP) endpoint to: 0.0.0.0:7626
 [DEBUG] [12/13/2018 07:13:43.156] [default-pekko.actor.default-dispatcher-5] [pekko.tcp://default@172.17.0.7:7355/system/IO-TCP/selectors/$a/1] Successfully bound to /0.0.0.0:8080
 [INFO] [12/13/2018 07:13:43.180] [main] [akka.actor.ActorSystemImpl(default)] Server online at http://localhost:8080/
 ....

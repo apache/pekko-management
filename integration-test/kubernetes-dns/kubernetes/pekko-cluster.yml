@@ -39,7 +39,7 @@ spec:
             port: management
         #health
         ports:
-        - containerPort: 6458
+        - containerPort: 7626
           # when contact-point-discovery.port-name is set for cluster bootstrap,
           # the management port must be named accordingly:
           # name: management
@@ -69,9 +69,9 @@ metadata:
 spec:
   ports:
   - name: management
-    port: 6458
+    port: 7626
     protocol: TCP
-    targetPort: 6458
+    targetPort: 7626
   - name: remoting
     port: 7355
     protocol: TCP

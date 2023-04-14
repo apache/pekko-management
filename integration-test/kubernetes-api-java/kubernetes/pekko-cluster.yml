@@ -27,14 +27,14 @@ spec:
         imagePullPolicy: Never
         livenessProbe:
           tcpSocket:
-            port: 6458
+            port: 7626
         ports:
         # akka remoting
         - name: remoting
           containerPort: 7355
           protocol: TCP
         # akka-management
-        - containerPort: 6458
+        - containerPort: 7626
           protocol: TCP
           # when contact-point-discovery.port-name is set for cluster bootstrap,
           # the management port must be named accordingly:

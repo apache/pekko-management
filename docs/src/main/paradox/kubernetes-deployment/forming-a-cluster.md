@@ -64,7 +64,7 @@ pekko {
 ```
 ### Apache Pekko Management HTTP
 
-The default configuration for Pekko management HTTP is suitable for use in Kubernetes, it will bind to a default port of 6458 on the pods external IP address.
+The default configuration for Pekko management HTTP is suitable for use in Kubernetes, it will bind to a default port of 7626 on the pods external IP address.
 
 ### Apache Pekko Cluster Bootstrap
 
@@ -179,7 +179,7 @@ Health check probes can be adjusted in `kubernetes/pekko-cluster.yaml`:
 ```yaml
 ports:
   - name: management
-    containerPort: 6458
+    containerPort: 7626
 readinessProbe:
   httpGet:
     path: "/ready"
