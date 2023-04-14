@@ -76,7 +76,7 @@
                             "failureThreshold": 5,
                             "httpGet": {
                                 "path": "/alive",
-                                "port": 8558,
+                                "port": 6262,
                                 "scheme": "HTTP"
                             },
                             "periodSeconds": 10,
@@ -100,7 +100,7 @@
                             "failureThreshold": 5,
                             "httpGet": {
                                 "path": "/ready",
-                                "port": 8558,
+                                "port": 6262,
                                 "scheme": "HTTP"
                             },
                             "periodSeconds": 10,

@@ -178,41 +178,41 @@
         ]
       }
     },
-    "AkkaClusterSecurityGroupIngressForPeers2552": {
+    "AkkaClusterSecurityGroupIngressForPeers7355": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupName": {
           "Ref": "AkkaClusterSecurityGroup"
         },
         "IpProtocol": "tcp",
-        "FromPort": 2552,
-        "ToPort": 2552,
+        "FromPort": 7355,
+        "ToPort": 7355,
         "SourceSecurityGroupName": {
           "Ref": "AkkaClusterSecurityGroup"
         }
       }
     },
-    "AkkaClusterSecurityGroupIngressForOutsiders8558": {
+    "AkkaClusterSecurityGroupIngressForOutsiders6262": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupName": {
           "Ref": "AkkaClusterSecurityGroup"
         },
         "IpProtocol": "tcp",
-        "FromPort": 8558,
-        "ToPort": 8558,
+        "FromPort": 6262,
+        "ToPort": 6262,
         "CidrIp": {"Ref": "SSHLocation"}
       }
     },
-    "AkkaClusterSecurityGroupIngressForPeers8558": {
+    "AkkaClusterSecurityGroupIngressForPeers6262": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupName": {
           "Ref": "AkkaClusterSecurityGroup"
         },
         "IpProtocol": "tcp",
-        "FromPort": 8558,
-        "ToPort": 8558,
+        "FromPort": 6262,
+        "ToPort": 6262,
         "SourceSecurityGroupName": {
           "Ref": "AkkaClusterSecurityGroup"
         }

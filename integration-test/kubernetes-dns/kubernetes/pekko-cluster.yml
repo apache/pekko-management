@@ -39,11 +39,11 @@ spec:
             port: management
         #health
         ports:
-        - containerPort: 8558
+        - containerPort: 6262
           # when contact-point-discovery.port-name is set for cluster bootstrap,
           # the management port must be named accordingly:
           # name: management
-        - containerPort: 2552
+        - containerPort: 7355
           name: remoting
         env:
         # Can be removed once async-dns supports search domains (in Akka 2.5.20)
@@ -69,13 +69,13 @@ metadata:
 spec:
   ports:
   - name: management
-    port: 8558
+    port: 6262
     protocol: TCP
-    targetPort: 8558
+    targetPort: 6262
   - name: remoting
-    port: 2552
+    port: 7355
     protocol: TCP
-    targetPort: 2552
+    targetPort: 7355
   selector:
     app: pekko-bootstrap-demo
   clusterIP: None

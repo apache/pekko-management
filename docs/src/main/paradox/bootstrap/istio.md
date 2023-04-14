@@ -4,17 +4,17 @@
 
 To bootstrap a Pekko cluster in Istio, Istio must be configured to allow Pekko cluster communication to bypass the Istio sidecar proxy. Istio's routing design is made such that services don't need to be aware of each others location, they just communicate with the proxy, and the mesh figures out how to route and secure the communication. However, Pekko cluster communication is fundamentally location aware, in order to, for example, route messages to sharded actors. Hence a service mesh is not a suitable communication medium for cluster traffic, so it needs to be bypassed.
 
-It is important to be aware that since Istio's proxy is bypassed, the Pekko cluster communication will not be secured by Istio using TLS. If you wish to secure your cluster communication, you will need to configure [Akka remoting with mTLS](https://doc.akka.io/docs/akka/current/remoting-artery.html#remote-security) yourself.
+It is important to be aware that since Istio's proxy is bypassed, the Pekko cluster communication will not be secured by Istio using TLS. If you wish to secure your cluster communication, you will need to configure [Akka remoting with mTLS](https://pekko.apache.org/docs/pekko/current/remoting-artery.html#remote-security) yourself.
 
 Booting a Pekko cluster in Istio requires a minimum Istio version of 1.2.0, as it requires the outbound port exclusions feature that was added in there. It also requires using the @ref[Kubernetes API](kubernetes-api.md) contact point discovery method to be used. The instructions below are for the additional configuration necessary to ensure an Akka cluster can be bootstrapped in Istio.
 
 ## Allowing outbound communication
 
-By default, Istio redirects all outbound communication to its proxy. To prevent it from doing this for Pekko cluster communication, both the remoting and management ports need to be excluded from redirection. This can be done using the `traffic.sidecar.istio.io/excludeOutboundPorts` annotation in the deployment pod template. If your remoting port is 2552, and management port is 8558, this can be done like so:
+By default, Istio redirects all outbound communication to its proxy. To prevent it from doing this for Pekko cluster communication, both the remoting and management ports need to be excluded from redirection. This can be done using the `traffic.sidecar.istio.io/excludeOutboundPorts` annotation in the deployment pod template. If your remoting port is 7355, and management port is 6262, this can be done like so:
 
 ```yaml
 annotations:
-  traffic.sidecar.istio.io/excludeOutboundPorts: "2552,8558"
+  traffic.sidecar.istio.io/excludeOutboundPorts: "7355,6262"
 ```
 
 ## Allowing inbound communication
@@ -50,7 +50,7 @@ spec:
         app: my-service
       annotations:
         traffic.sidecar.istio.io/includeInboundPorts: "8080"
-        traffic.sidecar.istio.io/excludeOutboundPorts: "2552,8558"
+        traffic.sidecar.istio.io/excludeOutboundPorts: "7355,6262"
     spec:
       containers:
       - name: my-service
@@ -59,9 +59,9 @@ spec:
         ports:
         - containerPort: 8080
           name: http
-        - containerPort: 2552
+        - containerPort: 7355
           name: remoting
-        - containerPort: 8558
+        - containerPort: 6262
           name: management
 
         readinessProbe:

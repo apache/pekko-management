@@ -33,7 +33,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll with Eventually {
   val serviceName = "bootstrap-coordinator-test-service"
-  val selfUri = Uri("http://localhost:8558/")
+  val selfUri = Uri("http://localhost:6262/")
   val system = ActorSystem(
     "test",
     ConfigFactory.parseString(s"""
@@ -60,10 +60,10 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
             Resolved(
               serviceName,
               List(
-                ResolvedTarget("host1", Some(2552), None),
-                ResolvedTarget("host1", Some(8558), None),
-                ResolvedTarget("host2", Some(2552), None),
-                ResolvedTarget("host2", Some(8558), None)))))
+                ResolvedTarget("host1", Some(7355), None),
+                ResolvedTarget("host1", Some(6262), None),
+                ResolvedTarget("host2", Some(7355), None),
+                ResolvedTarget("host2", Some(6262), None)))))
 
       val targets = new AtomicReference[List[ResolvedTarget]](Nil)
       val coordinator = system.actorOf(
@@ -83,7 +83,7 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
         targetsToCheck.length should be >= 2
         targetsToCheck.map(_.host) should contain("host1")
         targetsToCheck.map(_.host) should contain("host2")
-        targetsToCheck.flatMap(_.port).toSet should be(Set(8558))
+        targetsToCheck.flatMap(_.port).toSet should be(Set(6262))
       }
     }
 
@@ -132,7 +132,7 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
 
       BootstrapCoordinator.selectHosts(
         Lookup.create("service").withPortName("cats"),
-        8558,
+        6262,
         filterOnFallbackPort = true,
         beforeFiltering) shouldEqual beforeFiltering
     }
@@ -140,15 +140,15 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
     // For example when using DNS A-record-based discovery in K8s
     "filter when port-name is not set" in {
       val beforeFiltering = List(
-        ResolvedTarget("host1", Some(8558), None),
+        ResolvedTarget("host1", Some(6262), None),
         ResolvedTarget("host1", Some(2), None),
-        ResolvedTarget("host2", Some(8558), None),
+        ResolvedTarget("host2", Some(6262), None),
         ResolvedTarget("host2", Some(4), None))
 
-      BootstrapCoordinator.selectHosts(Lookup.create("service"), 8558, filterOnFallbackPort = true,
+      BootstrapCoordinator.selectHosts(Lookup.create("service"), 6262, filterOnFallbackPort = true,
         beforeFiltering) shouldEqual List(
-        ResolvedTarget("host1", Some(8558), None),
-        ResolvedTarget("host2", Some(8558), None))
+        ResolvedTarget("host1", Some(6262), None),
+        ResolvedTarget("host2", Some(6262), None))
     }
 
     // For example when using ECS service discovery
@@ -159,19 +159,19 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
         ResolvedTarget("host2", Some(3), None),
         ResolvedTarget("host2", Some(4), None))
 
-      BootstrapCoordinator.selectHosts(Lookup.create("service"), 8558, filterOnFallbackPort = false,
+      BootstrapCoordinator.selectHosts(Lookup.create("service"), 6262, filterOnFallbackPort = false,
         beforeFiltering) shouldEqual beforeFiltering
     }
 
     "not filter if there is a single target per host" in {
       val beforeFiltering = List(
-        ResolvedTarget("host1", Some(8558), None),
+        ResolvedTarget("host1", Some(6262), None),
         ResolvedTarget("host2", Some(2), None),
-        ResolvedTarget("host3", Some(8558), None),
+        ResolvedTarget("host3", Some(6262), None),
         ResolvedTarget("host4", Some(4), None))
 
       BootstrapCoordinator
-        .selectHosts(Lookup.create("service"), 8558, filterOnFallbackPort = true, beforeFiltering)
+        .selectHosts(Lookup.create("service"), 6262, filterOnFallbackPort = true, beforeFiltering)
         .toSet shouldEqual beforeFiltering.toSet
     }
   }

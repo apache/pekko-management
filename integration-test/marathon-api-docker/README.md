@@ -54,7 +54,7 @@ see `marathon/marathon-api-docker-app.json`:
       "portMappings": [
         ...
         {
-          "containerPort": 8558,
+          "containerPort": 6262,
           "hostPort": 0,
           "servicePort": 10206,
           "protocol": "tcp",

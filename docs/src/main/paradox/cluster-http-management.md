@@ -104,7 +104,7 @@ In the paths `address` is also allowed to be provided without the protocol prefi
 Example request:
 
     GET /cluster/domain-events?type=MemberUp&type=LeaderChanged HTTP/1.1
-    Host: 192.168.1.23:8558
+    Host: 192.168.1.23:6262
 
 Example response:
 

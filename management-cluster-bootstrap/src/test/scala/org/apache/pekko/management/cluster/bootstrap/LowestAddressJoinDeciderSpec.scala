@@ -129,10 +129,10 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactA,
-            Address("pekko", "join-decider-spec-system", "10.0.0.2", 2552),
-            Set(Address("pekko", "join-decider-spec-system", "10.0.0.2", 2552)))))
+            Address("pekko", "join-decider-spec-system", "10.0.0.2", 7355),
+            Set(Address("pekko", "join-decider-spec-system", "10.0.0.2", 7355)))))
       decider.decide(info).futureValue should ===(
-        JoinOtherSeedNodes(Set(Address("pekko", "join-decider-spec-system", "10.0.0.2", 2552))))
+        JoinOtherSeedNodes(Set(Address("pekko", "join-decider-spec-system", "10.0.0.2", 7355))))
     }
 
     "keep probing when contact points changed within stable-margin" in {
@@ -146,17 +146,17 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactA,
-            Address("pekko", "join-decider-spec-system", "10.0.0.2", 2552),
+            Address("pekko", "join-decider-spec-system", "10.0.0.2", 7355),
             Set.empty),
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactB,
-            Address("pekko", "join-decider-spec-system", "b", 2552),
+            Address("pekko", "join-decider-spec-system", "b", 7355),
             Set.empty),
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactC,
-            Address("pekko", "join-decider-spec-system", "c", 2552),
+            Address("pekko", "join-decider-spec-system", "c", 7355),
             Set.empty)))
       decider.decide(info).futureValue should ===(KeepProbing)
     }
@@ -172,12 +172,12 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactA,
-            Address("pekko", "join-decider-spec-system", "10.0.0.2", 2552),
+            Address("pekko", "join-decider-spec-system", "10.0.0.2", 7355),
             Set.empty),
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactB,
-            Address("pekko", "join-decider-spec-system", "b", 2552),
+            Address("pekko", "join-decider-spec-system", "b", 7355),
             Set.empty)))
       decider.decide(info).futureValue should ===(KeepProbing)
     }
@@ -193,12 +193,12 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactA,
-            Address("pekko", "join-decider-spec-system", "10.0.0.2", 2552),
+            Address("pekko", "join-decider-spec-system", "10.0.0.2", 7355),
             Set.empty),
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactB,
-            Address("pekko", "join-decider-spec-system", "b", 2552),
+            Address("pekko", "join-decider-spec-system", "b", 7355),
             Set.empty))
         // << 2 < required-contact-point-nr
       )
@@ -218,12 +218,12 @@ class LowestAddressJoinDeciderSpec extends JoinDeciderSpec {
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactA,
-            Address("pekko", "join-decider-spec-system", "10.0.0.2", 2552),
+            Address("pekko", "join-decider-spec-system", "10.0.0.2", 7355),
             Set.empty),
           new SeedNodesObservation(
             now.minusSeconds(1),
             contactB,
-            Address("pekko", "join-decider-spec-system", "b", 2552),
+            Address("pekko", "join-decider-spec-system", "b", 7355),
             Set.empty),
           new SeedNodesObservation(
             now.minusSeconds(1),

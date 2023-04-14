@@ -178,7 +178,7 @@ class IntegrationTest
   private def readTemplateFromResourceFolder(path: String): String = scala.io.Source.fromResource(path).mkString
 
   // we need this in order to tell AWS to allow the machine running the integration test to connect to the EC2 instances'
-  // port 8558
+  // port 6262
   private def getMyIp: String = {
     val myIp: Future[(Int, String)] = httpGetRequest("http://checkip.amazonaws.com")
     val result = Await.result(myIp, atMost = 3 seconds)
@@ -194,7 +194,7 @@ class IntegrationTest
     clusterPublicIps should have size instanceCount
     clusterPrivateIps should have size instanceCount
 
-    val expectedNodes: Set[String] = clusterPrivateIps.map(ip => s"pekko.tcp://demo@$ip:2552").toSet
+    val expectedNodes: Set[String] = clusterPrivateIps.map(ip => s"pekko.tcp://demo@$ip:7355").toSet
 
     eventually {
 
@@ -204,7 +204,7 @@ class IntegrationTest
       clusterPublicIps.foreach { nodeIp: String =>
         {
 
-          val result = httpGetRequest(s"http://$nodeIp:8558/cluster/members").futureValue(httpCallTimeout)
+          val result = httpGetRequest(s"http://$nodeIp:6262/cluster/members").futureValue(httpCallTimeout)
           result._1 should ===(200)
           result._2 should not be 'empty
 

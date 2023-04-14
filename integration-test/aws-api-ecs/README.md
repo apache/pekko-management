@@ -69,10 +69,10 @@ just delegates to `aws cloudformation create-stack`):
 ## Watch it form
 
 The security group that the stack defines and associates with the task
-definition includes a rule to allow public access to port 8558 so that the
+definition includes a rule to allow public access to port 6262 so that the
 formation of the cluster can be observed as follows:
 
-`watch -n 1 -c "curl http://$TASK_INSTANCE_IP:8558/cluster/members/ | python
+`watch -n 1 -c "curl http://$TASK_INSTANCE_IP:6262/cluster/members/ | python
 -mjson.tool"`
 
 `$taskInstanceIp` should be replaced with the public IP of any of the five task
@@ -87,10 +87,10 @@ When the cluster has fully formed you should see output like this:
 
 ```
 {
-    "leader": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
+    "leader": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:7355",
     "members": [
         {
-            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:7355",
             "nodeUid": "-801839214",
             "roles": [
                 "dc-default"
@@ -98,7 +98,7 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         },
         {
-            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.92.234:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.92.234:7355",
             "nodeUid": "-1965866076",
             "roles": [
                 "dc-default"
@@ -106,7 +106,7 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         },
         {
-            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.41.181:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.41.181:7355",
             "nodeUid": "1441500118",
             "roles": [
                 "dc-default"
@@ -114,7 +114,7 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         },
         {
-            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.58.83:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.58.83:7355",
             "nodeUid": "443867006",
             "roles": [
                 "dc-default"
@@ -122,7 +122,7 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         },
         {
-            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.67.222:2552",
+            "node": "pekko.tcp://ecsBootstrapDemoApp@172.31.67.222:7355",
             "nodeUid": "-17061216",
             "roles": [
                 "dc-default"
@@ -130,8 +130,8 @@ When the cluster has fully formed you should see output like this:
             "status": "Up"
         }
     ],
-    "oldest": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:2552",
-    "selfNode": "pekko.tcp://ecsBootstrapDemoApp@172.31.58.83:2552",
+    "oldest": "pekko.tcp://ecsBootstrapDemoApp@172.31.0.248:7355",
+    "selfNode": "pekko.tcp://ecsBootstrapDemoApp@172.31.58.83:7355",
     "unreachable": []
 }
 ```
