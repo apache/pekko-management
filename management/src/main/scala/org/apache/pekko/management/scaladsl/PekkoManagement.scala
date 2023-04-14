@@ -133,8 +133,8 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
         val effectiveProviderSettings = transformSettings(providerSettings)
 
         // TODO instead of binding to hardcoded things here, discovery could also be used for this binding!
-        // Basically: "give me the SRV host/port for the port called `akka-bootstrap`"
-        // discovery.lookup("_akka-bootstrap" + ".effective-name.default").find(myaddress)
+        // Basically: "give me the SRV host/port for the port called `pekko-bootstrap`"
+        // discovery.lookup("_pekko-bootstrap" + ".effective-name.default").find(myaddress)
         // ----
         // FIXME -- think about the style of how we want to make these available
 
