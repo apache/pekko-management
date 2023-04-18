@@ -132,7 +132,7 @@ final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Exten
       _selfContactPointUri.failure(new TimeoutException("Awaiting Bootstrap.selfContactPoint timed out."))
       log.error(
         "'Bootstrap.selfContactPoint' was NOT set, but is required for the bootstrap to work " +
-        "if binding bootstrap routes manually and not via akka-management.")
+        "if binding bootstrap routes manually and not via pekko-management.")
     }
   }
 

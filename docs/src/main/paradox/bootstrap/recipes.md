@@ -192,7 +192,7 @@ pick one of the pods and issue the kubectl logs command on it:
 
 ```
 $ POD=$(kubectl get pods | grep pekko-bootstrap | grep Running | head -n1 | awk '{ print $1 }'); echo $POD
-akka-integration-test-bcc456d8c-6qx87
+pekko-integration-test-bcc456d8c-6qx87
 
 $ kubectl logs $POD --follow | less
 ```

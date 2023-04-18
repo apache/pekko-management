@@ -253,7 +253,7 @@ PUTs must contain resourceVersions. Response:
       .to[String]
       .flatMap(body => {
         Future.failed(new LeaseException(
-          s"Unauthorized to communicate with Kubernetes API server. See https://doc.akka.io/docs/akka-management/current/kubernetes-lease.html#role-based-access-control for setting up access control. Body: ${body}"))
+          s"Unauthorized to communicate with Kubernetes API server. See https://pekko.apache.org/docs/pekko-management/current/kubernetes-lease.html#role-based-access-control for setting up access control. Body: ${body}"))
       })
   }
 
