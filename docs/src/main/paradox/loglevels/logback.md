@@ -56,12 +56,12 @@ A HTTP `PUT` request to `loglevel/logback?logger=[logger name]&level=[level name
 For example using curl:
 
 ```
-curl -X PUT "http://127.0.0.1:8558/loglevel/logback?logger=com.example.MyActor&level=DEBUG"
+curl -X PUT "http://127.0.0.1:7626/loglevel/logback?logger=com.example.MyActor&level=DEBUG"
 ```
 
 #### Classic and Internal Pekko Logger Level
 
-Internal Pekko actors and classic Pekko does logging through the built in API there is an [additional level of filtering](https://doc.akka.io/docs/akka/current/logging.html#slf4j) using the
+Internal Pekko actors and classic Pekko does logging through the built in API there is an [additional level of filtering](https://pekko.apache.org/docs/pekko/current/logging.html#slf4j) using the
 `pekko.loglevel` setting. If you have not set `pekko.loglevel` to `DEBUG` (recommended) log entries from the classic logging API may never reach the logger backend at all.
 
 The current level configured with `pekko.loglevel` can be inspected with a GET request to `loglevel/pekko`.
@@ -72,5 +72,5 @@ Note that the allowed level for Pekko Classic logging is a subset of the logleve
 For example using curl:
 
 ```
-curl -X PUT "http://127.0.0.1:8558/loglevel/pekko?level=DEBUG"
+curl -X PUT "http://127.0.0.1:7626/loglevel/pekko?level=DEBUG"
 ```

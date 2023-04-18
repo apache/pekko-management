@@ -71,7 +71,7 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
           s"""
             //#management-host-port
             pekko.management.http.hostname = "127.0.0.1"
-            pekko.management.http.port = 8558
+            pekko.management.http.port = 7626
             //#management-host-port
             pekko.management.http.port = $httpPort
             pekko.management.http.routes {

@@ -9,5 +9,7 @@ Version requirements:
 When migrating from Akka Management it is recommended to first upgrade to Akka 2.6.20 / Akka Management 1.1.4 before switching to Pekko/Pekko Management.
 Please refer to the [Akka Management migration guide](https://doc.akka.io/docs/akka-management/current/migration.html).
 
+### Management Port
 
+The default port has changed from Akka's 8558 to Pekko's 7626.
 

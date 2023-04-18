@@ -98,13 +98,13 @@ spec:
         ports:
         # pekko remoting
         - name: remoting
-          containerPort: 2552
+          containerPort: 7355
           protocol: TCP
         # When
         # pekko.management.cluster.bootstrap.contact-point-discovery.port-name
         # is defined, it must correspond to this name:
         - name: management
-          containerPort: 8558
+          containerPort: 7626
           protocol: TCP
 ```
 

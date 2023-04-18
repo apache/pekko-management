@@ -39,7 +39,7 @@ spec:
         #health
         ports:
         # akka-management bootstrap
-        - containerPort: 8558
+        - containerPort: 7626
           protocol: TCP
           # when contact-point-discovery.port-name is set for cluster bootstrap,
           # the management port must be named accordingly:
