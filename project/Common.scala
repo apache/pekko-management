@@ -57,7 +57,7 @@ object Common extends AutoPlugin {
         "-doc-version",
         version.value,
         "-skip-packages",
-        "pekko.pattern" // for some reason Scaladoc creates this
+        "org.apache.pekko.pattern" // for some reason Scaladoc creates this
       ),
       Compile / doc / scalacOptions ++= Seq(
         "-doc-source-url", {
