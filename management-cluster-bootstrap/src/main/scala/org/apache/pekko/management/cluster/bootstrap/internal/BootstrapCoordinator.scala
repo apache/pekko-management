@@ -48,6 +48,8 @@ import pekko.management.cluster.bootstrap.{
 
 import scala.concurrent.ExecutionContextExecutor
 
+import scala.concurrent.ExecutionContextExecutor
+
 /** INTERNAL API */
 @InternalApi
 private[pekko] object BootstrapCoordinator {

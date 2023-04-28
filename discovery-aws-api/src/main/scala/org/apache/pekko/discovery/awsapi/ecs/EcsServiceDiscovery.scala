@@ -21,6 +21,7 @@ import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.EcsServiceDiscovery.resolveTasks
 import pekko.pattern.after
+import pekko.util.ccompat.JavaConverters._
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.retry.PredefinedRetryPolicies
@@ -28,7 +29,6 @@ import com.amazonaws.services.ecs.model.{ DescribeTasksRequest, DesiredStatus, L
 import com.amazonaws.services.ecs.{ AmazonECS, AmazonECSClientBuilder }
 
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
 import scala.collection.immutable.Seq
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
@@ -105,7 +105,8 @@ object EcsServiceDiscovery {
     tasks
   }
 
-  @tailrec private[this] def listTaskArns(
+  @tailrec
+  private[this] def listTaskArns(
       ecsClient: AmazonECS,
       cluster: String,
       serviceName: String,

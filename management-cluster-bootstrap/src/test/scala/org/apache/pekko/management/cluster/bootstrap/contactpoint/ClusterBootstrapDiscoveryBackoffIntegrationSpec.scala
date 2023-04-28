@@ -13,37 +13,28 @@
 
 package org.apache.pekko.management.cluster.bootstrap.contactpoint
 
-import java.net.InetAddress
-import java.util.concurrent.ConcurrentHashMap
-import java.util.function.BiConsumer
-import java.util.function.BiFunction
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import org.apache.pekko
-import pekko.actor.ActorSystem
-import pekko.cluster.Cluster
-import pekko.cluster.ClusterEvent.CurrentClusterState
-import pekko.cluster.ClusterEvent.MemberUp
-import pekko.discovery.Lookup
-import pekko.discovery.MockDiscovery
-import pekko.discovery.ServiceDiscovery.Resolved
-import pekko.discovery.ServiceDiscovery.ResolvedTarget
-import pekko.http.scaladsl.Http
-import pekko.testkit.SocketUtil
-import pekko.testkit.TestKit
-import pekko.testkit.TestProbe
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import pekko.management.cluster.bootstrap.ClusterBootstrap
+import com.typesafe.config.{ Config, ConfigFactory }
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.cluster.Cluster
+import org.apache.pekko.cluster.ClusterEvent.{ CurrentClusterState, MemberUp }
+import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import org.apache.pekko.discovery.{ Lookup, MockDiscovery }
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap
+import org.apache.pekko.testkit.{ SocketUtil, TestKit, TestProbe }
 import org.scalactic.Tolerance
+import org.scalatest.Inside
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class ClusterBootstrapDiscoveryBackoffIntegrationSpec
-    extends AnyWordSpecLike
-    with Matchers
-    with Tolerance
+import java.net.InetAddress
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.{ BiConsumer, BiFunction }
+import scala.concurrent.Future
+import scala.concurrent.duration._
+
+class ClusterBootstrapDiscoveryBackoffIntegrationSpec extends AnyWordSpecLike with Matchers with Inside with Tolerance
     with ScalaFutures {
 
   "Cluster Bootstrap" should {
@@ -53,8 +44,11 @@ class ClusterBootstrapDiscoveryBackoffIntegrationSpec
     var unreachablePorts = Map.empty[String, Int]
 
     def config(id: String): Config = {
-      val Vector(managementPort: Int, remotingPort: Int, unreachablePort: Int) =
-        SocketUtil.temporaryServerAddresses(3, "127.0.0.1").map(_.getPort)
+      val (managementPort, remotingPort, unreachablePort) = inside(
+        SocketUtil.temporaryServerAddresses(3, "127.0.0.1").map(_.getPort)) {
+        case Vector(mPort: Int, rPort: Int, uPort: Int) => (mPort, rPort, uPort)
+        case o                                          => fail("Expected 3 ports but got: " + o)
+      }
 
       info(s"System [$id]:  management port: $managementPort")
       info(s"System [$id]:    remoting port: $remotingPort")

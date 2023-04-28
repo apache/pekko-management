@@ -13,7 +13,7 @@
 
 package org.apache.pekko.management.cluster.bootstrap.contactpoint
 
-import scala.concurrent.duration._
+import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, Address }
 import pekko.cluster.Cluster
@@ -23,16 +23,14 @@ import pekko.http.scaladsl.Http
 import pekko.management.cluster.bootstrap.ClusterBootstrap
 import pekko.remote.RARP
 import pekko.testkit.{ SocketUtil, TestKit }
-import com.typesafe.config.ConfigFactory
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.{ BeforeAndAfterAll, Inside }
 
-class ClusterBootstrapExistingSeedNodesSpec(system: ActorSystem)
-    extends TestKit(system)
-    with AnyWordSpecLike
-    with Matchers
-    with BeforeAndAfterAll {
+import scala.concurrent.duration._
+
+class ClusterBootstrapExistingSeedNodesSpec(system: ActorSystem) extends TestKit(system) with AnyWordSpecLike
+    with Matchers with Inside with BeforeAndAfterAll {
 
   def this() = {
     this(ActorSystem("ClusterBootstrapExistingSeedNodesSpec"))
@@ -47,8 +45,10 @@ class ClusterBootstrapExistingSeedNodesSpec(system: ActorSystem)
   val JoinYourself: List[Address] = List(null, null, null)
 
   def newSystem(id: String, seedNodes: List[Address]) = {
-    val Vector(managementPort: Int, remotingPort: Int) =
-      SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort)
+    val (managementPort, remotingPort) = inside(SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort)) {
+      case Vector(mPort: Int, rPort: Int) => (mPort, rPort)
+      case o                              => fail("Expected 2 ports but got: " + o)
+    }
 
     info(s"System [$id]: remoting port: $remotingPort")
 

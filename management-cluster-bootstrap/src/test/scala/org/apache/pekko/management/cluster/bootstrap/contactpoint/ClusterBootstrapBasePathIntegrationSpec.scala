@@ -23,6 +23,7 @@ import pekko.discovery.{ Lookup, MockDiscovery }
 import pekko.management.cluster.bootstrap.ClusterBootstrap
 import pekko.management.scaladsl.PekkoManagement
 import pekko.testkit.{ SocketUtil, TestKit, TestProbe }
+import org.scalatest.Inside
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
@@ -34,11 +35,13 @@ import scala.concurrent.duration._
  * This test ensures that the client and server both respect the base-path setting and thus that the bootstrapping
  * process works correctly when this setting is specified.
  */
-class ClusterBootstrapBasePathIntegrationSpec extends AnyWordSpecLike with Matchers {
+class ClusterBootstrapBasePathIntegrationSpec extends AnyWordSpecLike with Matchers with Inside {
 
   "Cluster Bootstrap" should {
-    val Vector(managementPort: Int, remotingPort: Int) =
-      SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort: Int)
+    val (managementPort, remotingPort) = inside(SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort)) {
+      case Vector(mPort: Int, rPort: Int) => (mPort, rPort)
+      case o                              => fail("Expected 2 ports but got: " + o)
+    }
 
     val config =
       ConfigFactory.parseString(s"""

@@ -13,8 +13,6 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
-import java.util.concurrent.atomic.AtomicBoolean
-
 import org.apache.pekko
 import pekko.actor.Status.Failure
 import pekko.actor.{ ActorRef, DeadLetterSuppression, FSM, LoggingFSM, Props }
@@ -23,6 +21,7 @@ import pekko.coordination.lease.{ LeaseSettings, LeaseTimeoutException }
 import pekko.util.ConstantFun
 import pekko.util.PrettyDuration._
 
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
@@ -87,16 +86,13 @@ private[pekko] object LeaseActor {
  * INTERNAL API
  */
 @InternalApi
-private[pekko] class LeaseActor(
-    k8sApi: KubernetesApi,
-    settings: LeaseSettings,
-    leaseName: String,
+private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, leaseName: String,
     granted: AtomicBoolean)
     extends LoggingFSM[LeaseActor.State, LeaseActor.Data] {
 
-  import pekko.coordination.lease.kubernetes.LeaseActor._
-  import pekko.pattern.pipe
+  import LeaseActor._
   import context.dispatcher
+  import pekko.pattern.pipe
 
   private val ownerName = settings.ownerName
 
@@ -105,7 +101,7 @@ private[pekko] class LeaseActor(
   when(Idle) {
     case Event(Acquire(leaseLostCallback), ReadRequired) =>
       // Send off read, pipe result back to self
-      pipe(k8sApi.readOrCreateLeaseResource(leaseName).map(ReadResponse)).to(self)
+      pipe(k8sApi.readOrCreateLeaseResource(leaseName).map(ReadResponse.apply)).to(self)
       goto(PendingRead).using(PendingReadData(sender(), leaseLostCallback))
 
     // Initial read can be skipped as we have a version
@@ -187,7 +183,7 @@ private[pekko] class LeaseActor(
   when(Granted) {
     case Event(Heartbeat, GrantedVersion(version, _)) =>
       log.debug("Heartbeat: updating lease time. Version {}", version)
-      pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(WriteResponse)).to(self)
+      pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(WriteResponse.apply)).to(self)
       stay()
     case Event(WriteResponse(Right(resource)), gv: GrantedVersion) =>
       require(
@@ -208,7 +204,7 @@ private[pekko] class LeaseActor(
       executeLeaseLockCallback(leaseLost, Some(t))
       goto(Idle).using(ReadRequired)
     case Event(Release(), GrantedVersion(version, leaseLost)) =>
-      pipe(k8sApi.updateLeaseResource(leaseName, "", version).map(WriteResponse)).to(self)
+      pipe(k8sApi.updateLeaseResource(leaseName, "", version).map(WriteResponse.apply)).to(self)
       goto(Releasing).using(OperationInProgress(sender(), version, leaseLost))
     case Event(Acquire(leaseLostCallback), gv: GrantedVersion) =>
       sender() ! LeaseAcquired

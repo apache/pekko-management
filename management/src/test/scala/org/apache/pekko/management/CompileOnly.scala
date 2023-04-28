@@ -23,6 +23,7 @@ import scala.concurrent.{ ExecutionContextExecutor, Future }
 object CompileOnly {
   val system: ActorSystem = null
   implicit val ec: ExecutionContextExecutor = system.dispatcher
+
   // #basic-auth
   def myUserPassAuthenticator(credentials: Credentials): Future[Option[String]] =
     credentials match {

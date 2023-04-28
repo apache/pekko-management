@@ -26,6 +26,8 @@ import pekko.management.internal.HealthChecksImpl
 import pekko.util.FunctionConverters._
 import pekko.util.FutureConverters._
 
+import scala.annotation.nowarn
+
 /**
  * Can be used to instantiate health checks directly rather than rely on the
  * automatic management route. Useful if want to host the health check via
@@ -109,6 +111,7 @@ final class CheckResult private[javadsl] (private val result: Either[String, Uni
 
   def isSuccess: java.lang.Boolean = result.isRight
 
+  @nowarn // remove annotation and ".right" with Scala 2.12 support
   def success: Optional[Unit] =
     Optional.ofNullable(result.right.toOption.orNull)
 }

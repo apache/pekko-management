@@ -13,24 +13,21 @@
 
 package org.apache.pekko.management.cluster
 
+import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.model.{ HttpRequest, StatusCodes }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
-import pekko.testkit.SocketUtil
-import com.typesafe.config.ConfigFactory
 import pekko.management.scaladsl.ManagementRouteProviderSettings
+import pekko.testkit.SocketUtil
+import org.scalatest.Inside
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
-import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpec
 
-class MultiDcSpec
-    extends AnyWordSpec
-    with Matchers
-    with ScalaFutures
-    with ClusterHttpManagementJsonProtocol
+class MultiDcSpec extends AnyWordSpec with Matchers with ScalaFutures with Inside with ClusterHttpManagementJsonProtocol
     with Eventually {
 
   implicit val patience: PatienceConfig = PatienceConfig(timeout = Span(10, Seconds), interval = Span(50, Millis))
@@ -46,8 +43,11 @@ class MultiDcSpec
 
   "Http cluster management" must {
     "allow multiple DCs" in {
-      val Vector(httpPortA: Int, portA: Int, portB: Int) =
-        SocketUtil.temporaryServerAddresses(3, "127.0.0.1").map(_.getPort)
+      val (httpPortA: Int, portA: Int, portB: Int) =
+        inside(SocketUtil.temporaryServerAddresses(3, "127.0.0.1").map(_.getPort)) {
+          case Vector(hpA: Int, pa: Int, pb: Int) => (hpA, pa, pb)
+          case o                                  => fail("Expected 3 ports but got: " + o)
+        }
       val dcA = ConfigFactory.parseString(
         s"""
            |pekko.management.http.hostname = "127.0.0.1"

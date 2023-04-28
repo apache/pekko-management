@@ -13,24 +13,26 @@
 
 package org.apache.pekko.management.cluster.bootstrap
 
-import java.time.LocalDateTime
-import java.net.InetAddress
-import scala.concurrent.duration._
+import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.pekko
-import pekko.actor.ActorSystem
-import pekko.actor.Address
+import pekko.actor.{ ActorSystem, Address }
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
 import pekko.event.NoLogging
-import pekko.testkit.SocketUtil
-import pekko.testkit.TestKit
-import com.typesafe.config.ConfigFactory
+import pekko.testkit.{ SocketUtil, TestKit }
+import org.scalatest.Inside
 
-abstract class JoinDeciderSpec extends AbstractBootstrapSpec {
+import java.net.InetAddress
+import java.time.LocalDateTime
+import scala.concurrent.duration._
 
-  val Vector(managementPort, remotingPort) =
-    SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort)
+abstract class JoinDeciderSpec extends AbstractBootstrapSpec with Inside {
 
-  val config =
+  val (managementPort, remotingPort) = inside(SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort)) {
+    case Vector(mPort: Int, rPort: Int) => (mPort, rPort)
+    case o                              => fail("Expected 2 ports but got: " + o)
+  }
+
+  val config: Config =
     ConfigFactory.parseString(s"""
         pekko {
           loglevel = INFO
