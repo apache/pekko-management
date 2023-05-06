@@ -15,7 +15,7 @@ addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.0")
 
 resolvers += Resolver.jcenterRepo
 // allow access to snapshots for pekko-sbt-paradox
-resolvers += "Apache Nexus Snapshots".at("https://repository.apache.org/content/repositories/snapshots/")
+resolvers += Resolver.ApacheMavenSnapshotsRepo
 
 // We have to deliberately use older versions of sbt-paradox because current Pekko sbt build
 // only loads on JDK 1.8 so we need to bring in older versions of parboiled which support JDK 1.8
