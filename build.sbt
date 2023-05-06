@@ -5,7 +5,7 @@ ThisBuild / apacheSonatypeProjectProfile := "pekko"
 sourceDistName := "incubating-pekko-management"
 
 ThisBuild / resolvers += Resolver.jcenterRepo
-ThisBuild / resolvers += "Apache Snapshots".at("https://repository.apache.org/content/repositories/snapshots/")
+ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 
 // root
 lazy val root = project
@@ -252,7 +252,7 @@ lazy val integrationTestLocal = pekkoIntTestModule("local")
 
 lazy val themeSettings = Seq(
   // allow access to snapshots for pekko-sbt-paradox
-  resolvers += "Apache Nexus Snapshots".at("https://repository.apache.org/content/repositories/snapshots/"),
+  resolvers += Resolver.ApacheMavenSnapshotsRepo,
   pekkoParadoxGithub := Some("https://github.com/apache/incubator-pekko-management"))
 
 lazy val docs = project
