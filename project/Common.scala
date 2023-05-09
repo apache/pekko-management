@@ -47,6 +47,8 @@ object Common extends AutoPlugin {
       },
       javacOptions ++= Seq(
         "-Xlint:unchecked"),
+      // Necessary otherwise javadoc fails with Unexpected javac output: javadoc: error - invalid flag: -Xlint:unchecked.
+      Compile / doc / javacOptions -= "-Xlint:unchecked",
       javacOptions ++= (
         if (isJdk8) Seq.empty
         else Seq("--release", "8")
