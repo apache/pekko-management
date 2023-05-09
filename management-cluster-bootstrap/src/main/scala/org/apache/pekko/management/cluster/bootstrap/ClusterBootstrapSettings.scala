@@ -22,8 +22,8 @@ import pekko.actor.ActorSystem
 import pekko.event.LoggingAdapter
 import com.typesafe.config.Config
 import scala.concurrent.duration.{ FiniteDuration, _ }
-import scala.compat.java8.OptionConverters._
 import pekko.util.JavaDurationConverters._
+import pekko.util.OptionConverters._
 
 final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
   import pekko.management.PekkoManagementSettings._
@@ -31,7 +31,7 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
   val managementBasePath: Option[String] =
     Option(config.getString("pekko.management.http.base-path")).filter(_.trim.nonEmpty)
 
-  def getManagementBasePath: Optional[String] = managementBasePath.asJava
+  def getManagementBasePath: Optional[String] = managementBasePath.toJava
 
   private val bootConfig = config.getConfig("pekko.management.cluster.bootstrap")
 
@@ -94,16 +94,16 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
   }
 
   /** Java API */
-  def getContactPointDiscoveryServiceName: Optional[String] = contactPointDiscovery.serviceName.asJava
+  def getContactPointDiscoveryServiceName: Optional[String] = contactPointDiscovery.serviceName.toJava
 
   /** Java API */
-  def getContactPointDiscoveryServiceNamespace: Optional[String] = contactPointDiscovery.serviceNamespace.asJava
+  def getContactPointDiscoveryServiceNamespace: Optional[String] = contactPointDiscovery.serviceNamespace.toJava
 
   /** Java API */
-  def getContactPointDiscoveryPortName: Optional[String] = contactPointDiscovery.portName.asJava
+  def getContactPointDiscoveryPortName: Optional[String] = contactPointDiscovery.portName.toJava
 
   /** Java API */
-  def getContactPointDiscoveryProtocol: Optional[String] = contactPointDiscovery.protocol.asJava
+  def getContactPointDiscoveryProtocol: Optional[String] = contactPointDiscovery.protocol.toJava
 
   /** Java API */
   def getContactPointDiscoveryEffectiveName(system: ActorSystem): String = contactPointDiscovery.effectiveName(system)

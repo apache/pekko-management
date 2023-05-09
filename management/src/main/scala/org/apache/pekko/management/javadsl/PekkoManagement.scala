@@ -15,7 +15,6 @@ package org.apache.pekko.management.javadsl
 
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
-import scala.compat.java8.FutureConverters._
 import org.apache.pekko
 import pekko.Done
 import pekko.actor.{ ActorSystem, ClassicActorSystemProvider }
@@ -23,6 +22,7 @@ import pekko.http.javadsl.model.Uri
 import pekko.http.javadsl.server.directives.RouteAdapter
 import pekko.management.PekkoManagementSettings
 import pekko.management.scaladsl
+import pekko.util.FutureConverters._
 
 object PekkoManagement {
   def get(system: ActorSystem): PekkoManagement =
@@ -72,16 +72,16 @@ final class PekkoManagement(delegate: scaladsl.PekkoManagement) {
    * Start a Pekko HTTP server to serve the HTTP management endpoint.
    */
   def start(): CompletionStage[Uri] =
-    delegate.start().map(Uri.create)(delegate.system.dispatcher).toJava
+    delegate.start().map(Uri.create)(delegate.system.dispatcher).asJava
 
   /**
    * Start a Pekko HTTP server to serve the HTTP management endpoint.
    */
   def start(transformSettings: JFunction[ManagementRouteProviderSettings, ManagementRouteProviderSettings])
       : CompletionStage[Uri] =
-    delegate.start(convertSettingsTransformation(transformSettings)).map(Uri.create)(delegate.system.dispatcher).toJava
+    delegate.start(convertSettingsTransformation(transformSettings)).map(Uri.create)(delegate.system.dispatcher).asJava
 
   def stop(): CompletionStage[Done] =
-    delegate.stop().toJava
+    delegate.stop().asJava
 
 }

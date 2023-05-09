@@ -17,7 +17,6 @@ import java.net.InetAddress
 import java.util.concurrent.TimeoutException
 import scala.collection.JavaConverters._
 import scala.collection.immutable.Seq
-import scala.compat.java8.FutureConverters.toScala
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
@@ -28,6 +27,7 @@ import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.AsyncEcsServiceDiscovery.{ resolveTasks, Tag }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.pattern.after
+import pekko.util.FutureConverters._
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.core.retry.RetryPolicy
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient
@@ -99,15 +99,14 @@ object AsyncEcsServiceDiscovery {
       pageTaken: Option[String] = None,
       accumulator: Seq[String] = Seq.empty)(implicit ec: ExecutionContext): Future[Seq[String]] =
     for {
-      listTasksResponse <- toScala(
-        ecsClient.listTasks(
-          ListTasksRequest
-            .builder()
-            .cluster(cluster)
-            .serviceName(serviceName)
-            .nextToken(pageTaken.orNull)
-            .desiredStatus(DesiredStatus.RUNNING)
-            .build()))
+      listTasksResponse <- ecsClient.listTasks(
+        ListTasksRequest
+          .builder()
+          .cluster(cluster)
+          .serviceName(serviceName)
+          .nextToken(pageTaken.orNull)
+          .desiredStatus(DesiredStatus.RUNNING)
+          .build()).asScala
       accumulatedTasksArns = accumulator ++ listTasksResponse.taskArns().asScala
       taskArns <- listTasksResponse.nextToken() match {
         case null =>
@@ -128,10 +127,9 @@ object AsyncEcsServiceDiscovery {
     for {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.
       describeTasksResponses <- Future.traverse(taskArns.grouped(100))(taskArnGroup =>
-        toScala(
-          ecsClient.describeTasks(
-            DescribeTasksRequest.builder().cluster(cluster).tasks(taskArnGroup.asJava).include(
-              TaskField.TAGS).build())))
+        ecsClient.describeTasks(
+          DescribeTasksRequest.builder().cluster(cluster).tasks(taskArnGroup.asJava).include(
+            TaskField.TAGS).build()).asScala)
       tasks = describeTasksResponses.flatMap(_.tasks().asScala).toList
     } yield tasks
 

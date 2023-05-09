@@ -18,8 +18,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <pekko.version>0.0.0+26599-83545a33-SNAPSHOT</pekko.version>
-    <pekko.http.version>0.0.0+4298-26846a02-SNAPSHOT</pekko.http.version>
+    <pekko.version>0.0.0+26656-898c6970-SNAPSHOT</pekko.version>
+    <pekko.http.version>0.0.0+4345-fa1cb9cb-SNAPSHOT</pekko.http.version>
     <pekko-management.version>0.0.0</pekko-management.version> <!-- set by build -->
     <scala.binary.version>2.12</scala.binary.version>
   </properties>

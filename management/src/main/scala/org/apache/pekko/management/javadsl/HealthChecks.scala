@@ -17,14 +17,14 @@ import java.util.concurrent.CompletionStage
 import java.util.function.Supplier
 import java.util.function.{ Function => JFunction }
 import java.util.{ List => JList, Optional }
-import scala.compat.java8.FunctionConverters._
-import scala.compat.java8.FutureConverters._
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.actor.ExtendedActorSystem
 import pekko.actor.setup.Setup
 import pekko.management.HealthCheckSettings
 import pekko.management.internal.HealthChecksImpl
+import pekko.util.FunctionConverters._
+import pekko.util.FutureConverters._
 
 /**
  * Can be used to instantiate health checks directly rather than rely on the
@@ -39,7 +39,7 @@ final class HealthChecks(system: ExtendedActorSystem, settings: HealthCheckSetti
    * Returns CompletionStage(result), containing the system's readiness result
    */
   def readyResult(): CompletionStage[CheckResult] =
-    delegate.readyResult().map(new CheckResult(_))(system.dispatcher).toJava
+    delegate.readyResult().map(new CheckResult(_))(system.dispatcher).asJava
 
   /**
    * Returns CompletionStage(true) if the system is ready to receive user traffic
@@ -53,7 +53,7 @@ final class HealthChecks(system: ExtendedActorSystem, settings: HealthCheckSetti
    * or is loading initial state from a database
    */
   def aliveResult(): CompletionStage[CheckResult] =
-    delegate.aliveResult().map(new CheckResult(_))(system.dispatcher).toJava
+    delegate.aliveResult().map(new CheckResult(_))(system.dispatcher).asJava
 
   /**
    * Returns CompletionStage(result) containing the system's liveness result
