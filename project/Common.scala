@@ -39,7 +39,7 @@ object Common extends AutoPlugin {
           "-deprecation",
           "-Xlint",
           "-Ywarn-dead-code",
-          "-target:jvm-1.8")
+          "-release:8")
         if (scalaVersion.value == Dependencies.scala212Version)
           scalacOptionsBase ++: Seq("-Xfuture", "-Xfatal-warnings")
         else
