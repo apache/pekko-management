@@ -15,11 +15,11 @@ package org.apache.pekko.management.cluster.javadsl
 
 import java.util.concurrent.CompletionStage
 
-import scala.compat.java8.FutureConverters._
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.dispatch.ExecutionContexts
 import pekko.management.cluster.scaladsl.{ ClusterMembershipCheck => ScalaClusterReadinessCheck }
+import pekko.util.FutureConverters._
 
 class ClusterMembershipCheck(system: ActorSystem)
     extends java.util.function.Supplier[CompletionStage[java.lang.Boolean]] {
@@ -27,6 +27,6 @@ class ClusterMembershipCheck(system: ActorSystem)
   private val delegate = new ScalaClusterReadinessCheck(system)
 
   override def get(): CompletionStage[java.lang.Boolean] = {
-    delegate.apply().map(Boolean.box)(ExecutionContexts.parasitic).toJava
+    delegate.apply().map(Boolean.box)(ExecutionContexts.parasitic).asJava
   }
 }

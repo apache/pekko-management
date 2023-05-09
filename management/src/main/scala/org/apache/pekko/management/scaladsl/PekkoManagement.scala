@@ -33,13 +33,13 @@ import pekko.http.scaladsl.server.directives.Credentials
 import pekko.http.scaladsl.settings.ServerSettings
 import pekko.management.{ javadsl, ManagementLogMarker, NamedRouteProvider, PekkoManagementSettings }
 import pekko.util.ManifestInfo
+import pekko.util.FutureConverters._
+import pekko.util.OptionConverters._
 
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicReference
 import scala.annotation.tailrec
 import scala.collection.immutable
-import scala.compat.java8.FutureConverters._
-import scala.compat.java8.OptionConverters._
 import scala.concurrent.{ Future, Promise }
 import scala.util.{ Failure, Success }
 import scala.util.control.NonFatal
@@ -194,7 +194,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
             case provided: Credentials.Provided => Optional.of(ProvidedCredentials(provided))
             case _                              => Optional.empty()
           }
-          authenticateBasicAsync(realm = "secured", c => auth.apply(credsToJava(c)).toScala.map(_.asScala)).optional
+          authenticateBasicAsync(realm = "secured", c => auth.apply(credsToJava(c)).asScala.map(_.toScala)).optional
             .apply(_ => inner)
 
         case (Some(_), Some(_)) =>
