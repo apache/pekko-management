@@ -3,12 +3,12 @@ name := "bootstrap-demo-dns-api"
 
 scalaVersion := "2.13.10"
 
-def akkaManagementVersion(version: String) = version.split('+')(0)
+def pekkoManagementVersion(version: String) = version.split('+')(0)
 
-libraryDependencies += "com.lightbend.akka.management" %% "pekko-management-cluster-bootstrap" % akkaManagementVersion(
+libraryDependencies += "org.apache.pekko" %% "pekko-management-cluster-bootstrap" % pekkoManagementVersion(
   version.value)
 
-libraryDependencies += "com.lightbend.akka.management" %% "pekko-management-cluster-http" % akkaManagementVersion(
+libraryDependencies += "org.apache.pekko" %% "pekko-management-cluster-http" % pekkoManagementVersion(
   version.value)
 
 libraryDependencies += "org.apache.pekko" %% "pekko-discovery" % "2.5.20"
