@@ -52,7 +52,7 @@ This is a separate JAR file:
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="org.apache.pekko.pekko.discovery"
+  group="org.apache.pekko"
   artifact="pekko-discovery-aws-api_$scala.binary.version$"
   version=PekkoManagementVersion
 }
@@ -166,7 +166,7 @@ preview SDK. The disadvantage is that the mainstream SDK does blocking IO.
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="org.apache.pekko.pekko.discovery"
+  group="org.apache.pekko"
   artifact="pekko-discovery-aws-api_$scala.binary.version$"
   version=PekkoManagementVersion
 }
@@ -198,7 +198,7 @@ Once the async AWS SDK is out of preview it is likely that the
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="org.apache.pekko.pekko.discovery"
+  group="org.apache.pekko"
   artifact="pekko-discovery-aws-api-async_$scala.binary.version$"
   version=PekkoManagementVersion
 }

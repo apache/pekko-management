@@ -19,7 +19,7 @@ If you are using Consul to do the service discovery this would allow you to base
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="org.apache.pekko.pekko.discovery"
+  group="org.apache.pekko"
   artifact="pekko-discovery-consul_$scala.binary.version$"
   version=PekkoManagementVersion
 }
