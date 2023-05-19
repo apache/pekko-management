@@ -2,7 +2,7 @@
 
 set -exu
 
-VERSION=`sbt publishM2 | grep pekko-management-cluster-bootstrap_2.12 | tail -1 | cut -d "/" -f 10`
+VERSION=`sbt publishM2 | grep pekko-management-cluster-bootstrap_2.13 | tail -1 | cut -d "/" -f 10`
 
 cd integration-test/kubernetes-api-java
 
