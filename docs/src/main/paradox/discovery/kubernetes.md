@@ -15,7 +15,7 @@ First, add the dependency on the component:
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="org.apache.pekko.pekko.discovery"
+  group="org.apache.pekko"
   artifact="pekko-discovery-kubernetes-api_$scala.binary.version$"
   version=PekkoManagementVersion
 }
