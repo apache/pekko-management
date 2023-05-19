@@ -4,7 +4,7 @@ name := "bootstrap-demo-marathon-api-docker"
 
 version := "1.1.4"
 
-scalaVersion := "2.12.16"
+scalaVersion := "2.13.10"
 
 enablePlugins(JavaServerAppPackaging)
 

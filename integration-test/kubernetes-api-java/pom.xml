@@ -21,7 +21,7 @@
     <pekko.version>0.0.0+26656-898c6970-SNAPSHOT</pekko.version>
     <pekko.http.version>0.0.0+4345-fa1cb9cb-SNAPSHOT</pekko.http.version>
     <pekko-management.version>0.0.0</pekko-management.version> <!-- set by build -->
-    <scala.binary.version>2.12</scala.binary.version>
+    <scala.binary.version>2.13</scala.binary.version>
   </properties>
 
   <repositories>
