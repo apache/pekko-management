@@ -28,7 +28,7 @@ This is a separate JAR file:
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
-  group="com.lightbend.pekko.discovery"
+  group="org.apache.pekko.pekko.discovery"
   artifact="pekko-discovery-marathon-api_$scala.binary.version$"
   version=PekkoManagementVersion
 }
