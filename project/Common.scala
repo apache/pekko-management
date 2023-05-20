@@ -3,14 +3,14 @@ import de.heikoseeberger.sbtheader.HeaderPlugin
 import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport._
 import sbt.Keys._
 import sbt._
-import org.mdedetrich.apache.sonatype.SonatypeApachePlugin
+import org.mdedetrich.apache.sonatype.ApacheSonatypePlugin
 import sbtdynver.DynVerPlugin
 import sbtdynver.DynVerPlugin.autoImport.dynverSonatypeSnapshots
 
 object Common extends AutoPlugin {
 
   override def trigger = allRequirements
-  override def requires = plugins.JvmPlugin && HeaderPlugin && SonatypeApachePlugin && DynVerPlugin
+  override def requires = plugins.JvmPlugin && HeaderPlugin && ApacheSonatypePlugin && DynVerPlugin
 
   val currentYear = "2023"
 
