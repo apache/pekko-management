@@ -37,11 +37,11 @@ object ClusterApp {
 
     system.actorOf(
       ClusterSingletonManager.props(
-        Props[NoisySingleton],
+        Props[NoisySingleton](),
         PoisonPill,
         ClusterSingletonManagerSettings(system)))
     Cluster(system).subscribe(
-      system.actorOf(Props[ClusterWatcher]),
+      system.actorOf(Props[ClusterWatcher]()),
       ClusterEvent.InitialStateAsEvents,
       classOf[ClusterDomainEvent])
 

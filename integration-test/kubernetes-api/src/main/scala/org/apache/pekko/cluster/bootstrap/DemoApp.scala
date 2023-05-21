@@ -40,7 +40,7 @@ object DemoApp extends App {
   ClusterBootstrap(system).start()
 
   cluster.subscribe(
-    system.actorOf(Props[ClusterWatcher]),
+    system.actorOf(Props[ClusterWatcher]()),
     ClusterEvent.InitialStateAsEvents,
     classOf[ClusterDomainEvent])
 
