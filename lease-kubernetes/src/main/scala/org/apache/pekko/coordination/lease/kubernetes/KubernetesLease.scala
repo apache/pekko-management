@@ -104,6 +104,7 @@ class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: A
         case Failure(_: AskTimeoutException) => Failure(
             new LeaseTimeoutException(
               s"Timed out trying to release lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
+        case Failure(exception) => Failure(exception)
       }(ExecutionContexts.parasitic)
   }
 
@@ -120,6 +121,7 @@ class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: A
         case Success(InvalidRequest(msg)) => Failure(new LeaseException(msg))
         case Failure(_: AskTimeoutException) => Failure(new LeaseTimeoutException(
             s"Timed out trying to acquire lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
+        case Failure(exception) => Failure(exception)
       }(ExecutionContexts.parasitic)
   }
 }
