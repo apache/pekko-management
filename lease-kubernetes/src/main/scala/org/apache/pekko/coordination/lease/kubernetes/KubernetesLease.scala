@@ -18,6 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 import scala.concurrent.Future
+import scala.util.{ Failure, Success }
+import scala.annotation.nowarn
 
 import org.apache.pekko
 import pekko.actor.ExtendedActorSystem
@@ -66,7 +68,6 @@ class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: A
     extends Lease(settings) {
 
   import pekko.pattern.ask
-  import system.dispatcher
 
   private val logger = LoggerFactory.getLogger(classOf[KubernetesLease])
 
@@ -94,37 +95,31 @@ class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: A
 
   override def checkLease(): Boolean = leaseTaken.get()
 
+  @nowarn("msg=match may not be exhaustive")
   override def release(): Future[Boolean] = {
-    // replace with transform once 2.11 dropped
     (leaseActor ? Release())
-      .flatMap {
-        case LeaseReleased       => Future.successful(true)
-        case InvalidRequest(msg) => Future.failed(new LeaseException(msg))
-      }(ExecutionContexts.parasitic)
-      .recoverWith {
-        case _: AskTimeoutException =>
-          Future.failed(
+      .transform {
+        case Success(LeaseReleased)       => Success(true)
+        case Success(InvalidRequest(msg)) => Failure(new LeaseException(msg))
+        case Failure(_: AskTimeoutException) => Failure(
             new LeaseTimeoutException(
-              s"Timed out trying to release lease [${leaseName}, ${settings.ownerName}]. It may still be taken."))
-      }
+              s"Timed out trying to release lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
+      }(ExecutionContexts.parasitic)
   }
 
   override def acquire(): Future[Boolean] = {
     acquire(ConstantFun.scalaAnyToUnit)
 
   }
+  @nowarn("msg=match may not be exhaustive")
   override def acquire(leaseLostCallback: Option[Throwable] => Unit): Future[Boolean] = {
-    // replace with transform once 2.11 dropped
     (leaseActor ? Acquire(leaseLostCallback))
-      .flatMap {
-        case LeaseAcquired       => Future.successful(true)
-        case LeaseTaken          => Future.successful(false)
-        case InvalidRequest(msg) => Future.failed(new LeaseException(msg))
-      }
-      .recoverWith {
-        case _: AskTimeoutException =>
-          Future.failed[Boolean](new LeaseTimeoutException(
-            s"Timed out trying to acquire lease [${leaseName}, ${settings.ownerName}]. It may still be taken."))
+      .transform {
+        case Success(LeaseAcquired)       => Success(true)
+        case Success(LeaseTaken)          => Success(false)
+        case Success(InvalidRequest(msg)) => Failure(new LeaseException(msg))
+        case Failure(_: AskTimeoutException) => Failure(new LeaseTimeoutException(
+            s"Timed out trying to acquire lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
       }(ExecutionContexts.parasitic)
   }
 }
