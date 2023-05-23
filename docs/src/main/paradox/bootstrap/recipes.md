@@ -3,10 +3,10 @@
 A set of integration tests projects can be found in [integration-test folder of the Pekko Management project](https://github.com/apache/incubator-pekko-management/tree/master/integration-test).
 These test various Pekko management features together in various environments such as Kubernetes.
 
-The following samples exist as standalone projects for Akka as a starting point and can be easily adapted to Pekko:
+The following samples exist as standalone projects for Apache Pekko as a starting point:
 
-* [Akka Cluster bootstrap using the Kubernetes API with Java/Maven](https://github.com/akka/akka-sample-cluster-kubernetes-java)
-* [Akka Cluster bootstrap using DNS in Kubernetes](https://github.com/akka/akka-sample-cluster-kubernetes-dns-java)
+* [Pekko Cluster bootstrap using the Kubernetes API with Java/Maven](https://github.com/apache/incubator-pekko-samples/tree/main/pekko-sample-cluster-kubernetes-java)
+* [Pekko Cluster bootstrap using the Kubernetes API with Scala/sbt](https://github.com/apache/incubator-pekko-samples/tree/main/pekko-sample-cluster-kubernetes-scala)
 
 ## Local
 
@@ -210,10 +210,10 @@ $ kubectl logs $POD --follow | less
 [DEBUG] [12/13/2018 07:13:43.134] [default-pekko.actor.default-dispatcher-18] [pekko.tcp://default@172.17.0.7:7355/system/IO-DNS/async-dns/$a/$a] Resolving [_management._tcp.integration-test-kubernetes-dns-internal.pekko-bootstrap-demo-ns.svc.cluster.local] (SRV)
 [INFO] [12/13/2018 07:13:43.147] [default-pekko.actor.default-dispatcher-6] [PekkoManagement(pekko://default)] Bound Pekko Management (HTTP) endpoint to: 0.0.0.0:7626
 [DEBUG] [12/13/2018 07:13:43.156] [default-pekko.actor.default-dispatcher-5] [pekko.tcp://default@172.17.0.7:7355/system/IO-TCP/selectors/$a/1] Successfully bound to /0.0.0.0:8080
-[INFO] [12/13/2018 07:13:43.180] [main] [akka.actor.ActorSystemImpl(default)] Server online at http://localhost:8080/
+[INFO] [12/13/2018 07:13:43.180] [main] [pekko.actor.ActorSystemImpl(default)] Server online at http://localhost:8080/
 ....
 [INFO] [12/13/2018 07:13:50.631] [default-pekko.actor.default-dispatcher-5] [org.apache.pekko.cluster.Cluster(pekko://default)] Cluster Node [pekko.tcp://default@172.17.0.7:7355] - Welcome from [pekko.tcp://default@172.17.0.6:7355]
-[DEBUG] [12/13/2018 07:13:50.644] [default-pekko.remote.default-remote-dispatcher-22] [akka.serialization.Serialization(pekko://default)] Using serializer [org.apache.pekko.cluster.protobuf.ClusterMessageSerializer] for message [org.apache.pekko.cluster.GossipEnvelope]
+[DEBUG] [12/13/2018 07:13:50.644] [default-pekko.remote.default-remote-dispatcher-22] [pekko.serialization.Serialization(pekko://default)] Using serializer [org.apache.pekko.cluster.protobuf.ClusterMessageSerializer] for message [org.apache.pekko.cluster.GossipEnvelope]
 [INFO] [12/13/2018 07:13:50.659] [default-pekko.actor.default-dispatcher-18] [pekko.tcp://default@172.17.0.7:7355/user/$b] Cluster pekko.tcp://default@172.17.0.7:7355 >>> MemberUp(Member(address = pekko.tcp://default@172.17.0.6:7355, status = Up))
 [INFO] [12/13/2018 07:13:50.676] [default-pekko.actor.default-dispatcher-20] [pekko.tcp://default@172.17.0.7:7355/user/$b] Cluster pekko.tcp://default@172.17.0.7:7355 >>> MemberJoined(Member(address = pekko.tcp://default@172.17.0.7:7355, status = Joining))
 [INFO] [12/13/2018 07:13:50.716] [default-pekko.actor.default-dispatcher-6] [pekko.tcp://default@172.17.0.7:7355/user/$b] Cluster pekko.tcp://default@172.17.0.7:7355 >>> LeaderChanged(Some(pekko.tcp://default@172.17.0.6:7355))

@@ -15,7 +15,7 @@
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
     "InstanceCount": {
-      "Description": "Number of EC2 instances for your Akka Cluster (must be between 2 and 50)",
+      "Description": "Number of EC2 instances for your Pekko Cluster (must be between 2 and 50)",
       "Type": "Number",
       "Default": 3,
       "MinValue": 2,
@@ -57,7 +57,7 @@
         "KeyName": {"Fn::If": ["HasKeyPair", {"Ref": "KeyPair"}, {"Ref": "AWS::NoValue"}]},
         "SecurityGroups": [
           {
-            "Ref": "AkkaClusterSecurityGroup"
+            "Ref": "PekkoClusterSecurityGroup"
           }
         ],
         "UserData": {
@@ -77,7 +77,7 @@
         }
       }
     },
-    "AkkaAutoScalingGroup": {
+    "PekkoAutoScalingGroup": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "LaunchConfigurationName": {
@@ -162,10 +162,10 @@
         }
       }
     },
-    "AkkaClusterSecurityGroup": {
+    "PekkoClusterSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "for akka",
+        "GroupDescription": "for pekko",
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
@@ -178,25 +178,25 @@
         ]
       }
     },
-    "AkkaClusterSecurityGroupIngressForPeers7355": {
+    "PekkoClusterSecurityGroupIngressForPeers7355": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupName": {
-          "Ref": "AkkaClusterSecurityGroup"
+          "Ref": "PekkoClusterSecurityGroup"
         },
         "IpProtocol": "tcp",
         "FromPort": 7355,
         "ToPort": 7355,
         "SourceSecurityGroupName": {
-          "Ref": "AkkaClusterSecurityGroup"
+          "Ref": "PekkoClusterSecurityGroup"
         }
       }
     },
-    "AkkaClusterSecurityGroupIngressForOutsiders7626": {
+    "PekkoClusterSecurityGroupIngressForOutsiders7626": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupName": {
-          "Ref": "AkkaClusterSecurityGroup"
+          "Ref": "PekkoClusterSecurityGroup"
         },
         "IpProtocol": "tcp",
         "FromPort": 7626,
@@ -204,17 +204,17 @@
         "CidrIp": {"Ref": "SSHLocation"}
       }
     },
-    "AkkaClusterSecurityGroupIngressForPeers7626": {
+    "PekkoClusterSecurityGroupIngressForPeers7626": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupName": {
-          "Ref": "AkkaClusterSecurityGroup"
+          "Ref": "PekkoClusterSecurityGroup"
         },
         "IpProtocol": "tcp",
         "FromPort": 7626,
         "ToPort": 7626,
         "SourceSecurityGroupName": {
-          "Ref": "AkkaClusterSecurityGroup"
+          "Ref": "PekkoClusterSecurityGroup"
         }
       }
     }
@@ -222,7 +222,7 @@
   "Outputs" : {
     "AutoScalingGroupName": {
       "Value": {
-        "Ref": "AkkaAutoScalingGroup"
+        "Ref": "APekkoAutoScalingGroup"
       },
       "Description": "ASG name"
     }

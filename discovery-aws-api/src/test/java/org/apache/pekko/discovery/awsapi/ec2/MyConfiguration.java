@@ -26,7 +26,7 @@ class MyConfiguration extends ClientConfiguration {
     setProxyHost(".."); // and/or other things you would like to set
 
     setRetryPolicy(PredefinedRetryPolicies.NO_RETRY_POLICY);
-    // If you're using this module for bootstrapping your Akka cluster,
+    // If you're using this module for bootstrapping your Pekko cluster,
     // Cluster Bootstrap already has its own retry/back-off mechanism. To avoid RequestLimitExceeded
     // errors from AWS,
     // disable retries in the EC2 client configuration.
