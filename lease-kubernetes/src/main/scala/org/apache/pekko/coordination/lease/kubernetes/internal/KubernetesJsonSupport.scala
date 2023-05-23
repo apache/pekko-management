@@ -26,7 +26,7 @@ case class LeaseCustomResource(
     metadata: Metadata,
     spec: Spec,
     kind: String = "Lease",
-    apiVersion: String = "akka.io/v1")
+    apiVersion: String = "pekko.apache.org/v1")
 
 /**
  * INTERNAL API

@@ -88,9 +88,9 @@ import javax.net.ssl.TrustManager
   log.debug("kubernetes access namespace: {}. Secure: {}", namespace, settings.secure)
 
   /*
-  PATH: to get all: /apis/akka.io/v1/namespaces/<namespace>/leases
-  PATH: to get a specific one: /apis/akka.io/v1/namespaces/<namespace>/leases/<lease-name>
-  curl -v -X POST localhost:8080/apis/akka.io/v1/namespaces/lease/leases/ -H "Content-Type: application/yaml" --data-binary "@lease-example.yml"
+  PATH: to get all: /apis/pekko.apache.org/v1/namespaces/<namespace>/leases
+  PATH: to get a specific one: /apis/pekko.apache.org/v1/namespaces/<namespace>/leases/<lease-name>
+  curl -v -X POST localhost:8080/apis/pekko.apache.org/v1/namespaces/lease/leases/ -H "Content-Type: application/yaml" --data-binary "@lease-example.yml"
 
   responds with either:
   409 Conflict Already Exists
@@ -127,7 +127,7 @@ import javax.net.ssl.TrustManager
   }
 
   /*
-curl -v -X PUT localhost:8080/apis/akka.io/v1/namespaces/lease/leases/sbr-lease --data-binary "@sbr-lease.yml" -H "Content-Type: application/yaml"
+curl -v -X PUT localhost:8080/apis/pekko.apache.org/v1/namespaces/lease/leases/sbr-lease --data-binary "@sbr-lease.yml" -H "Content-Type: application/yaml"
 PUTs must contain resourceVersions. Response:
 409: Resource version is out of date
 200 if it is updated
@@ -258,7 +258,7 @@ PUTs must contain resourceVersions. Response:
   }
 
   private def pathForLease(name: String): Uri.Path =
-    Uri.Path.Empty / "apis" / "akka.io" / "v1" / "namespaces" / namespace / "leases" / name
+    Uri.Path.Empty / "apis" / "pekko.apache.org" / "v1" / "namespaces" / namespace / "leases" / name
       .replaceAll("[^\\d\\w\\-\\.]", "")
       .toLowerCase
 

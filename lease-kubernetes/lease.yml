@@ -2,9 +2,9 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: leases.akka.io
+  name: leases.pekko.apache.org
 spec:
-  group: akka.io
+  group: pekko.apache.org
   versions:
    - name: v1
      storage: true
