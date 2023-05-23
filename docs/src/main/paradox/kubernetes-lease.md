@@ -69,7 +69,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: lease-access
 rules:
-  - apiGroups: ["akka.io"]
+  - apiGroups: ["pekko.apache.org"]
     resources: ["leases"]
     verbs: ["get", "create", "update", "list"]
 ---
@@ -103,7 +103,7 @@ kubelctl create -f sbr-lease.yml -n <YOUR_NAMESPACE>
 Where `sbr-lease.yml` contains:
 
 ```yml
-apiVersion: "akka.io/v1"
+apiVersion: "pekko.apache.org/v1"
 kind: Lease
 metadata:
   name: <YOUR_ACTORSYSTEM_NAME>-pekko-sbr
