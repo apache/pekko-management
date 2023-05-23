@@ -103,7 +103,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
           case Success(clientConfig) =>
             if (clientConfig.getRetryPolicy != PredefinedRetryPolicies.NO_RETRY_POLICY) {
               log.warning(
-                "If you're using this module for bootstrapping your Akka cluster, " +
+                "If you're using this module for bootstrapping your Apache Pekko cluster, " +
                 "Cluster Bootstrap already has its own retry/back-off mechanism. " +
                 "To avoid RequestLimitExceeded errors from AWS, " +
                 "disable retries in the EC2 client configuration.")
@@ -176,7 +176,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
           case None =>
             ResolvedTarget(host = ip, port = None, address = Try(InetAddress.getByName(ip)).toOption) :: Nil
           case Some(ports) =>
-            ports.map(p => ResolvedTarget(host = ip, port = Some(p), address = Try(InetAddress.getByName(ip)).toOption)) // this allows multiple akka nodes (i.e. JVMs) per EC2 instance
+            ports.map(p => ResolvedTarget(host = ip, port = Some(p), address = Try(InetAddress.getByName(ip)).toOption)) // this allows multiple pekko nodes (i.e. JVMs) per EC2 instance
         })
     }.map(resoledTargets => Resolved(query.serviceName, resoledTargets))
 

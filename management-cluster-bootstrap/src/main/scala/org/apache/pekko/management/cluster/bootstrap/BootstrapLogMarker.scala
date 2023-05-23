@@ -57,7 +57,7 @@ object BootstrapLogMarker {
   /**
    * Marker "pekkoBootstrapInProgress" of log event when bootstrap is in progress.
    * @param contactPoints The hostname and port of the resolved and selected contact points. Included as property "pekkoContactPoints".
-   * @param seedNodes The address of the observed seed nodes of the Akka Cluster. Included as property "pekkoSeedNodes".
+   * @param seedNodes The address of the observed seed nodes of the Pekko Cluster. Included as property "pekkoSeedNodes".
    */
   def inProgress(contactPoints: Set[String], seedNodes: Set[Address]): LogMarker =
     LogMarker(
@@ -65,21 +65,21 @@ object BootstrapLogMarker {
       Map(Properties.ContactPoints -> contactPoints.mkString(", "), Properties.SeedNodes -> seedNodes.mkString(", ")))
 
   /**
-   * Marker "pekkoBootstrapSeedNodes" of log event when seed nodes of the Akka Cluster have been discovered.
-   * @param seedNodes The address of the observed seed nodes of the Akka Cluster. Included as property "pekkoSeedNodes".
+   * Marker "pekkoBootstrapSeedNodes" of log event when seed nodes of the Pekko Cluster have been discovered.
+   * @param seedNodes The address of the observed seed nodes of the Pekko Cluster. Included as property "pekkoSeedNodes".
    */
   def seedNodes(seedNodes: Set[Address]): LogMarker =
     LogMarker("pekkoBootstrapSeedNodes", Map(Properties.SeedNodes -> seedNodes.mkString(", ")))
 
   /**
-   * Marker "pekkoBootstrapJoin" of log event when joining the seed nodes of an existing Akka Cluster.
-   * @param seedNodes The address of the seed nodes of the Akka Cluster. Included as property "pekkoSeedNodes".
+   * Marker "pekkoBootstrapJoin" of log event when joining the seed nodes of an existing Pekko Cluster.
+   * @param seedNodes The address of the seed nodes of the Pekko Cluster. Included as property "pekkoSeedNodes".
    */
   def join(seedNodes: Set[Address]): LogMarker =
     LogMarker("pekkoBootstrapJoin", Map(Properties.SeedNodes -> seedNodes.mkString(", ")))
 
   /**
-   * Marker "pekkoBootstrapJoinSelf" of log event when joining self to form a new Akka Cluster.
+   * Marker "pekkoBootstrapJoinSelf" of log event when joining self to form a new Pekko Cluster.
    */
   val joinSelf: LogMarker =
     LogMarker("pekkoBootstrapJoinSelf")

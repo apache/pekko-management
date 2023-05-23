@@ -43,7 +43,7 @@ final class ClusterHttpManagementRouteProvider(system: ExtendedActorSystem) exte
 
   val settings: ClusterHttpManagementSettings = new ClusterHttpManagementSettings(system.settings.config)
 
-  /** Routes to be exposed by Akka cluster management */
+  /** Routes to be exposed by Pekko cluster management */
   override def routes(routeProviderSettings: ManagementRouteProviderSettings): Route =
     if (routeProviderSettings.readOnly) {
       ClusterHttpManagementRoutes.readOnly(cluster)

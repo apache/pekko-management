@@ -22,18 +22,18 @@ spec:
         actorSystemName: pekko-bootstrap-demo
     spec:
       containers:
-      - name: akka-boostrap-demo
+      - name: pekko-boostrap-demo
         image: integration-test-kubernetes-api:1.3.3.7
         imagePullPolicy: Never
         livenessProbe:
           tcpSocket:
             port: 7626
         ports:
-        # akka remoting
+        # pekko remoting
         - name: remoting
           containerPort: 7355
           protocol: TCP
-        # akka-management
+        # pekko-management
         - containerPort: 7626
           protocol: TCP
           # when contact-point-discovery.port-name is set for cluster bootstrap,

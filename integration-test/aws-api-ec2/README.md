@@ -63,7 +63,7 @@ Step 6: Package the App
 Compile and package the demo app.
 
 ```
-$ cd akka-management 
+$ cd pekko-management 
 $ sbt
 > project integration-test-aws-api-ec2-tag-based
 > universal:packageBin

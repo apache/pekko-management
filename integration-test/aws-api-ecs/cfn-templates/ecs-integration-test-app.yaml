@@ -95,7 +95,7 @@ Resources:
       FromPort: 7626
       ToPort: 7626
       SourceSecurityGroupId: !GetAtt ServiceSecurityGroup.GroupId
-  ServiceSecurityGroupAkkaClusterSelfIngress:
+  ServiceSecurityGroupPekkoClusterSelfIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !GetAtt ServiceSecurityGroup.GroupId

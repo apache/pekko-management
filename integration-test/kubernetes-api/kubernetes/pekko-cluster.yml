@@ -38,7 +38,7 @@ spec:
             port: management
         #health
         ports:
-        # akka-management bootstrap
+        # pekko-management bootstrap
         - containerPort: 7626
           protocol: TCP
           # when contact-point-discovery.port-name is set for cluster bootstrap,

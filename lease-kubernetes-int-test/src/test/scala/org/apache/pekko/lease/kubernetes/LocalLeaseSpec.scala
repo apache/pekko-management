@@ -28,7 +28,7 @@ abstract class LocalLeaseSpec extends LeaseSpec {
     pekko.coordination.lease.kubernetes {
       api-service-host = localhost
       api-service-port = 8080
-      namespace = "akka-lease-tests"
+      namespace = "pekko-lease-tests"
       namespace-path = ""
       secure-api-server = false
     }

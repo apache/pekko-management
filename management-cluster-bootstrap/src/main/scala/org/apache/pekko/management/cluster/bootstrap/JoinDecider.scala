@@ -44,7 +44,7 @@ trait JoinDecider {
  * `seedNodesObservations` contains the replies from those contact points when probing them
  * with the HTTP call. It only contains entries for the contact points that actually replied,
  * i.e. were reachable and running. Each such `SeedNodesObservation` entry has the `seedNodes`
- * (Akka Cluster addresses) that were returned from that contact point. That `Set` will be
+ * (Pekko Cluster addresses) that were returned from that contact point. That `Set` will be
  * empty if the node replied but is not part of an existing cluster yet, i.e. it hasn't joined.
  *
  * There are also some timestamps that can be interesting. Note that `currentTime` is passed in

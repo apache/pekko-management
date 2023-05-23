@@ -24,7 +24,7 @@ public class ClusterReadViewAccess {
   /**
    * INTERNAL API
    *
-   * <p>Exposes the internal {@code readView} of the Akka Cluster, not reachable from Scala code
+   * <p>Exposes the internal {@code readView} of the Pekko Cluster, not reachable from Scala code
    * because it is {@code private[cluster]}.
    */
   @InternalApi

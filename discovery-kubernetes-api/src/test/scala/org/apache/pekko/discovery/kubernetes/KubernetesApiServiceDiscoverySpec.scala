@@ -140,7 +140,7 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
         None) shouldBe List.empty
     }
 
-    "ignore running pods where the Akka container is waiting" in {
+    "ignore running pods where the Pekko container is waiting" in {
       val podList = {
         val data = resourceAsString("multi-container-pod.json")
         import spray.json._

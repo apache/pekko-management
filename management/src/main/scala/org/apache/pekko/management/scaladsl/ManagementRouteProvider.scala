@@ -22,7 +22,7 @@ import pekko.management.javadsl
 /** Extend this trait in your extension in order to allow it to contribute routes to Pekko Management starts its HTTP endpoint */
 trait ManagementRouteProvider extends Extension {
 
-  /** Routes to be exposed by Akka cluster management */
+  /** Routes to be exposed by Pekko cluster management */
   def routes(settings: ManagementRouteProviderSettings): Route
 
 }

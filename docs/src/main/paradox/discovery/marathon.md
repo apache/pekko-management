@@ -61,7 +61,7 @@ And in your `marathon.json`:
 ```
 {
    ...
-   "cmd": "path-to-your-app -Dpekko.remote.netty.tcp.hostname=$HOST -Dpekko.remote.netty.tcp.port=$PORT_PEKKOREMOTE -Dpekko.management.http.hostname=$HOST -Dpekko.management.http.port=$PORT_AKKAMGMTHTTP",
+   "cmd": "path-to-your-app -Dpekko.remote.netty.tcp.hostname=$HOST -Dpekko.remote.netty.tcp.port=$PORT_PEKKOREMOTE -Dpekko.management.http.hostname=$HOST -Dpekko.management.http.port=$PORT_PEKKOMGMTHTTP",
 
    "labels": {
      "ACTOR_SYSTEM_NAME": "my-system"

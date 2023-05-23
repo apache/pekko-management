@@ -231,7 +231,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
   private def loadRouteProviders(): immutable.Seq[ManagementRouteProvider] = {
     val dynamicAccess = system.dynamicAccess
 
-    // since often the providers are akka extensions, we initialize them here as the ActorSystem would otherwise
+    // since often the providers are Pekko extensions, we initialize them here as the ActorSystem would otherwise
     settings.Http.RouteProviders.map {
       case NamedRouteProvider(name, fqcn) =>
         dynamicAccess
