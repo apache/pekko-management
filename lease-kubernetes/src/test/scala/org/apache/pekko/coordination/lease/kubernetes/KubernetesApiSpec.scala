@@ -82,16 +82,16 @@ class KubernetesApiSpec
     "be able to be created" in {
       val version = "1234"
       stubFor(
-        post(urlEqualTo("/apis/akka.io/v1/namespaces/lease/leases/lease-1"))
+        post(urlEqualTo("/apis/pekko.apache.org/v1/namespaces/lease/leases/lease-1"))
           .willReturn(aResponse().withStatus(201).withHeader("Content-Type", "application/json").withBody(s"""
                |{
-               |    "apiVersion": "akka.io/v1",
+               |    "apiVersion": "pekko.apache.org/v1",
                |    "kind": "Lease",
                |    "metadata": {
                |        "name": "lease-1",
-               |        "namespace": "akka-lease-tests",
+               |        "namespace": "pekko-lease-tests",
                |        "resourceVersion": "$version",
-               |        "selfLink": "/apis/akka.io/v1/namespaces/akka-lease-tests/leases/lease-1",
+               |        "selfLink": "/apis/pekko.apache.org/v1/namespaces/pekko-lease-tests/leases/lease-1",
                |        "uid": "c369949e-296c-11e9-9c62-16f8dd5735ba"
                |    },
                |    "spec": {
@@ -115,16 +115,16 @@ class KubernetesApiSpec
       val updatedVersion = "3"
       val timestamp = System.currentTimeMillis()
       stubFor(
-        put(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease"))
+        put(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease"))
           .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(s"""
                |{
-               |    "apiVersion": "akka.io/v1",
+               |    "apiVersion": "pekko.apache.org/v1",
                |    "kind": "Lease",
                |    "metadata": {
                |        "name": "lease-1",
-               |        "namespace": "akka-lease-tests",
+               |        "namespace": "pekko-lease-tests",
                |        "resourceVersion": "$updatedVersion",
-               |        "selfLink": "/apis/akka.io/v1/namespaces/akka-lease-tests/leases/$lease",
+               |        "selfLink": "/apis/pekko.apache.org/v1/namespaces/pekko-lease-tests/leases/$lease",
                |        "uid": "c369949e-296c-11e9-9c62-16f8dd5735ba"
                |    },
                |    "spec": {
@@ -147,21 +147,21 @@ class KubernetesApiSpec
       val timestamp = System.currentTimeMillis()
       // Conflict
       stubFor(
-        put(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease"))
+        put(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease"))
           .willReturn(aResponse().withStatus(StatusCodes.Conflict.intValue)))
 
       // Read to get version
       stubFor(
-        get(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease")).willReturn(
+        get(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse().withStatus(StatusCodes.OK.intValue).withHeader("Content-Type", "application/json").withBody(s"""
                |{
-               |    "apiVersion": "akka.io/v1",
+               |    "apiVersion": "pekko.apache.org/v1",
                |    "kind": "Lease",
                |    "metadata": {
                |        "name": "lease-1",
-               |        "namespace": "akka-lease-tests",
+               |        "namespace": "pekko-lease-tests",
                |        "resourceVersion": "$updatedVersion",
-               |        "selfLink": "/apis/akka.io/v1/namespaces/akka-lease-tests/leases/$lease",
+               |        "selfLink": "/apis/pekko.apache.org/v1/namespaces/pekko-lease-tests/leases/$lease",
                |        "uid": "c369949e-296c-11e9-9c62-16f8dd5735ba"
                |    },
                |    "spec": {
@@ -178,7 +178,7 @@ class KubernetesApiSpec
     "remove lease via DELETE" in {
       val lease = "lease-1"
       stubFor(
-        delete(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease"))
+        delete(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease"))
           .willReturn(aResponse().withStatus(StatusCodes.OK.intValue)))
 
       val response = underTest.removeLease(lease).futureValue
@@ -192,20 +192,20 @@ class KubernetesApiSpec
       val timestamp = System.currentTimeMillis()
 
       stubFor(
-        get(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease")).willReturn(
+        get(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
             .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
             .withHeader("Content-Type", "application/json")
             .withBody(s"""
                |{
-               |    "apiVersion": "akka.io/v1",
+               |    "apiVersion": "pekko.apache.org/v1",
                |    "kind": "Lease",
                |    "metadata": {
                |        "name": "lease-1",
-               |        "namespace": "akka-lease-tests",
+               |        "namespace": "pekko-lease-tests",
                |        "resourceVersion": "$version",
-               |        "selfLink": "/apis/akka.io/v1/namespaces/akka-lease-tests/leases/$lease",
+               |        "selfLink": "/apis/pekko.apache.org/v1/namespaces/pekko-lease-tests/leases/$lease",
                |        "uid": "c369949e-296c-11e9-9c62-16f8dd5735ba"
                |    },
                |    "spec": {
@@ -226,11 +226,11 @@ class KubernetesApiSpec
       val lease = "lease-1"
 
       stubFor(
-        get(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease"))
+        get(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease"))
           .willReturn(aResponse().withStatus(StatusCodes.NotFound.intValue)))
 
       stubFor(
-        post(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease")).willReturn(
+        post(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
             .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
@@ -247,7 +247,7 @@ class KubernetesApiSpec
       val lease = "lease-1"
       val owner = "client"
       stubFor(
-        put(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease")).willReturn(
+        put(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
             .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
@@ -260,7 +260,7 @@ class KubernetesApiSpec
     "timeout on remove lease " in {
       val lease = "lease-1"
       stubFor(
-        delete(urlEqualTo(s"/apis/akka.io/v1/namespaces/lease/leases/$lease")).willReturn(
+        delete(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
             .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)))
