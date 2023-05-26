@@ -80,7 +80,7 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             }
           """)
 
-        implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
+        implicit val system: ActorSystem = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
         val management = PekkoManagement(system)
         management.settings.Http.RouteProviders should contain(
@@ -114,7 +114,7 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             }
           """)
 
-        implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
+        implicit val system: ActorSystem = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
         import system.dispatcher
 
         def myUserPassAuthenticator(credentials: Credentials): Future[Option[String]] =
@@ -153,7 +153,7 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             }
           """)
 
-        implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
+        implicit val system: ActorSystem = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
         val password: Array[Char] = "password".toCharArray // do not store passwords in code, read them from somewhere safe!
 
@@ -213,7 +213,7 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             pekko.management.http.port = $httpPort
           """)
 
-        implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
+        implicit val system: ActorSystem = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
         val management = PekkoManagement(system)
         Await.result(management.start(), 10.seconds)
@@ -237,7 +237,7 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             pekko.management.http.port = 0
           """)
 
-        implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
+        implicit val system: ActorSystem = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
         val management = PekkoManagement(system)
         val boundUri = Await.result(management.start(), 10.seconds)
@@ -272,7 +272,7 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             }
           """)
 
-        implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
+        implicit val system: ActorSystem = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
         val management = PekkoManagement(system)
         Await.result(management.start(), 10.seconds)
@@ -303,7 +303,7 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
             }
           """)
 
-        implicit val system = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
+        implicit val system: ActorSystem = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
 
         val management = PekkoManagement(system)
         intercept[IllegalArgumentException] {

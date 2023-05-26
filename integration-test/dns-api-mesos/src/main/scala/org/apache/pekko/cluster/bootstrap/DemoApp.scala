@@ -25,7 +25,7 @@ import com.typesafe.config.ConfigFactory
 
 object DemoApp extends App {
 
-  implicit val system = ActorSystem("simple")
+  implicit val system: ActorSystem = ActorSystem("simple")
 
   import system.log
   import system.dispatcher

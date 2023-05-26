@@ -21,6 +21,7 @@ import scala.concurrent.duration._
 import org.apache.pekko
 import pekko.actor.Actor
 import pekko.actor.ActorLogging
+import pekko.actor.ActorSystem
 import pekko.actor.DeadLetterSuppression
 import pekko.actor.Props
 import pekko.actor.Status
@@ -86,7 +87,7 @@ private[bootstrap] class HttpContactPointBootstrap(
       s"Uri: $baseUri, this node's remoting address: ${cluster.selfAddress}")
   }
 
-  private implicit val sys = context.system
+  private implicit val sys: ActorSystem = context.system
   private val http = Http()
   private val connectionPoolWithoutRetries = ConnectionPoolSettings(context.system).withMaxRetries(0)
   import context.dispatcher

@@ -181,7 +181,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
       Future.failed(new RuntimeException) // will be enriched with which check timed out below
     )
 
-    val spawnedChecks = checks.map { check =>
+    val spawnedChecks: Seq[Future[Either[String, Unit]]] = checks.map { check =>
       val checkName = check.getClass.getName
       Future.firstCompletedOf(
         Seq(

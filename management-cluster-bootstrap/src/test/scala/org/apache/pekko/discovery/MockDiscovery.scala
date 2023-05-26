@@ -18,7 +18,7 @@ import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.Resolved
-import pekko.event.Logging
+import pekko.event.{ LogSource, Logging }
 
 import scala.annotation.tailrec
 import scala.concurrent.Future
@@ -49,7 +49,7 @@ object MockDiscovery {
 @InternalApi
 final class MockDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
-  private val log = Logging(system, getClass)
+  private val log = Logging(system, getClass)(LogSource.fromClass)
 
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     MockDiscovery.data.get().get(query) match {

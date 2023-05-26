@@ -78,6 +78,6 @@ object ClusterBootstrapRequests {
   import pekko.http.scaladsl.client.RequestBuilding._
 
   def bootstrapSeedNodes(baseUri: Uri): HttpRequest =
-    Get(baseUri + "/bootstrap/seed-nodes")
+    Get(s"$baseUri/bootstrap/seed-nodes")
 
 }

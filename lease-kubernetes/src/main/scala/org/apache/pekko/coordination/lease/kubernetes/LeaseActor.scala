@@ -19,7 +19,6 @@ import org.apache.pekko
 import pekko.actor.Status.Failure
 import pekko.actor.{ ActorRef, DeadLetterSuppression, FSM, LoggingFSM, Props }
 import pekko.annotation.InternalApi
-import pekko.coordination.lease.kubernetes.LeaseActor._
 import pekko.coordination.lease.{ LeaseSettings, LeaseTimeoutException }
 import pekko.util.ConstantFun
 import pekko.util.PrettyDuration._
@@ -93,8 +92,9 @@ private[pekko] class LeaseActor(
     settings: LeaseSettings,
     leaseName: String,
     granted: AtomicBoolean)
-    extends LoggingFSM[State, Data] {
+    extends LoggingFSM[LeaseActor.State, LeaseActor.Data] {
 
+  import pekko.coordination.lease.kubernetes.LeaseActor._
   import pekko.pattern.pipe
   import context.dispatcher
 

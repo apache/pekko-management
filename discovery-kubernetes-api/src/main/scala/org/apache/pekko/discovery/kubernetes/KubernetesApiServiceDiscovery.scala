@@ -31,7 +31,7 @@ import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.kubernetes.JsonFormat._
 import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.{ targets, KubernetesApiException }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
-import pekko.event.Logging
+import pekko.event.{ LogSource, Logging }
 import pekko.http.scaladsl.HttpsConnectionContext
 import pekko.http.scaladsl._
 import pekko.http.scaladsl.model._
@@ -109,7 +109,7 @@ class KubernetesApiServiceDiscovery(implicit system: ActorSystem) extends Servic
 
   private val settings = Settings(system)
 
-  private val log = Logging(system, getClass)
+  private val log = Logging(system, getClass)(LogSource.fromClass)
 
   private val sslContext = {
     val certificates = PemManagersProvider.loadCertificates(settings.apiCaPath)

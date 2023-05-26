@@ -117,7 +117,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
   }
 
   private def routeFindMember(cluster: Cluster, readOnly: Boolean): Route = {
-    extractMethod { method: HttpMethod =>
+    extractMethod { (method: HttpMethod) =>
       if (readOnly && method != HttpMethods.GET) {
         complete(StatusCodes.MethodNotAllowed)
       } else {

@@ -17,7 +17,7 @@ import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
-import pekko.event.Logging
+import pekko.event.{ LogSource, Logging }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -32,7 +32,7 @@ import scala.concurrent.duration._
     system: ActorSystem,
     settings: ClusterBootstrapSettings) extends JoinDecider {
 
-  protected val log = Logging.withMarker(system, getClass)
+  protected val log = Logging.withMarker(system, getClass)(LogSource.fromClass)
 
   /** Returns the current `selfContactPoints` as a String for logging, e.g. [127.0.0.1:64714]. */
   protected def contactPointString(contactPoint: (String, Int)): String =

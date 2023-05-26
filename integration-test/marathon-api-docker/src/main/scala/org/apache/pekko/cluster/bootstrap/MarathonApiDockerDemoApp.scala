@@ -23,7 +23,7 @@ import pekko.management.cluster.bootstrap.ClusterBootstrap
 import pekko.management.scaladsl.PekkoManagement
 
 object MarathonApiDockerDemoApp extends App {
-  implicit val system = ActorSystem("my-system")
+  implicit val system: ActorSystem = ActorSystem("my-system")
 
   val cluster = Cluster(system)
 

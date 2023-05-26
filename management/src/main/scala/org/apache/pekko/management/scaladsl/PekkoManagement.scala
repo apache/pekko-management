@@ -23,7 +23,7 @@ import pekko.actor.{
   ExtensionId,
   ExtensionIdProvider
 }
-import pekko.event.Logging
+import pekko.event.{ LogSource, Logging }
 import pekko.http.javadsl.server.directives.SecurityDirectives.ProvidedCredentials
 import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.model.Uri
@@ -70,7 +70,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
       "pekko-management-cluster-http"),
     logWarning = true)
 
-  private val log = Logging.withMarker(system, getClass)
+  private val log = Logging.withMarker(system, getClass)(LogSource.fromClass)
   val settings: PekkoManagementSettings = new PekkoManagementSettings(system.settings.config)
 
   import system.dispatcher

@@ -31,7 +31,7 @@ import pekko.coordination.lease.LeaseTimeoutException
 import pekko.coordination.lease.kubernetes.KubernetesApi
 import pekko.coordination.lease.kubernetes.KubernetesSettings
 import pekko.coordination.lease.kubernetes.LeaseResource
-import pekko.event.Logging
+import pekko.event.{ LogSource, Logging }
 import pekko.http.scaladsl.ConnectionContext
 import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.HttpsConnectionContext
@@ -57,8 +57,8 @@ import javax.net.ssl.TrustManager
 
   import system.dispatcher
 
-  private implicit val sys = system
-  private val log = Logging(system, getClass)
+  private implicit val sys: ActorSystem = system
+  private val log = Logging(system, getClass)(LogSource.fromClass)
   private val http = Http()(system)
 
   private lazy val sslContext = {

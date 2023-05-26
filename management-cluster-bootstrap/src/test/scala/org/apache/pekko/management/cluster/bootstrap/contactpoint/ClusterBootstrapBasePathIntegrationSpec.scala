@@ -37,8 +37,8 @@ import scala.concurrent.duration._
 class ClusterBootstrapBasePathIntegrationSpec extends AnyWordSpecLike with Matchers {
 
   "Cluster Bootstrap" should {
-    val Vector(managementPort, remotingPort) =
-      SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort)
+    val Vector(managementPort: Int, remotingPort: Int) =
+      SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort: Int)
 
     val config =
       ConfigFactory.parseString(s"""

@@ -5,12 +5,12 @@ object Dependencies {
   // keep in sync with .github/workflows/unit-tests.yml
   val scala212Version = "2.12.17"
   val scala213Version = "2.13.10"
-  val scala3Version = "3.1.2" // not yet enabled - missing pekko-http Scala 3 artifacts
-  val crossScalaVersions = Seq(scala212Version, scala213Version)
+  val scala3Version = "3.3.0"
+  val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
 
   // Align the versions in integration-test/kubernetes-api-java/pom.xml
-  val pekkoVersion = "0.0.0+26656-898c6970-SNAPSHOT"
-  val pekkoHttpVersion = "0.0.0+4345-fa1cb9cb-SNAPSHOT"
+  val pekkoVersion = "0.0.0+26669-ec5b6764-SNAPSHOT"
+  val pekkoHttpVersion = "0.0.0+4411-6fe04045-SNAPSHOT"
 
   val scalaTestVersion = "3.2.14"
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"

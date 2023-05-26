@@ -29,7 +29,7 @@ import JsonFormat._
 import pekko.annotation.ApiMayChange
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import pekko.event.Logging
+import pekko.event.{ LogSource, Logging }
 
 @ApiMayChange
 object MarathonApiServiceDiscovery {
@@ -87,7 +87,7 @@ class MarathonApiServiceDiscovery(implicit system: ActorSystem) extends ServiceD
   import MarathonApiServiceDiscovery._
   import system.dispatcher
 
-  private val log = Logging(system, getClass)
+  private val log = Logging(system, getClass)(LogSource.fromClass)
 
   private val http = Http()
 

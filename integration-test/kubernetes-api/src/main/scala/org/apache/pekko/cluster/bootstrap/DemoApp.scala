@@ -27,7 +27,7 @@ import org.apache.pekko.management.scaladsl.PekkoManagement
 
 object DemoApp extends App {
 
-  implicit val system = ActorSystem("Appka")
+  implicit val system: ActorSystem = ActorSystem("Appka")
 
   import system.log
   val cluster = Cluster(system)

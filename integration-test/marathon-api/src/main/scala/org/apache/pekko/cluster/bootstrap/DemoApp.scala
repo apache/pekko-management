@@ -23,7 +23,7 @@ import pekko.management.scaladsl.PekkoManagement
 import pekko.management.cluster.bootstrap.ClusterBootstrap
 
 object DemoApp extends App {
-  implicit val system = ActorSystem("my-system")
+  implicit val system: ActorSystem = ActorSystem("my-system")
 
   val cluster = Cluster(system)
 

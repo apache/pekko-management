@@ -46,7 +46,8 @@ class MultiDcSpec
 
   "Http cluster management" must {
     "allow multiple DCs" in {
-      val Vector(httpPortA, portA, portB) = SocketUtil.temporaryServerAddresses(3, "127.0.0.1").map(_.getPort)
+      val Vector(httpPortA: Int, portA: Int, portB: Int) =
+        SocketUtil.temporaryServerAddresses(3, "127.0.0.1").map(_.getPort)
       val dcA = ConfigFactory.parseString(
         s"""
            |pekko.management.http.hostname = "127.0.0.1"
@@ -63,7 +64,7 @@ class MultiDcSpec
            |pekko.remote.artery.canonical.port = $portB
            |          """.stripMargin)
 
-      implicit val dcASystem = ActorSystem("MultiDcSystem", config.withFallback(dcA))
+      implicit val dcASystem: ActorSystem = ActorSystem("MultiDcSystem", config.withFallback(dcA))
       val dcBSystem = ActorSystem("MultiDcSystem", config.withFallback(dcB))
 
       val routeSettings =

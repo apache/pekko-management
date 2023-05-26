@@ -1,11 +1,8 @@
 package org.apache.pekko.coordination.lease.kubernetes
 
 import java.util.concurrent.Executors
-
 import scala.collection.immutable
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor, Future }
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.coordination.lease.TimeoutSettings
@@ -65,7 +62,7 @@ class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec",
     "only allow one client to get acquire lease" in {
       val underTest = LeaseProvider(system)
       val nrClients = 30
-      implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(nrClients)) // too many = HTTP request queue of pool fills up
+      implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(nrClients)) // too many = HTTP request queue of pool fills up
       // could make this more contended with a countdown latch so they all start at the same time
       val leases: immutable.Seq[(String, Boolean)] = Future.sequence((0 until nrClients).map(i => {
         val clientName = s"client$i"
