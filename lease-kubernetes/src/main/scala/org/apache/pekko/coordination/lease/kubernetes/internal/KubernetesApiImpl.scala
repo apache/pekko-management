@@ -170,7 +170,7 @@ PUTs must contain resourceVersions. Response:
           getLeaseResource(leaseName).flatMap {
             case None =>
               Future.failed(
-                new LeaseException(s"GET after PUT conflict did not return a lease. Lease[${leaseName}-${ownerName}]"))
+                new LeaseException(s"GET after PUT conflict did not return a lease. Lease[$leaseName-$ownerName]"))
             case Some(lr) =>
               log.debug("LeaseResource read after conflict: {}", lr)
               Future.successful(Left(lr))
@@ -183,7 +183,7 @@ PUTs must contain resourceVersions. Response:
             .flatMap(body => {
               Future.failed(
                 new LeaseException(
-                  s"PUT for lease $leaseName returned unexpected status code ${unexpected}. Body: ${body}"))
+                  s"PUT for lease $leaseName returned unexpected status code $unexpected. Body: $body"))
             })
       }
     } yield result
@@ -218,7 +218,7 @@ PUTs must contain resourceVersions. Response:
   }
 
   private def getLeaseResource(name: String): Future[Option[LeaseResource]] = {
-    val fResponse = makeRequest(requestForPath(pathForLease(name)), s"Timed out reading lease ${name}")
+    val fResponse = makeRequest(requestForPath(pathForLease(name)), s"Timed out reading lease $name")
     for {
       response <- fResponse
       entity <- response.entity.toStrict(settings.bodyReadTimeout)
@@ -242,7 +242,7 @@ PUTs must contain resourceVersions. Response:
             .to[String]
             .flatMap(body => {
               Future.failed(new LeaseException(
-                s"Unexpected response from API server when retrieving lease StatusCode: ${unexpected}. Body: ${body}"))
+                s"Unexpected response from API server when retrieving lease StatusCode: $unexpected. Body: $body"))
             })
       }
     } yield lr
@@ -253,7 +253,7 @@ PUTs must contain resourceVersions. Response:
       .to[String]
       .flatMap(body => {
         Future.failed(new LeaseException(
-          s"Unauthorized to communicate with Kubernetes API server. See https://pekko.apache.org/docs/pekko-management/current/kubernetes-lease.html#role-based-access-control for setting up access control. Body: ${body}"))
+          s"Unauthorized to communicate with Kubernetes API server. See https://pekko.apache.org/docs/pekko-management/current/kubernetes-lease.html#role-based-access-control for setting up access control. Body: $body"))
       })
   }
 
@@ -324,7 +324,7 @@ PUTs must contain resourceVersions. Response:
             .flatMap(body => {
               Future.failed(
                 new LeaseException(
-                  s"Unexpected response from API server when creating Lease StatusCode: ${unexpected}. Body: ${body}"))
+                  s"Unexpected response from API server when creating Lease StatusCode: $unexpected. Body: $body"))
             })
       }
     } yield lr

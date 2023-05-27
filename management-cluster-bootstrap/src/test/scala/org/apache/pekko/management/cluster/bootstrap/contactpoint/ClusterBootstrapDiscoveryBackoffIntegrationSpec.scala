@@ -194,7 +194,7 @@ class ClusterBootstrapDiscoveryBackoffIntegrationSpec
           override def accept(system: ActorSystem, stats: SystemStats): Unit = {
             stats.called shouldBe >=(5)
             val durationBetweenCall2And3 = (stats.call3Timestamp - stats.call2Timestamp).nanos.toMillis
-            info(s"${Cluster(system).selfAddress}: duration between call 2 and 3 ${durationBetweenCall2And3} ms")
+            info(s"${Cluster(system).selfAddress}: duration between call 2 and 3 $durationBetweenCall2And3 ms")
             durationBetweenCall2And3 shouldBe >=(
               (ClusterBootstrap(system).settings.contactPointDiscovery.interval * 2).toMillis)
           }

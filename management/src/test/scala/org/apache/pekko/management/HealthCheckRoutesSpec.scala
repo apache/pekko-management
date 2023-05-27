@@ -45,7 +45,7 @@ class HealthCheckRoutesSpec extends AnyWordSpec with Matchers with ScalatestRout
   tests("/alive", result => testRoute(aliveResultValue = result))
 
   def tests(endpoint: String, route: Future[Either[String, Unit]] => Route) = {
-    s"Health check ${endpoint} endpoint" should {
+    s"Health check $endpoint endpoint" should {
       "return 200 for Right" in {
         Get(endpoint) ~> route(Future.successful(Right(()))) ~> check {
           status shouldEqual StatusCodes.OK
