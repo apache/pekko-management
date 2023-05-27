@@ -178,7 +178,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
             else
               List(classOf[ClusterEvent.ClusterDomainEvent])
 
-          val eventualActorRef = Promise[Option[ActorRef]]
+          val eventualActorRef = Promise[Option[ActorRef]]()
 
           val clusterEvents = Source
             .actorRef[ClusterEvent.ClusterDomainEvent](

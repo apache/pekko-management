@@ -494,7 +494,7 @@ class ClusterHttpManagementRoutesSpec
 
         implicit val t = ScalatestTimeout(5.seconds)
 
-        val done = Promise[Unit]
+        val done = Promise[Unit]()
         cluster.registerOnMemberUp { done.success(()) }
         val _ = done.future.futureValue
 
