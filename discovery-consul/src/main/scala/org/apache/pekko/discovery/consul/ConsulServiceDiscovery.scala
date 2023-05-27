@@ -48,7 +48,7 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     Future.firstCompletedOf(
       Seq(
         after(resolveTimeout, using = system.scheduler)(
-          Future.failed(new TimeoutException(s"Lookup for [${lookup}] timed-out, within [${resolveTimeout}]!"))),
+          Future.failed(new TimeoutException(s"Lookup for [$lookup] timed-out, within [$resolveTimeout]!"))),
         lookupInConsul(lookup.serviceName)))
   }
 

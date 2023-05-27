@@ -60,7 +60,7 @@ class ClusterBootstrapExistingSeedNodesSpec(system: ActorSystem)
       else "pekko.tcp"
 
     val seeds = (seedNodes match {
-      case JoinYourself => List(s"${protocol}://${systemName}@127.0.0.1:${remotingPort}")
+      case JoinYourself => List(s"$protocol://$systemName@127.0.0.1:$remotingPort")
       case _            => seedNodes.map(_.toString)
     }).mkString("""["""", """", """", """"] """)
 
@@ -70,7 +70,7 @@ class ClusterBootstrapExistingSeedNodesSpec(system: ActorSystem)
 
           cluster.jmx.multi-mbeans-in-same-jvm = on
 
-          cluster.seed-nodes = ${seeds}
+          cluster.seed-nodes = $seeds
 
           cluster.http.management.port = $managementPort
           remote.netty.tcp.port = $remotingPort

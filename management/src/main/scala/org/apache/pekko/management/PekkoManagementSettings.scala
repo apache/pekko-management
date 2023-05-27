@@ -38,7 +38,7 @@ final class PekkoManagementSettings(val config: Config) {
 
     val Port: Int = {
       val p = cc.getInt("port")
-      require(0 to 65535 contains p, s"pekko.management.http.port must be 0 through 65535 (was ${p})")
+      require(0 to 65535 contains p, s"pekko.management.http.port must be 0 through 65535 (was $p)")
       p
     }
 
@@ -51,7 +51,7 @@ final class PekkoManagementSettings(val config: Config) {
       case "" => Port
       case value =>
         val p = value.toInt
-        require(0 to 65535 contains p, s"pekko.management.http.bind-port must be 0 through 65535 (was ${p})")
+        require(0 to 65535 contains p, s"pekko.management.http.bind-port must be 0 through 65535 (was $p)")
         p
     }
 
