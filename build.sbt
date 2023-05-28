@@ -2,6 +2,7 @@ import com.typesafe.sbt.packager.docker.{ Cmd, ExecCmd }
 import sbt.Keys.parallelExecution
 
 ThisBuild / apacheSonatypeProjectProfile := "pekko"
+ThisBuild / versionScheme := Some("semver-spec")
 sourceDistName := "incubating-pekko-management"
 
 ThisBuild / resolvers += Resolver.jcenterRepo
