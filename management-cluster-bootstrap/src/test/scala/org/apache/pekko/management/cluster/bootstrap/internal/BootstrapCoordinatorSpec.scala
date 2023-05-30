@@ -46,7 +46,7 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
 
   val discovery = new MockDiscovery(system)
 
-  override implicit val patienceConfig =
+  override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(5, Seconds), interval = Span(100, Millis))
 
   "The bootstrap coordinator, when avoiding named port lookups" should {

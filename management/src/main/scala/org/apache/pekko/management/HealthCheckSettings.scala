@@ -14,9 +14,10 @@
 package org.apache.pekko.management
 
 import com.typesafe.config.Config
-import org.apache.pekko.util.JavaDurationConverters._
+import org.apache.pekko
+import pekko.util.JavaDurationConverters._
+import pekko.util.ccompat.JavaConverters._
 
-import scala.collection.JavaConverters._
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 

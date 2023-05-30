@@ -28,7 +28,7 @@ object ClusterApp {
 
   def main(args: Array[String]): Unit = {
 
-    implicit val system = ActorSystem()
+    implicit val system: ActorSystem = ActorSystem()
     val cluster = Cluster(system)
 
     system.log.info("Starting Pekko Management")

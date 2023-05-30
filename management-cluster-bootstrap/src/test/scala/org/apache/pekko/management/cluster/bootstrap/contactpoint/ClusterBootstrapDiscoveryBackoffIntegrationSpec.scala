@@ -37,13 +37,11 @@ import com.typesafe.config.ConfigFactory
 import pekko.management.cluster.bootstrap.ClusterBootstrap
 import org.scalactic.Tolerance
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.Inside
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class ClusterBootstrapDiscoveryBackoffIntegrationSpec
-    extends AnyWordSpecLike
-    with Matchers
-    with Tolerance
+class ClusterBootstrapDiscoveryBackoffIntegrationSpec extends AnyWordSpecLike with Matchers with Inside with Tolerance
     with ScalaFutures {
 
   "Cluster Bootstrap" should {
@@ -53,8 +51,11 @@ class ClusterBootstrapDiscoveryBackoffIntegrationSpec
     var unreachablePorts = Map.empty[String, Int]
 
     def config(id: String): Config = {
-      val Vector(managementPort, remotingPort, unreachablePort) =
-        SocketUtil.temporaryServerAddresses(3, "127.0.0.1").map(_.getPort)
+      val (managementPort, remotingPort, unreachablePort) = inside(
+        SocketUtil.temporaryServerAddresses(3, "127.0.0.1").map(_.getPort)) {
+        case Vector(mPort: Int, rPort: Int, uPort: Int) => (mPort, rPort, uPort)
+        case o                                          => fail("Expected 3 ports but got: " + o)
+      }
 
       info(s"System [$id]:  management port: $managementPort")
       info(s"System [$id]:    remoting port: $remotingPort")
@@ -163,7 +164,7 @@ class ClusterBootstrapDiscoveryBackoffIntegrationSpec
 
     "start listening with the http contact-points on 2 systems" in {
       def start(system: ActorSystem, contactPointPort: Int) = {
-        implicit val sys = system
+        implicit val sys: ActorSystem = system
 
         val bootstrap: ClusterBootstrap = ClusterBootstrap(system)
         val routes = new HttpClusterBootstrapRoutes(bootstrap.settings).routes

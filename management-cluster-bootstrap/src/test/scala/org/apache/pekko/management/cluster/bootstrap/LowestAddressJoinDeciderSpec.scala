@@ -24,11 +24,14 @@ import pekko.event.NoLogging
 import pekko.testkit.SocketUtil
 import pekko.testkit.TestKit
 import com.typesafe.config.ConfigFactory
+import org.scalatest.Inside
 
-abstract class JoinDeciderSpec extends AbstractBootstrapSpec {
+abstract class JoinDeciderSpec extends AbstractBootstrapSpec with Inside {
 
-  val Vector(managementPort, remotingPort) =
-    SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort)
+  val (managementPort, remotingPort) = inside(SocketUtil.temporaryServerAddresses(2, "127.0.0.1").map(_.getPort)) {
+    case Vector(mPort: Int, rPort: Int) => (mPort, rPort)
+    case o                              => fail("Expected 2 ports but got: " + o)
+  }
 
   val config =
     ConfigFactory.parseString(s"""

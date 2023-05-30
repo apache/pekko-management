@@ -16,11 +16,12 @@ package org.apache.pekko.management
 import java.net.InetAddress
 import java.util.Optional
 
-import scala.collection.JavaConverters._
 import scala.collection.immutable
 
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.util.OptionConverters._
+import org.apache.pekko
+import pekko.annotation.InternalApi
+import pekko.util.OptionConverters._
+import pekko.util.ccompat.JavaConverters._
 import com.typesafe.config.Config
 
 final class PekkoManagementSettings(val config: Config) {

@@ -23,6 +23,7 @@ import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.model.HttpRequest
 import pekko.management.cluster.{ ClusterHttpManagementJsonProtocol, ClusterMembers }
 import pekko.util.ByteString
+import pekko.util.ccompat.JavaConverters._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.PatienceConfiguration.{ Interval, Timeout }
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
@@ -54,17 +55,8 @@ trait HttpClient {
 
 }
 
-class IntegrationTest
-    extends AnyFunSuite
-    with Eventually
-    with BeforeAndAfterAll
-    with ScalaFutures
-    with HttpClient
-    with ClusterHttpManagementJsonProtocol
-    with SpanSugar
-    with Matchers {
-
-  import collection.JavaConverters._
+class IntegrationTest extends AnyFunSuite with Eventually with BeforeAndAfterAll with ScalaFutures with HttpClient
+    with ClusterHttpManagementJsonProtocol with SpanSugar with Matchers {
 
   private val buildId: String = System.getenv("BUILD_ID")
   assert(buildId != null, "BUILD_ID environment variable has to be defined")
@@ -201,12 +193,12 @@ class IntegrationTest
       log.info(
         "querying the Cluster Http Management interface of each node, eventually we should see a well formed cluster")
 
-      clusterPublicIps.foreach { nodeIp: String =>
+      clusterPublicIps.foreach { (nodeIp: String) =>
         {
 
           val result = httpGetRequest(s"http://$nodeIp:7626/cluster/members").futureValue(httpCallTimeout)
           result._1 should ===(200)
-          result._2 should not be 'empty
+          result._2 should not be empty
 
           val clusterMembers = result._2.parseJson.convertTo[ClusterMembers]
 
@@ -214,7 +206,7 @@ class IntegrationTest
           clusterMembers.members.count(_.status == "Up") should ===(instanceCount)
           clusterMembers.members.map(_.node) should ===(expectedNodes)
 
-          clusterMembers.unreachable should be('empty)
+          clusterMembers.unreachable should be(empty)
           clusterMembers.leader shouldBe defined
           clusterMembers.oldest shouldBe defined
 

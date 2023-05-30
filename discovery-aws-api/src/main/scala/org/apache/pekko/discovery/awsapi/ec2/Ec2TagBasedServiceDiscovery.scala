@@ -26,11 +26,11 @@ import pekko.discovery.awsapi.ec2.Ec2TagBasedServiceDiscovery.parseFiltersString
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.event.Logging
 import pekko.pattern.after
+import pekko.util.ccompat.JavaConverters._
 
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }

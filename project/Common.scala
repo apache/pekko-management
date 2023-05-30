@@ -32,16 +32,18 @@ object Common extends AutoPlugin {
       crossVersion := CrossVersion.binary,
       scalacOptions ++= {
         val scalacOptionsBase = Seq(
-          "-encoding",
-          "UTF-8",
+          "-encoding", "UTF-8",
           "-feature",
           "-unchecked",
           "-deprecation",
-          "-Xlint",
-          "-Ywarn-dead-code",
-          "-target:jvm-1.8")
-        if (scalaVersion.value == Dependencies.scala212Version)
-          scalacOptionsBase ++: Seq("-Xfuture", "-Xfatal-warnings")
+          "-release:8")
+        if (scalaVersion.value == Dependencies.scala213Version)
+          scalacOptionsBase ++: Seq(
+            "-Werror",
+            "-Wdead-code")
+        else if (scalaVersion.value == Dependencies.scala3Version)
+          scalacOptionsBase ++: Seq(
+            "-Werror")
         else
           scalacOptionsBase
       },

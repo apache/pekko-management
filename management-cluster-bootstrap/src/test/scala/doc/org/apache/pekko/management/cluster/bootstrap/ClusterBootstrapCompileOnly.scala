@@ -20,7 +20,7 @@ import pekko.management.scaladsl.PekkoManagement
 
 object ClusterBootstrapCompileOnly {
 
-  val system = ActorSystem()
+  val system: ActorSystem = ActorSystem()
 
   // #start
   // Pekko Management hosts the HTTP routes used by bootstrap
