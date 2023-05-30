@@ -19,7 +19,13 @@ import java.util.concurrent.TimeoutException
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import org.apache.pekko
-import pekko.actor.{ Actor, ActorLogging, ActorSystem, DeadLetterSuppression, Props, Status, Timers }
+import pekko.actor.Actor
+import pekko.actor.ActorLogging
+import pekko.actor.ActorSystem
+import pekko.actor.DeadLetterSuppression
+import pekko.actor.Props
+import pekko.actor.Status
+import pekko.actor.Timers
 import pekko.annotation.InternalApi
 import pekko.cluster.Cluster
 import pekko.discovery.ServiceDiscovery.ResolvedTarget

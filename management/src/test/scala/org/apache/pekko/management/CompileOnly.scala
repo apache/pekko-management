@@ -18,11 +18,11 @@ import pekko.actor.ActorSystem
 import pekko.http.scaladsl.server.directives.Credentials
 import pekko.management.scaladsl.PekkoManagement
 
-import scala.concurrent.{ ExecutionContextExecutor, Future }
+import scala.concurrent.{ ExecutionContext, Future }
 
 object CompileOnly {
   val system: ActorSystem = null
-  implicit val ec: ExecutionContextExecutor = system.dispatcher
+  implicit val ec: ExecutionContext = system.dispatcher
 
   // #basic-auth
   def myUserPassAuthenticator(credentials: Credentials): Future[Option[String]] =

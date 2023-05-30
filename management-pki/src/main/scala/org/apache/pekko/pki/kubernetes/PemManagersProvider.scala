@@ -27,10 +27,8 @@ import pekko.annotation.InternalApi
 import pekko.pki.pem.DERPrivateKeyLoader
 import pekko.pki.pem.PEMDecoder
 import pekko.util.ccompat.JavaConverters._
-
 import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
-import scala.annotation.nowarn
 import scala.util.Random
 
 /**

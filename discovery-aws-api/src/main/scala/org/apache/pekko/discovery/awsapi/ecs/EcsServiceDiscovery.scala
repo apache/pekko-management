@@ -22,6 +22,7 @@ import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.EcsServiceDiscovery.resolveTasks
 import pekko.pattern.after
 import pekko.util.ccompat.JavaConverters._
+
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.retry.PredefinedRetryPolicies
@@ -105,8 +106,7 @@ object EcsServiceDiscovery {
     tasks
   }
 
-  @tailrec
-  private[this] def listTaskArns(
+  @tailrec private[this] def listTaskArns(
       ecsClient: AmazonECS,
       cluster: String,
       serviceName: String,

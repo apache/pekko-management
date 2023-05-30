@@ -13,6 +13,8 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 import org.apache.pekko
 import pekko.actor.Status.Failure
 import pekko.actor.{ ActorRef, DeadLetterSuppression, FSM, LoggingFSM, Props }
@@ -21,7 +23,6 @@ import pekko.coordination.lease.{ LeaseSettings, LeaseTimeoutException }
 import pekko.util.ConstantFun
 import pekko.util.PrettyDuration._
 
-import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
@@ -90,9 +91,9 @@ private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, 
     granted: AtomicBoolean)
     extends LoggingFSM[LeaseActor.State, LeaseActor.Data] {
 
-  import LeaseActor._
-  import context.dispatcher
   import pekko.pattern.pipe
+  import context.dispatcher
+  import LeaseActor._
 
   private val ownerName = settings.ownerName
 

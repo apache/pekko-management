@@ -13,17 +13,18 @@
 
 package org.apache.pekko.management.cluster.bootstrap
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import java.time.LocalDateTime
+import java.net.InetAddress
+import scala.concurrent.duration._
 import org.apache.pekko
-import pekko.actor.{ ActorSystem, Address }
+import pekko.actor.ActorSystem
+import pekko.actor.Address
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
 import pekko.event.NoLogging
-import pekko.testkit.{ SocketUtil, TestKit }
+import pekko.testkit.SocketUtil
+import pekko.testkit.TestKit
+import com.typesafe.config.ConfigFactory
 import org.scalatest.Inside
-
-import java.net.InetAddress
-import java.time.LocalDateTime
-import scala.concurrent.duration._
 
 abstract class JoinDeciderSpec extends AbstractBootstrapSpec with Inside {
 
@@ -32,7 +33,7 @@ abstract class JoinDeciderSpec extends AbstractBootstrapSpec with Inside {
     case o                              => fail("Expected 2 ports but got: " + o)
   }
 
-  val config: Config =
+  val config =
     ConfigFactory.parseString(s"""
         pekko {
           loglevel = INFO

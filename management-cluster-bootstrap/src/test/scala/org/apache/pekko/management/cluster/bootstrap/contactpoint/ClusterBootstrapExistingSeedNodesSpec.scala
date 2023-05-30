@@ -13,7 +13,7 @@
 
 package org.apache.pekko.management.cluster.bootstrap.contactpoint
 
-import com.typesafe.config.ConfigFactory
+import scala.concurrent.duration._
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, Address }
 import pekko.cluster.Cluster
@@ -23,9 +23,10 @@ import pekko.http.scaladsl.Http
 import pekko.management.cluster.bootstrap.ClusterBootstrap
 import pekko.remote.RARP
 import pekko.testkit.{ SocketUtil, TestKit }
+import com.typesafe.config.ConfigFactory
+import org.scalatest.{ BeforeAndAfterAll, Inside }
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import org.scalatest.{ BeforeAndAfterAll, Inside }
 
 import scala.concurrent.duration._
 

@@ -21,7 +21,6 @@ import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.server.Directives._
 import pekko.management.cluster.bootstrap.ClusterBootstrap
-
 //#start-pekko-management
 import org.apache.pekko.management.scaladsl.PekkoManagement
 //#start-pekko-management
@@ -31,7 +30,7 @@ object DemoApp extends App {
   implicit val system: ActorSystem = ActorSystem("Appka")
 
   import system.log
-  private val cluster = Cluster(system)
+  val cluster = Cluster(system)
 
   log.info(s"Started [$system], cluster.selfAddress = ${cluster.selfAddress}")
 

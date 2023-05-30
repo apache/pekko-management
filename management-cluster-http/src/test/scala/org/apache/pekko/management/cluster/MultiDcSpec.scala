@@ -13,18 +13,18 @@
 
 package org.apache.pekko.management.cluster
 
-import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.model.{ HttpRequest, StatusCodes }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
-import pekko.management.scaladsl.ManagementRouteProviderSettings
 import pekko.testkit.SocketUtil
+import com.typesafe.config.ConfigFactory
+import pekko.management.scaladsl.ManagementRouteProviderSettings
 import org.scalatest.Inside
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class MultiDcSpec extends AnyWordSpec with Matchers with ScalaFutures with Inside with ClusterHttpManagementJsonProtocol

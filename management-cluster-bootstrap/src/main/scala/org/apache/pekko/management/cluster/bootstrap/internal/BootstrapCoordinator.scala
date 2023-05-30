@@ -16,6 +16,7 @@ package org.apache.pekko.management.cluster.bootstrap.internal
 import java.time.LocalDateTime
 import java.util.concurrent.ThreadLocalRandom
 import scala.collection.immutable
+import scala.concurrent.ExecutionContext
 import org.apache.pekko
 import pekko.actor.Actor
 import pekko.actor.ActorRef
@@ -45,10 +46,6 @@ import pekko.management.cluster.bootstrap.{
   SeedNodesInformation,
   SeedNodesObservation
 }
-
-import scala.concurrent.ExecutionContextExecutor
-
-import scala.concurrent.ExecutionContextExecutor
 
 /** INTERNAL API */
 @InternalApi
@@ -149,7 +146,7 @@ private[pekko] class BootstrapCoordinator(
   import BootstrapCoordinator.Protocol._
   import BootstrapCoordinator._
 
-  implicit private val ec: ExecutionContextExecutor = context.dispatcher
+  implicit private val ec: ExecutionContext = context.dispatcher
   private val log = Logging.withMarker(this)
   private val cluster = Cluster(context.system)
   private val DiscoverTimerKey = "resolve-key"
