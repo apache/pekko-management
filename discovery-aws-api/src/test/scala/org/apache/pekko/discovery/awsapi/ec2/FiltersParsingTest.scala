@@ -14,13 +14,13 @@
 package org.apache.pekko.discovery.awsapi.ec2
 
 import com.amazonaws.services.ec2.model.Filter
-import org.apache.pekko.discovery.awsapi.ec2.Ec2TagBasedServiceDiscovery.parseFiltersString
+import org.apache.pekko
+import pekko.discovery.awsapi.ec2.Ec2TagBasedServiceDiscovery.parseFiltersString
+import pekko.util.ccompat.JavaConverters._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 
 class FiltersParsingTest extends AnyFunSuite with Matchers {
-
-  import scala.collection.JavaConverters._
 
   test("empty string does not break parsing") {
     val filters = ""

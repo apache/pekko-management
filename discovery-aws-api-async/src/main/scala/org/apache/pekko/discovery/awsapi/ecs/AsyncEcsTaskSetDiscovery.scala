@@ -15,7 +15,6 @@ package org.apache.pekko.discovery.awsapi.ecs
 
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
-import scala.collection.JavaConverters._
 import scala.collection.immutable.Seq
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
@@ -33,6 +32,7 @@ import pekko.http.scaladsl.{ Http, HttpExt }
 import pekko.pattern.after
 import pekko.stream.Materializer
 import pekko.util.FutureConverters._
+import pekko.util.ccompat.JavaConverters._
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.core.retry.RetryPolicy
 import software.amazon.awssdk.services.ecs._
@@ -88,7 +88,7 @@ object AsyncEcsTaskSetDiscovery {
   private[this] case class TaskMetadata(TaskARN: String)
   private[this] case class TaskSet(value: String) extends AnyVal
 
-  private[this] implicit val orderFormat: RootJsonFormat[TaskMetadata] = jsonFormat1(TaskMetadata)
+  private[this] implicit val orderFormat: RootJsonFormat[TaskMetadata] = jsonFormat1(TaskMetadata.apply)
 
   private val ECS_CONTAINER_METADATA_URI_PATH = "ECS_CONTAINER_METADATA_URI"
 

@@ -23,6 +23,7 @@ import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.model.HttpRequest
 import pekko.management.cluster.{ ClusterHttpManagementJsonProtocol, ClusterMembers }
 import pekko.util.ByteString
+import org.apache.pekko.util.ccompat.JavaConverters._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.PatienceConfiguration.{ Interval, Timeout }
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
@@ -32,21 +33,19 @@ import org.scalatest.time.{ Seconds, Span, SpanSugar }
 import spray.json._
 
 import scala.concurrent.{ Await, Future }
-import scala.language.postfixOps
 
 trait HttpClient {
-
-  implicit val system: ActorSystem = ActorSystem("simple")
-
   import system.dispatcher
 
   import scala.concurrent.duration._
+
+  implicit val system: ActorSystem = ActorSystem("simple")
 
   val http = Http()
 
   def httpGetRequest(url: String): Future[(Int, String)] = {
     http.singleRequest(HttpRequest(uri = url))
-      .flatMap(r => r.entity.toStrict(3 seconds).map(s => r.status -> s))
+      .flatMap(r => r.entity.toStrict(3.seconds).map(s => r.status -> s))
       .flatMap(t =>
         t._2.dataBytes.runFold(ByteString.empty)(_ ++ _).map(_.utf8String).map(_.filter(_ >= ' '))
           .map(r => t._1.intValue() -> r))
@@ -54,17 +53,8 @@ trait HttpClient {
 
 }
 
-class IntegrationTest
-    extends AnyFunSuite
-    with Eventually
-    with BeforeAndAfterAll
-    with ScalaFutures
-    with HttpClient
-    with ClusterHttpManagementJsonProtocol
-    with SpanSugar
-    with Matchers {
-
-  import collection.JavaConverters._
+class IntegrationTest extends AnyFunSuite with Eventually with BeforeAndAfterAll with ScalaFutures with HttpClient
+    with ClusterHttpManagementJsonProtocol with SpanSugar with Matchers {
 
   private val buildId: String = System.getenv("BUILD_ID")
   assert(buildId != null, "BUILD_ID environment variable has to be defined")
@@ -84,18 +74,12 @@ class IntegrationTest
   private val awsEc2Client = AmazonEC2ClientBuilder.standard().withRegion(region).build()
 
   // Patience settings for the part where we wait for the CloudFormation script to complete
-  private val createStackPatience: PatienceConfig =
-    PatienceConfig(
-      timeout = 15 minutes,
-      interval = 10 seconds)
+  private val createStackPatience: PatienceConfig = PatienceConfig(timeout = 15.minutes, interval = 10.seconds)
 
   // Patience settings for the actual cluster bootstrap part.
   // Once the CloudFormation stack has CREATE_COMPLETE status, the EC2 instances are
   // still "initializing" (seems to take a very long time) so we add some additional patience for that.
-  private val clusterBootstrapPatience: PatienceConfig =
-    PatienceConfig(
-      timeout = 12 minutes,
-      interval = 5 seconds)
+  private val clusterBootstrapPatience: PatienceConfig = PatienceConfig(timeout = 12.minutes, interval = 5.seconds)
 
   private var clusterPublicIps: List[String] = List()
 
@@ -181,7 +165,7 @@ class IntegrationTest
   // port 7626
   private def getMyIp: String = {
     val myIp: Future[(Int, String)] = httpGetRequest("http://checkip.amazonaws.com")
-    val result = Await.result(myIp, atMost = 3 seconds)
+    val result = Await.result(myIp, atMost = 3.seconds)
     assert(result._1 == 200, "http://checkip.amazonaws.com did not return 200 OK")
     result._2
   }
@@ -227,7 +211,7 @@ class IntegrationTest
   // this includes security rules, IAM roles, auto-scaling groups, EC2 instances etc.
   override def afterAll(): Unit = {
     log.info("tearing down infrastructure")
-    eventually(timeout = Timeout(3 minutes), interval = Interval(3 seconds)) {
+    eventually(timeout = Timeout(3.minutes), interval = Interval(3.seconds)) {
       // we put this into an an eventually block since we want to retry
       // for a while, in case it throws an exception.
       awsCfClient.deleteStack(new DeleteStackRequest().withStackName(stackName))

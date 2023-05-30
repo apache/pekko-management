@@ -26,9 +26,9 @@ import pekko.management.javadsl.{ LivenessCheckSetup => JLivenessCheckSetup }
 import pekko.management.javadsl.{ ReadinessCheckSetup => JReadinessCheckSetup }
 import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup }
 import pekko.util.FutureConverters._
+import pekko.util.ccompat.JavaConverters._
 
 import scala.collection.immutable
-import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
 
@@ -186,7 +186,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
       Future.firstCompletedOf(
         Seq(
           timeout.recoverWith {
-            case t: Throwable =>
+            case _: Throwable =>
               Future.failed(
                 CheckTimeoutException(s"Check [$checkName] timed out after ${settings.checkTimeout}"))
           },

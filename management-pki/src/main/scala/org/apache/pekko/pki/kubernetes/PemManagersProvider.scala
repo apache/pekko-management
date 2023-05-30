@@ -13,7 +13,6 @@
 
 package org.apache.pekko.pki.kubernetes
 
-import collection.JavaConverters._
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.Charset
@@ -27,8 +26,11 @@ import org.apache.pekko
 import pekko.annotation.InternalApi
 import pekko.pki.pem.DERPrivateKeyLoader
 import pekko.pki.pem.PEMDecoder
+import pekko.util.ccompat.JavaConverters._
+
 import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
+import scala.annotation.nowarn
 import scala.util.Random
 
 /**
