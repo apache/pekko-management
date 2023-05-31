@@ -14,6 +14,8 @@ object Common extends AutoPlugin {
 
   val currentYear = "2023"
 
+  val isScala3 = Def.setting(scalaBinaryVersion.value == "3")
+
   override lazy val projectSettings: Seq[sbt.Def.Setting[_]] =
     Seq(
       startYear := Some(2022),
@@ -59,10 +61,14 @@ object Common extends AutoPlugin {
         "-doc-title",
         "Apache Pekko Management",
         "-doc-version",
-        version.value,
-        "-skip-packages",
-        "org.apache.pekko.pattern" // for some reason Scaladoc creates this
-      ),
+        version.value) ++
+      // for some reason Scaladoc creates this
+      (if (!isScala3.value)
+         Seq(
+           "-skip-packages",
+           "org.apache.pekko.pattern")
+       else
+         Seq("-skip-packages:org.apache.pekko.pattern")),
       Compile / doc / scalacOptions ++= Seq(
         "-doc-source-url", {
           val branch = if (isSnapshot.value) "master" else s"v${version.value}"
