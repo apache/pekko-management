@@ -39,8 +39,8 @@ lazy val root = project
     docs)
   .settings(
     name := "pekko-management-root",
-    GlobalScope / parallelExecution := false,
-    publish / skip := true)
+    GlobalScope / parallelExecution := false)
+  .enablePlugins(NoPublish)
 
 lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set.empty // temporarily disable mima checks
 
@@ -144,7 +144,6 @@ lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
   .disablePlugins(MimaPlugin)
   .settings(
     name := "pekko-lease-kubernetes-int-test",
-    publish / skip := true,
     libraryDependencies := Dependencies.leaseKubernetesTest,
     version ~= (_.replace('+', '-')),
     dockerBaseImage := "openjdk:8-jre-alpine",
@@ -158,22 +157,20 @@ lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
       Cmd("RUN", "chgrp -R 0 . && chmod -R g=u ."),
       Cmd("RUN", "/sbin/apk", "add", "--no-cache", "bash", "bind-tools", "busybox-extras", "curl", "strace"),
       Cmd("RUN", "chmod +x /opt/docker/bin/pekko-lease-kubernetes-int-test")))
+  .enablePlugins(NoPublish)
 
 lazy val integrationTestKubernetesApi = pekkoIntTestModule("kubernetes-api")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
-    publish / skip := true,
-    doc / sources := Seq.empty,
     libraryDependencies := Dependencies.bootstrapDemos)
   .dependsOn(management, managementClusterHttp, managementClusterBootstrap, discoveryKubernetesApi)
+  .enablePlugins(NoPublish)
 
 lazy val integrationTestKubernetesApiJava = pekkoIntTestModule("kubernetes-api-java")
   .disablePlugins(MimaPlugin)
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, NoPublish)
   .settings(
-    publish / skip := true,
-    doc / sources := Seq.empty,
     libraryDependencies := Dependencies.bootstrapDemos)
   .dependsOn(
     management,
@@ -183,10 +180,8 @@ lazy val integrationTestKubernetesApiJava = pekkoIntTestModule("kubernetes-api-j
 
 lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
   .disablePlugins(MimaPlugin)
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, NoPublish)
   .settings(
-    publish / skip := true,
-    doc / sources := Seq.empty,
     libraryDependencies := Dependencies.bootstrapDemos)
   .dependsOn(
     management,
@@ -196,10 +191,8 @@ lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
 lazy val integrationTestAwsApiEc2TagBased = pekkoIntTestModule("aws-api-ec2")
   .configs(IntegrationTest)
   .disablePlugins(MimaPlugin)
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, NoPublish)
   .settings(
-    publish / skip := true,
-    doc / sources := Seq.empty,
     Defaults.itSettings)
   .dependsOn(
     management,
@@ -209,11 +202,9 @@ lazy val integrationTestAwsApiEc2TagBased = pekkoIntTestModule("aws-api-ec2")
 
 lazy val integrationTestMarathonApiDocker = pekkoIntTestModule("marathon-api-docker")
   .disablePlugins(MimaPlugin)
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, NoPublish)
   .settings(
-    name := "integration-test-marathon-api-docker",
-    publish / skip := true,
-    doc / sources := Seq.empty)
+    name := "integration-test-marathon-api-docker")
   .dependsOn(
     management,
     managementClusterHttp,
@@ -223,15 +214,12 @@ lazy val integrationTestMarathonApiDocker = pekkoIntTestModule("marathon-api-doc
 lazy val integrationTestAwsApiEcs = pekkoIntTestModule("aws-api-ecs")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
-  .settings(
-    publish / skip := true,
-    doc / sources := Seq.empty)
   .dependsOn(
     management,
     managementClusterHttp,
     managementClusterBootstrap,
     discoveryAwsApiAsync)
-  .enablePlugins(JavaAppPackaging, AshScriptPlugin, DockerPlugin)
+  .enablePlugins(JavaAppPackaging, AshScriptPlugin, DockerPlugin, NoPublish)
   .settings(
     dockerBaseImage := "openjdk:10-jre-slim",
     Docker / com.typesafe.sbt.SbtNativePackager.autoImport.packageName := "ecs-integration-test-app",
@@ -242,14 +230,12 @@ lazy val integrationTestLocal = pekkoIntTestModule("local")
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
     name := "integration-test-local",
-    publish / skip := true,
-    doc / sources := Seq.empty,
     libraryDependencies := Dependencies.bootstrapDemos)
   .dependsOn(
     management,
     managementClusterHttp,
     managementClusterBootstrap)
-  .enablePlugins(JavaAppPackaging, AshScriptPlugin)
+  .enablePlugins(JavaAppPackaging, AshScriptPlugin, NoPublish)
 
 lazy val themeSettings = Seq(
   // allow access to snapshots for pekko-sbt-paradox
