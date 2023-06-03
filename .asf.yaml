@@ -12,7 +12,10 @@ github:
     - microservice
     - management
     - cloud-native
-  
+
+  protected_tags:
+    - "v*.*.*"
+
   features:
     # Enable wiki for documentation
     wiki: false
