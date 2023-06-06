@@ -3,8 +3,8 @@ import Keys._
 
 object Dependencies {
   // keep in sync with .github/workflows/unit-tests.yml
-  val scala212Version = "2.12.17"
-  val scala213Version = "2.13.10"
+  val scala212Version = "2.12.18"
+  val scala213Version = "2.13.11"
   val scala3Version = "3.3.0"
   val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
 

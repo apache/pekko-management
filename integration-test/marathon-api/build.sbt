@@ -4,7 +4,7 @@ name := "bootstrap-demo-marathon-api"
 
 version := "1.1.4"
 
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.11"
 
 val pekkoManagementVersion = "1.10.0"
 
