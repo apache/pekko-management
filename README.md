@@ -5,19 +5,17 @@ Future additions may extend these concepts to other parts of Apache Pekko.
 
 Apache Pekko Management is a fork of [Akka Management](https://github.com/akka/akka-management)
 
+## Documentation
 
+The documentation is available at
+[pekko.apache.org](https://pekko.apache.org/docs/pekko-management/current/).
 
-Documentation
--------------
-
-**TODO add documentation links**
-
-Community
----------
+## Community
 
 There are several ways to interact with the Apache Pekko community:
 
 - [GitHub discussions](https://github.com/apache/incubator-pekko-management/discussions): for questions and general discussion.
+- [Pekko users mailing list](https://lists.apache.org/list.html?users@pekko.apache.org): for Pekko user discussions.
 - [Pekko dev mailing list](https://lists.apache.org/list.html?dev@pekko.apache.org): for Pekko development discussions.
 - [GitHub issues](https://github.com/apache/incubator-pekko-management/issues): for bug reports and feature requests. Please search the existing issues before creating new ones. If you are unsure whether you have found a bug, consider asking in GitHub discussions or the mailing list first.
 
