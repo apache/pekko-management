@@ -20,7 +20,6 @@ ThisBuild / resolvers += Resolver.jcenterRepo
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
 
-
 // root
 lazy val root = project
   .in(file("."))
