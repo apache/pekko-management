@@ -20,7 +20,6 @@ ThisBuild / resolvers += Resolver.jcenterRepo
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
 
-enablePlugins(ReproducibleBuildsPlugin)
 
 // root
 lazy val root = project
@@ -59,7 +58,7 @@ lazy val root = project
 lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set.empty // temporarily disable mima checks
 
 lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-discovery-kubernetes-api",
     libraryDependencies := Dependencies.discoveryKubernetesApi,
@@ -67,28 +66,28 @@ lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
   .dependsOn(managementPki)
 
 lazy val discoveryMarathonApi = pekkoModule("discovery-marathon-api")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-discovery-marathon-api",
     libraryDependencies := Dependencies.discoveryMarathonApi,
     mimaPreviousArtifactsSet)
 
 lazy val discoveryAwsApi = pekkoModule("discovery-aws-api")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-discovery-aws-api",
     libraryDependencies := Dependencies.discoveryAwsApi,
     mimaPreviousArtifactsSet)
 
 lazy val discoveryAwsApiAsync = pekkoModule("discovery-aws-api-async")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-discovery-aws-api-async",
     libraryDependencies := Dependencies.discoveryAwsApiAsync,
     mimaPreviousArtifactsSet)
 
 lazy val discoveryConsul = pekkoModule("discovery-consul")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-discovery-consul",
     libraryDependencies := Dependencies.discoveryConsul,
@@ -96,21 +95,21 @@ lazy val discoveryConsul = pekkoModule("discovery-consul")
 
 // gathers all enabled routes and serves them (HTTP or otherwise)
 lazy val management = pekkoModule("management")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-management",
     libraryDependencies := Dependencies.managementHttp,
     mimaPreviousArtifactsSet)
 
 lazy val managementPki = pekkoModule("management-pki")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-management-pki",
     libraryDependencies := Dependencies.managementPki,
     mimaPreviousArtifactsSet)
 
 lazy val managementLoglevelsLogback = pekkoModule("management-loglevels-logback")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-management-loglevels-logback",
     libraryDependencies := Dependencies.managementLoglevelsLogback,
@@ -118,7 +117,7 @@ lazy val managementLoglevelsLogback = pekkoModule("management-loglevels-logback"
   .dependsOn(management)
 
 lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
     name := "pekko-management-loglevels-log4j2",
@@ -126,7 +125,7 @@ lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
   .dependsOn(management)
 
 lazy val managementClusterHttp = pekkoModule("management-cluster-http")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-management-cluster-http",
     libraryDependencies := Dependencies.managementClusterHttp,
@@ -134,7 +133,7 @@ lazy val managementClusterHttp = pekkoModule("management-cluster-http")
   .dependsOn(management)
 
 lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-management-cluster-bootstrap",
     libraryDependencies := Dependencies.managementClusterBootstrap,
@@ -142,7 +141,7 @@ lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap"
   .dependsOn(management)
 
 lazy val leaseKubernetes = pekkoModule("lease-kubernetes")
-  .enablePlugins(AutomateHeaderPlugin)
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-lease-kubernetes",
     libraryDependencies := Dependencies.leaseKubernetes,
