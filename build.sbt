@@ -12,12 +12,15 @@ import sbt.Keys.parallelExecution
 
 ThisBuild / apacheSonatypeProjectProfile := "pekko"
 ThisBuild / versionScheme := Some(VersionScheme.SemVerSpec)
-sourceDistName := "incubating-pekko-management"
+sourceDistName := "apache-pekko-management"
+sourceDistIncubating := true
 
 ThisBuild / resolvers += Resolver.jcenterRepo
 // TODO: Remove when Pekko has a proper release
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
+
+enablePlugins(ReproducibleBuildsPlugin)
 
 // root
 lazy val root = project
