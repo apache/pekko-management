@@ -31,7 +31,7 @@
       <url>https://repository.apache.org/content/repositories/snapshots/</url>
     </repository>
     <repository>
-      <id>apache-snapshots</id>
+      <id>apache-staging</id>
       <name>Apache Staging Repository</name>
       <url>https://repository.apache.org/content/repositories/staging/</url>
     </repository>
