@@ -1,10 +1,6 @@
 # Migration guide
 
-## 1.0 
-
-Version requirements:
-* Pekko 1.0 later
-* Pekko HTTP 1.0 or later
+## 1.0
 
 When migrating from Akka Management it is recommended to first upgrade to Akka 2.6.20 / Akka Management 1.1.4 before switching to Pekko/Pekko Management.
 Please refer to the [Akka Management migration guide](https://doc.akka.io/docs/akka-management/current/migration.html).
@@ -35,4 +31,4 @@ And finally the CRD:
 kubectl delete crd leases.akka.io
 ```
 
-To prepare for Pekko Management, setup the CRD and RBAC again following @ref[kubernetes-lease](kubernetes-lease.md).
+To prepare for Pekko Management, set up the CRD and RBAC again following @ref[kubernetes-lease](kubernetes-lease.md).

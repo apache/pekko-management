@@ -7,9 +7,7 @@ on:
       - main
       - release-*
     tags-ignore: [ v.* ]
-    # Different than its sibilings, we don't configure this workflow to run as a cron job.
-    # The cron build compiles against Akka 2.6 and Akka HTTP 10.2, but the Maven example uses 2.5 and 10.1
-    # see https://github.com/akka/akka-management/issues/744
+    # Different from its siblings, we don't configure this workflow to run as a cron job.
 
 jobs:
    integration-test:

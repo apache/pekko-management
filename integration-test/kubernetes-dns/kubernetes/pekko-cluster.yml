@@ -46,7 +46,7 @@ spec:
         - containerPort: 7355
           name: remoting
         env:
-        # Can be removed once async-dns supports search domains (in Akka 2.5.20)
+        # Possibly can be removed now that async-dns supports search domains
         - name: NAMESPACE
           valueFrom:
             fieldRef:
