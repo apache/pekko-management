@@ -4,7 +4,7 @@
 
 To bootstrap a Pekko cluster in Istio, Istio must be configured to allow Pekko cluster communication to bypass the Istio sidecar proxy. Istio's routing design is made such that services don't need to be aware of each others location, they just communicate with the proxy, and the mesh figures out how to route and secure the communication. However, Pekko cluster communication is fundamentally location aware, in order to, for example, route messages to sharded actors. Hence a service mesh is not a suitable communication medium for cluster traffic, so it needs to be bypassed.
 
-It is important to be aware that since Istio's proxy is bypassed, the Pekko cluster communication will not be secured by Istio using TLS. If you wish to secure your cluster communication, you will need to configure [Akka remoting with mTLS](https://pekko.apache.org/docs/pekko/current/remoting-artery.html#remote-security) yourself.
+It is important to be aware that since Istio's proxy is bypassed, the Pekko cluster communication will not be secured by Istio using TLS. If you wish to secure your cluster communication, you will need to configure [Pekko remoting with mTLS](https://pekko.apache.org/docs/pekko/current/remoting-artery.html#remote-security) yourself.
 
 Booting a Pekko cluster in Istio requires a minimum Istio version of 1.2.0, as it requires the outbound port exclusions feature that was added in there. It also requires using the @ref[Kubernetes API](kubernetes-api.md) contact point discovery method to be used. The instructions below are for the additional configuration necessary to ensure an Akka cluster can be bootstrapped in Istio.
 
