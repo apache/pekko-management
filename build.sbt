@@ -8,6 +8,7 @@
  */
 
 import com.typesafe.sbt.packager.docker.{ Cmd, ExecCmd }
+import net.bzzt.reproduciblebuilds.ReproducibleBuildsPlugin.reproducibleBuildsCheckResolver
 import sbt.Keys.parallelExecution
 
 ThisBuild / apacheSonatypeProjectProfile := "pekko"
@@ -20,6 +21,9 @@ commands := commands.value.filterNot { command =>
     name.contains("sonatypeRelease") || name.contains("sonatypeBundleRelease")
   }
 }
+
+ThisBuild / reproducibleBuildsCheckResolver :=
+  "Apache Pekko Staging".at("https://repository.apache.org/content/groups/staging/")
 
 ThisBuild / resolvers += Resolver.jcenterRepo
 // TODO: Remove when Pekko has a proper release
