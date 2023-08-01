@@ -6,7 +6,7 @@ To bootstrap a Pekko cluster in Istio, Istio must be configured to allow Pekko c
 
 It is important to be aware that since Istio's proxy is bypassed, the Pekko cluster communication will not be secured by Istio using TLS. If you wish to secure your cluster communication, you will need to configure [Pekko remoting with mTLS](https://pekko.apache.org/docs/pekko/current/remoting-artery.html#remote-security) yourself.
 
-Booting a Pekko cluster in Istio requires a minimum Istio version of 1.2.0, as it requires the outbound port exclusions feature that was added in there. It also requires using the @ref[Kubernetes API](kubernetes-api.md) contact point discovery method to be used. The instructions below are for the additional configuration necessary to ensure an Akka cluster can be bootstrapped in Istio.
+Booting a Pekko cluster in Istio requires a minimum Istio version of 1.2.0, as it requires the outbound port exclusions feature that was added in there. It also requires using the @ref[Kubernetes API](kubernetes-api.md) contact point discovery method to be used. The instructions below are for the additional configuration necessary to ensure a Pekko cluster can be bootstrapped in Istio.
 
 ## Allowing outbound communication
 

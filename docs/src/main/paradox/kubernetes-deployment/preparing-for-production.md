@@ -66,7 +66,7 @@ spec:
 Here are a few things to note:
 
 * We're using a Kubernetes deployment. Deployments are logical groupings of pods that represent a single service using the same template. 
-  They support [configurable rolling updates](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#deploymentstrategy-v1-apps), 
+  They support [configurable rolling updates](https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/), 
   meaning the cluster will be gradually upgraded, rather than upgrading every node at once and incurring an outage.
 * We label the pod in the `template` with `app: appka`. This must match the ActorSystem name so that @ref[Pekko Bootstrap](../bootstrap/index.md) finds the other nodes in the cluster.
 * The image we're using is `pekko-sample-cluster-kubernetes:latest`. This corresponds to the name and version of the service in our build. 

@@ -290,8 +290,7 @@ lazy val docs = project
       "scaladoc.pekko.base_url" -> s"https://pekko.apache.org/api/pekko/current/",
       "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/current/%s",
       "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/current/",
-      "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/current/%s",
-      "scaladoc.akka.management.base_url" -> s"/${(Preprocess / siteSubdirName).value}/"),
+      "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/current/%s"),
     Compile / paradoxMarkdownToHtml / sourceGenerators += Def.taskDyn {
       val targetFile = (Compile / paradox / sourceManaged).value / "license-report.md"
 
