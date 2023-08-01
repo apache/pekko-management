@@ -310,5 +310,5 @@ def pekkoModule(moduleName: String): Project =
 def pekkoIntTestModule(moduleName: String): Project =
   Project(id = s"integration-test-$moduleName", base = file(s"integration-test/$moduleName"))
 
-addCommandAlias("verifyCodeStyle", "scalafmtCheckAll; scalafmtSbtCheck; headerCheckAll; javafmtCheckAll")
-addCommandAlias("applyCodeStyle", "headerCreateAll; scalafmtAll; scalafmtSbt; javafmtAll")
+addCommandAlias("verifyCodeStyle", "scalafmtCheckAll; scalafmtSbtCheck; +headerCheckAll; javafmtCheckAll")
+addCommandAlias("applyCodeStyle", "+headerCreateAll; scalafmtAll; scalafmtSbt; javafmtAll")
