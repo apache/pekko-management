@@ -158,6 +158,7 @@ lazy val leaseKubernetes = pekkoModule("lease-kubernetes")
     mimaPreviousArtifactsSet)
   .settings(Defaults.itSettings)
   .configs(IntegrationTest)
+  .settings(inConfig(IntegrationTest)(JavaFormatterPlugin.toBeScopedSettings))
   .dependsOn(managementPki)
 
 lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
@@ -213,6 +214,7 @@ lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
 
 lazy val integrationTestAwsApiEc2TagBased = pekkoIntTestModule("aws-api-ec2")
   .configs(IntegrationTest)
+  .settings(inConfig(IntegrationTest)(JavaFormatterPlugin.toBeScopedSettings))
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin, NoPublish)
   .settings(
@@ -301,9 +303,5 @@ def pekkoModule(moduleName: String): Project =
 def pekkoIntTestModule(moduleName: String): Project =
   Project(id = s"integration-test-$moduleName", base = file(s"integration-test/$moduleName"))
 
-TaskKey[Unit]("verifyCodeFmt") := {
-  javafmtCheckAll.all(ScopeFilter(inAnyProject)).result.value.toEither.left.foreach { _ =>
-    throw new MessageOnlyException(
-      "Unformatted Java code found. Please run 'javafmtAll' and commit the reformatted code")
-  }
-}
+addCommandAlias("verifyCodeStyle", "scalafmtCheckAll; scalafmtSbtCheck; headerCheckAll; javafmtCheckAll")
+addCommandAlias("applyCodeStyle", "headerCreateAll; scalafmtAll; scalafmtSbt; javafmtAll")
