@@ -25,6 +25,7 @@ Various parts of Pekko management can be used together for deploying Pekko Clust
 @@@ index
 
   - [Release Notes](release-notes/index.md)
+  - [License Report](license-report.md)
   - [Deploy guide for Kubernetes](kubernetes-deployment/index.md)
   - [Pekko Management](pekko-management.md)
   - [Migrating from older versions](migration.md)
