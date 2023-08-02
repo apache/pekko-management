@@ -150,7 +150,7 @@ for 'hello world':
 
     kubectl expose deployment appka --type=LoadBalancer --name=appka-service
 
-You can inspect the Pekko Cluster membership status with the [Cluster HTTP Management](https://doc.pekko.io/docs/pekko-management/current/cluster-http-management.html).
+You can inspect the Pekko Cluster membership status with the @ref:[Cluster HTTP Management](../cluster-http-management.md).
 
     curl http://127.0.0.1:7626/cluster/members/
 

@@ -6,7 +6,7 @@ Dynamic Log Levels for Logback hooks into Pekko Management and provides a route 
 
 @@project-info{ projectId="management-loglevels-logback" }
 
-Requires @ref:[Pekko Management](../pekko-management.md) and that the application uses [Logback](http://logback.qos.ch) as logging backend.
+Requires @ref:[Pekko Management](../pekko-management.md) and that the application uses [Logback](https://logback.qos.ch) as logging backend.
 
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
