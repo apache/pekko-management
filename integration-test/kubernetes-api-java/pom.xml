@@ -19,23 +19,10 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <encoding>UTF-8</encoding>
     <pekko.version>1.0.1</pekko.version>
-    <pekko.http.version>1.0.0-RC2</pekko.http.version>
+    <pekko.http.version>1.0.0</pekko.http.version>
     <pekko-management.version>0.0.0</pekko-management.version> <!-- set by build -->
     <scala.binary.version>2.13</scala.binary.version>
   </properties>
-
-  <repositories>
-    <repository>
-      <id>apache-snapshots</id>
-      <name>Apache Snapshots Repository</name>
-      <url>https://repository.apache.org/content/repositories/snapshots/</url>
-    </repository>
-    <repository>
-      <id>apache-staging</id>
-      <name>Apache Staging Repository</name>
-      <url>https://repository.apache.org/content/repositories/staging/</url>
-    </repository>
-  </repositories>
 
   <dependencies>
     <dependency>
