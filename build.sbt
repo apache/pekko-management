@@ -26,10 +26,6 @@ ThisBuild / reproducibleBuildsCheckResolver :=
   "Apache Pekko Staging".at("https://repository.apache.org/content/groups/staging/")
 
 ThisBuild / resolvers += Resolver.jcenterRepo
-// TODO: Remove when Pekko has a proper release
-ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
-ThisBuild / resolvers += "Apache Pekko Staging".at("https://repository.apache.org/content/groups/staging")
-ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
 
 // root
 lazy val root = project

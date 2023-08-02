@@ -19,7 +19,7 @@ object Dependencies {
 
   // Align the versions in integration-test/kubernetes-api-java/pom.xml
   val pekkoVersion = "1.0.1"
-  val pekkoHttpVersion = "1.0.0-RC2"
+  val pekkoHttpVersion = "1.0.0"
 
   val scalaTestVersion = "3.2.14"
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"
