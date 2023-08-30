@@ -259,8 +259,6 @@ lazy val integrationTestLocal = pekkoIntTestModule("local")
   .enablePlugins(JavaAppPackaging, AshScriptPlugin, NoPublish)
 
 lazy val themeSettings = Seq(
-  // allow access to snapshots for pekko-sbt-paradox
-  resolvers += Resolver.ApacheMavenSnapshotsRepo,
   pekkoParadoxGithub := Some("https://github.com/apache/incubator-pekko-management"))
 
 lazy val docs = project
