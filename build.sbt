@@ -22,8 +22,7 @@ commands := commands.value.filterNot { command =>
   }
 }
 
-ThisBuild / reproducibleBuildsCheckResolver :=
-  "Apache Pekko Staging".at("https://repository.apache.org/content/groups/staging/")
+ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 
 ThisBuild / resolvers += Resolver.jcenterRepo
 
