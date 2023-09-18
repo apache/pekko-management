@@ -24,8 +24,8 @@ and its backing `etcd` cluster can also be subject to failure and network issues
 ### Lease Instances
 
 * With @extref[Split Brain Resolver](pekko:split-brain-resolver.html#lease) there will be one lease per Pekko Cluster
-* With multiple Pekko Clusters using SBRs in the same namespace, e.g. multiple Lagom 
-applications, you must ensure different `ActorSystem` names because they all need a separate lease. 
+* With multiple Pekko Clusters using SBRs in the same namespace you must ensure
+different `ActorSystem` names because they all need a separate lease. 
 * With Cluster Sharding and Cluster Singleton there will be more leases 
     - For @extref:[Cluster Singleton](pekko:typed/cluster-singleton.html#lease) there will be one per singleton.
     - For @extref:[Cluster Sharding](pekko:typed/cluster-sharding.html#lease), there will be one per shard per type.
