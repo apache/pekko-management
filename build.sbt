@@ -62,8 +62,7 @@ lazy val root = project
     docs)
   .settings(
     name := "pekko-management-root",
-    GlobalScope / parallelExecution := false
-  )
+    GlobalScope / parallelExecution := false)
   .enablePlugins(NoPublish)
 
 lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set.empty // temporarily disable mima checks
