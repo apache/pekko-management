@@ -24,7 +24,12 @@ commands := commands.value.filterNot { command =>
 
 ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 
-ThisBuild / resolvers += Resolver.jcenterRepo
+inThisBuild(Def.settings(
+  onLoad in Global := {
+    sLog.value.info(
+      s"Building Pekko Management ${version.value} against Pekko ${PekkoDependency.pekkoVersion} on Scala ${(root / scalaVersion).value}")
+    (onLoad in Global).value
+  }))
 
 // root
 lazy val root = project
@@ -57,7 +62,8 @@ lazy val root = project
     docs)
   .settings(
     name := "pekko-management-root",
-    GlobalScope / parallelExecution := false)
+    GlobalScope / parallelExecution := false
+  )
   .enablePlugins(NoPublish)
 
 lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set.empty // temporarily disable mima checks

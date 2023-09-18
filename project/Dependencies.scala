@@ -8,7 +8,6 @@
  */
 
 import sbt._
-import Keys._
 
 object Dependencies {
   // keep in sync with .github/workflows/unit-tests.yml
@@ -17,8 +16,7 @@ object Dependencies {
   val scala3Version = "3.3.0"
   val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
 
-  // Align the versions in integration-test/kubernetes-api-java/pom.xml
-  val pekkoVersion = "1.0.1"
+  val pekkoVersion = PekkoDependency.pekkoVersion
   val pekkoHttpVersion = "1.0.0"
 
   val scalaTestVersion = "3.2.14"
