@@ -11,6 +11,7 @@ import com.typesafe.sbt.packager.docker.{ Cmd, ExecCmd }
 import net.bzzt.reproduciblebuilds.ReproducibleBuildsPlugin.reproducibleBuildsCheckResolver
 import sbt.Keys.parallelExecution
 
+ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / apacheSonatypeProjectProfile := "pekko"
 ThisBuild / versionScheme := Some(VersionScheme.SemVerSpec)
 sourceDistName := "apache-pekko-management"
@@ -24,7 +25,12 @@ commands := commands.value.filterNot { command =>
 
 ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 
-ThisBuild / resolvers += Resolver.jcenterRepo
+inThisBuild(Def.settings(
+  Global / onLoad := {
+    sLog.value.info(
+      s"Building Pekko Management ${version.value} against Pekko ${PekkoDependency.pekkoVersion} on Scala ${(root / scalaVersion).value}")
+    (Global / onLoad).value
+  }))
 
 // root
 lazy val root = project

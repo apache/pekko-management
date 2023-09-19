@@ -1,0 +1,56 @@
+name: Unit Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'  # every day 2am
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { javaVersion: 8,  scalaVersion: 2.12.18, pekkoVersion: 'default' }
+          - { javaVersion: 8,  scalaVersion: 2.12.18, pekkoVersion: 'main' }
+          - { javaVersion: 8,  scalaVersion: 2.13.11, pekkoVersion: 'default' }
+          - { javaVersion: 8,  scalaVersion: 2.13.11, pekkoVersion: 'main' }
+          - { javaVersion: 8,  scalaVersion: 3.3.0,   pekkoVersion: 'default' }
+          - { javaVersion: 8,  scalaVersion: 3.3.0,   pekkoVersion: 'main' }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout GitHub merge
+        if: github.event.pull_request
+        run: |-
+          git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
+          git checkout scratch
+
+      - name: Setup Java ${{ matrix.javaVersion }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.javaVersion }}
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@v6.4.0
+
+      # hack to solve "Cannot assign requested address" issue - https://github.community/t/github-action-and-oserror-errno-99-cannot-assign-requested-address/173973/1
+      - name: Add the current IP address, long hostname and short hostname record to /etc/hosts file
+        run: |
+          echo -e "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)\t$(hostname -f) $(hostname -s)" | sudo tee -a /etc/hosts
+
+      - name: Compile integration test
+        run: sbt -Dpekko.build.pekko.version=${{ matrix.pekkoVersion }} "++${{ matrix.scalaVersion }} IntegrationTest/compile"
+
+      - name: Run tests with Scala ${{ matrix.scalaVersion }} and Java ${{ matrix.javaVersion }}
+        run: sbt -Dpekko.build.pekko.version=${{ matrix.pekkoVersion }} "++${{ matrix.scalaVersion }} test"
+
+      - name: Print logs on failure
+        if: ${{ failure() }}
+        run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
