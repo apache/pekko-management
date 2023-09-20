@@ -1,11 +1,5 @@
 ## AWS API
 
-@@@ warning
-
-This module is community maintained and the Lightbend subscription doesn't cover support for this module.
-
-@@@
-
 If you're using EC2 directly _or_ you're using ECS with host mode networking
 _and_ you're deploying one container per cluster member, continue to
 @ref:[Discovery Method: AWS API - EC2 Tag-Based Discovery](aws.md#discovery-method-aws-api-ec2-tag-based-discovery).
