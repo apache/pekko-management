@@ -28,8 +28,7 @@ Compile / mainClass := Some("prg.apache.pekko.sample.cluster.kubernetes.DemoApp"
 
 ### Selecting a JDK
 
-By default, sbt native packager uses the `openjdk` latest Docker image from DockerHub. At time of writing, this will give you OpenJDK 11, which is not certified by Lightbend, and it also gives you the Debian OpenJDK build, 
-which is not certified by Lightbend either. For a full list of Lightbend certified JDK builds and versions, see [here](https://developer.lightbend.com/docs/introduction/getting-help/java-versions.html).
+By default, sbt native packager uses the `openjdk` latest Docker image from DockerHub. 
 
 We recommend using the AdoptOpenJDK base image:
 

@@ -127,7 +127,7 @@ Scala
 Java
 :   @@snip[CodeExamples.java](/management/src/test/java/org/apache/pekko/management/CodeExamples.java){ #start-pekko-management-with-https-context }
 
-You can also refer to [PekkoManagementHttpEndpointSpec](https://github.com/akka/akka-management/blob/119ad1871c3907c2ca528720361b8ccb20234c55/management/src/test/scala/org/apache/pekko/management/PekkoManagementHttpEndpointSpec.scala#L124-L148) where a full example configuring the HTTPS context is shown.
+You can also refer to [PekkoManagementHttpEndpointSpec](https://github.com/apache/incubator-pekko-management/blob/main/management/src/test/scala/org/apache/pekko/management/PekkoManagementHttpEndpointSpec.scala) where a full example configuring the HTTPS context is shown.
 
 ### Enabling Basic Authentication
 
