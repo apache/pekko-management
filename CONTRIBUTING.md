@@ -20,7 +20,7 @@ This is the process for committing code into master.
 2. Especially for bigger features it can be good to create or find a ticket for your work in the [issue tracker](https://github.com/apache/incubator-pekko-management/issues) and discuss your proposed solution there. This is not a requirement, but can avoid disappointment later in the process.
 3. Perform your work according to the [pull request requirements](#pull-request-requirements).
 4. When the feature or fix is completed you should open a [Pull Request](https://help.github.com/articles/using-pull-requests) on [GitHub](https://github.com/apache/incubator-pekko-management/pulls).
-5. The Pull Request should be reviewed by other maintainers (as many as feasible/practical). Note that the maintainers can consist of outside contributors, both within and outside Lightbend. Outside contributors are encouraged to participate in the review process, it is not a closed process.
+5. The Pull Request should be reviewed by other maintainers (as many as feasible/practical). Outside contributors are encouraged to participate in the review process, it is not a closed process.
 6. After the review you should fix the issues (review comments, CI failures) by pushing a new commit for new review, iterating until the reviewers give their thumbs up and CI tests pass.
 
 ## Pull Request Requirements

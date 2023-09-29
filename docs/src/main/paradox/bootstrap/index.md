@@ -185,7 +185,7 @@ and the operation will (presumably) eventually succeed. You'll want to specify t
 
 #### Graceful shutdown 
 
-Pekko Cluster can handle hard failures using a downing provider such as Lightbend's split brain resolver discussed below.
+Pekko Cluster can handle hard failures using a downing provider such as the split brain resolver discussed below.
 However this should not be relied upon for regular rolling redeploys. Features such as `ClusterSingleton`s and `ClusterSharding`
 can safely restart actors on new nodes far quicker when it is certain that a node has shutdown rather than crashed. 
 
