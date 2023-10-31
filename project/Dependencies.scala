@@ -12,8 +12,8 @@ import sbt._
 object Dependencies {
   // keep in sync with .github/workflows/unit-tests.yml
   val scala212Version = "2.12.18"
-  val scala213Version = "2.13.11"
-  val scala3Version = "3.3.0"
+  val scala213Version = "2.13.12"
+  val scala3Version = "3.3.1"
   val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
 
   val pekkoVersion = PekkoDependency.pekkoVersion
@@ -26,6 +26,7 @@ object Dependencies {
   val jacksonVersion = "2.14.3"
 
   val log4j2Version = "2.17.2"
+  val logbackVersion = "1.2.11"
 
   // often called-in transitively with insecure versions of databind / core
   private val jacksonDatabind = Seq(
@@ -45,7 +46,7 @@ object Dependencies {
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion % Test,
-    "ch.qos.logback" % "logback-classic" % "1.2.11" % Test) ++ jacksonDatabind ++ jacksonDatatype // consul depends on insecure version of jackson
+    "ch.qos.logback" % "logback-classic" % logbackVersion % Test) ++ jacksonDatabind ++ jacksonDatatype // consul depends on insecure version of jackson
 
   val discoveryKubernetesApi = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
@@ -99,7 +100,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "ch.qos.logback" % "logback-classic" % "1.2.11",
+    "ch.qos.logback" % "logback-classic" % logbackVersion,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
@@ -161,7 +162,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
-    "ch.qos.logback" % "logback-classic" % "1.2.11",
+    "ch.qos.logback" % "logback-classic" % logbackVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 
 }
