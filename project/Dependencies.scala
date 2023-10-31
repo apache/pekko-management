@@ -25,8 +25,8 @@ object Dependencies {
   val awsSdkVersion = "1.12.210"
   val jacksonVersion = "2.14.3"
 
-  val log4j2Version = "2.17.2"
-  val logbackVersion = "1.2.11"
+  val log4j2Version = "2.21.1"
+  val logbackVersion = "1.3.11"
 
   // often called-in transitively with insecure versions of databind / core
   private val jacksonDatabind = Seq(
