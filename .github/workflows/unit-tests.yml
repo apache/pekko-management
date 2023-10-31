@@ -17,12 +17,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { javaVersion: 8,  scalaVersion: 2.12.18, sbtOpts: '' }
-          - { javaVersion: 11, scalaVersion: 2.12.18, sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
-          - { javaVersion: 8,  scalaVersion: 2.13.11, sbtOpts: '' }
-          - { javaVersion: 11, scalaVersion: 2.13.11, sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
-          - { javaVersion: 8,  scalaVersion: 3.3.0,   sbtOpts: '' }
-          - { javaVersion: 11, scalaVersion: 3.3.0,   sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
+          - { javaVersion: 8,  scalaVersion: 2.12, sbtOpts: '' }
+          - { javaVersion: 11, scalaVersion: 2.12, sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
+          - { javaVersion: 8,  scalaVersion: 2.13, sbtOpts: '' }
+          - { javaVersion: 11, scalaVersion: 2.13, sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
+          - { javaVersion: 8,  scalaVersion: 3.3,   sbtOpts: '' }
+          - { javaVersion: 11, scalaVersion: 3.3,   sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
     steps:
       - name: Checkout
         uses: actions/checkout@v4

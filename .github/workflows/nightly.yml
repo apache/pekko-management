@@ -13,12 +13,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { javaVersion: 8,  scalaVersion: 2.12.18, pekkoVersion: 'default' }
-          - { javaVersion: 8,  scalaVersion: 2.12.18, pekkoVersion: 'main' }
-          - { javaVersion: 8,  scalaVersion: 2.13.11, pekkoVersion: 'default' }
-          - { javaVersion: 8,  scalaVersion: 2.13.11, pekkoVersion: 'main' }
-          - { javaVersion: 8,  scalaVersion: 3.3.0,   pekkoVersion: 'default' }
-          - { javaVersion: 8,  scalaVersion: 3.3.0,   pekkoVersion: 'main' }
+          - { javaVersion: 8,  scalaVersion: 2.12, pekkoVersion: 'default' }
+          - { javaVersion: 8,  scalaVersion: 2.12, pekkoVersion: 'main' }
+          - { javaVersion: 8,  scalaVersion: 2.13, pekkoVersion: 'default' }
+          - { javaVersion: 8,  scalaVersion: 2.13, pekkoVersion: 'main' }
+          - { javaVersion: 8,  scalaVersion: 3.3,   pekkoVersion: 'default' }
+          - { javaVersion: 8,  scalaVersion: 3.3,   pekkoVersion: 'main' }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
