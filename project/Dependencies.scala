@@ -23,10 +23,13 @@ object Dependencies {
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"
 
   val awsSdkVersion = "1.12.210"
+  val awsSdk2Version = "2.17.184"
   val jacksonVersion = "2.14.3"
 
-  val log4j2Version = "2.17.2"
-  val logbackVersion = "1.2.11"
+  val (log4jSlf4jBridgeJar, log4j2Version, logbackVersion) = if (pekkoVersion.startsWith("1.0"))
+    ("log4j-slf4j-impl", "2.17.2", "1.2.11")
+  else
+    ("log4j-slf4j2-impl", "2.21.1", "1.3.11")
 
   // often called-in transitively with insecure versions of databind / core
   private val jacksonDatabind = Seq(
@@ -77,7 +80,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    ("software.amazon.awssdk" % "ecs" % "2.17.184").exclude("software.amazon.awssdk", "apache-client"),
+    ("software.amazon.awssdk" % "ecs" % awsSdk2Version).exclude("software.amazon.awssdk", "apache-client"),
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test) ++ jacksonDatabind // aws-java-sdk depends on insecure version of jackson
 
   val managementHttp = Seq(
@@ -113,7 +116,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
     "org.apache.logging.log4j" % "log4j-core" % log4j2Version,
     "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
-    "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+    "org.apache.logging.log4j" % log4jSlf4jBridgeJar % log4j2Version,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
