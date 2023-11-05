@@ -42,6 +42,18 @@ The documentation is available at
     - Or you can add a file called `version.sbt` to the same directory that has the `build.sbt` containing something like
         - `ThisBuild / version := "1.0.0"`
 
+### Running integration tests
+
+The integration tests requires an Kubernetes API server running on `localhost:8080`. You can run a local Kubernetes cluster using [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/).
+You can bind the API server on `localhost:8080` using `kubectl proxy --port=8080`.
+
+The following scripts can be used to run the integration tests:
+
+- `./integration-test/kubernetes-api/test.sh` run the integration tests for the Kubernetes API.
+- `./integration-test/kubernetes-dns/test.sh` run the integration tests related to the Kubernetes DNS-based discovery using the service name.
+- `./integration-test/kubernetes-dns/test.sh` run the integration tests for the Kubernetes DNS-based discovery using the service name.
+- `./lease-kubernetes-int-test/test.sh` run the integration tests for the Kubernetes lease implementation.
+
 ## Community
 
 There are several ways to interact with the Apache Pekko community:
