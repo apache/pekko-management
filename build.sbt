@@ -50,7 +50,9 @@ lazy val root = project
     managementClusterHttp,
     managementClusterBootstrap,
     managementLoglevelsLogback,
+    managementLoglevelsLogbackSlf4j2,
     managementLoglevelsLog4j2,
+    managementLoglevelsLog4j2Slf4j2,
     integrationTestAwsApiEc2TagBased,
     integrationTestLocal,
     integrationTestAwsApiEcs,
@@ -127,12 +129,28 @@ lazy val managementLoglevelsLogback = pekkoModule("management-loglevels-logback"
     mimaPreviousArtifactsSet)
   .dependsOn(management)
 
-lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
+lazy val managementLoglevelsLogbackSlf4j2 = pekkoModule("management-loglevels-logback-slf4j2")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .disablePlugins(MimaPlugin)
   .settings(
+    name := "pekko-management-loglevels-logback-slf4j2",
+    libraryDependencies := Dependencies.managementLoglevelsLogbackSlf4j2)
+  .dependsOn(management)
+
+lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .settings(
     name := "pekko-management-loglevels-log4j2",
-    libraryDependencies := Dependencies.managementLoglevelsLog4j2)
+    libraryDependencies := Dependencies.managementLoglevelsLog4j2,
+    mimaPreviousArtifactsSet)
+  .dependsOn(management)
+
+lazy val managementLoglevelsLog4j2Slf4j2 = pekkoModule("management-loglevels-log4j2-slf4j2")
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .disablePlugins(MimaPlugin)
+  .settings(
+    name := "pekko-management-loglevels-log4j2-slf4j2",
+    libraryDependencies := Dependencies.managementLoglevelsLog4j2Slf4j2)
   .dependsOn(management)
 
 lazy val managementClusterHttp = pekkoModule("management-cluster-http")
