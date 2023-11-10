@@ -66,7 +66,9 @@ lazy val root = project
     GlobalScope / parallelExecution := false)
   .enablePlugins(NoPublish)
 
-lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set.empty // temporarily disable mima checks
+lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set(
+  organization.value %% name.value % previousStableVersion.value.getOrElse(
+    throw new Error("Unable to determine previous version")))
 
 lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
@@ -129,10 +131,10 @@ lazy val managementLoglevelsLogback = pekkoModule("management-loglevels-logback"
 
 lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
-  .disablePlugins(MimaPlugin)
   .settings(
     name := "pekko-management-loglevels-log4j2",
-    libraryDependencies := Dependencies.managementLoglevelsLog4j2)
+    libraryDependencies := Dependencies.managementLoglevelsLog4j2,
+    mimaPreviousArtifactsSet)
   .dependsOn(management)
 
 lazy val managementClusterHttp = pekkoModule("management-cluster-http")
