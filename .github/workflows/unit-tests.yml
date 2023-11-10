@@ -61,8 +61,9 @@ jobs:
       - name: Print logs on failure
         if: ${{ failure() }}
         run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
+
   slf4j2-test:
-    name: Test Logback with Slf4J
+    name: Test Logback with slf4J2
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -85,7 +86,7 @@ jobs:
         uses: coursier/cache-action@v6.4.0
 
       - name: Create all API docs for artifacts/website and all reference docs
-        run: sbt -Dpekko.test.slf4j2=true actor-typed-tests/test
+        run: sbt -Dpekko.test.slf4j2=true management-loglevels-logback/test
 
   docs:
     name: Docs compile
