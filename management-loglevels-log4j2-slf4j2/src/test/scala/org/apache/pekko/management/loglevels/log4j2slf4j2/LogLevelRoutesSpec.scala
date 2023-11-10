@@ -35,7 +35,7 @@ class LogLevelRoutesSpec extends AnyWordSpec with Matchers with ScalatestRouteTe
     .createExtension(system.asInstanceOf[ExtendedActorSystem])
     .routes(ManagementRouteProviderSettings(Uri("https://example.com"), readOnly = false))
 
-  "The logback log level routes" must {
+  "The logback (with slf4j2) log level routes" must {
 
     "show log level of a Logger" in {
       Get("/loglevel/log4j2?logger=LogLevelRoutesSpec") ~> routes ~> check {

@@ -110,17 +110,13 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test)
 
-  val managementLoglevelsLogbackSlf4j2 = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "org.slf4j" % "slf4j-api" % slf4j2Version,
-    "ch.qos.logback" % "logback-classic" % logbackSlf4j2Version,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test)
+  val managementLoglevelsLogbackSlf4j2Overrides = if (java.lang.Boolean.getBoolean("pekko.test.slf4j2")) {
+    Seq(
+      "org.slf4j" % "slf4j-api" % "2.0.9",
+      "ch.qos.logback" % "logback-classic" % "1.3.11" % Test)
+  } else {
+    Seq.empty
+  }
 
   val managementLoglevelsLog4j2 = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
@@ -142,7 +138,7 @@ object Dependencies {
     "org.slf4j" % "slf4j-api" % slf4j2Version,
     "org.apache.logging.log4j" % "log4j-core" % log4j2Slf4j2Version,
     "org.apache.logging.log4j" % "log4j-api" % log4j2Slf4j2Version,
-    "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Slf4j2Version,
+    "org.apache.logging.log4j" % "log4j-slf4j2-impl" % log4j2Slf4j2Version,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
