@@ -18,6 +18,8 @@ import scala.util.matching.Regex.Groups
 
 object PekkoDependency {
 
+  val pekkoBuildVersionPropertyName = "pekko.build.pekko.version"
+
   sealed trait Pekko {
     def version: String
     // The version to use in api/japi/docs links,
@@ -36,7 +38,7 @@ object PekkoDependency {
       case Some(pekkoSources) =>
         Sources(pekkoSources)
       case None =>
-        Option(System.getProperty("pekko.build.pekko.version")) match {
+        Option(System.getProperty(pekkoBuildVersionPropertyName)) match {
           case Some("main")           => mainSnapshot
           case Some("default") | None => Artifact(defaultVersion)
           case Some(other)            => Artifact(other, true)

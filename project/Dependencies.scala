@@ -110,7 +110,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test)
 
-  val managementLoglevelsLogbackSlf4j2Overrides = if (java.lang.Boolean.getBoolean("pekko.test.slf4j2")) {
+  val managementLoglevelsLogbackSlf4j2Overrides = if (Common.testWithSlf4J2) {
     Seq(
       "org.slf4j" % "slf4j-api" % "2.0.9",
       "ch.qos.logback" % "logback-classic" % "1.3.11" % Test)
