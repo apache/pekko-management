@@ -32,36 +32,50 @@ inThisBuild(Def.settings(
     (Global / onLoad).value
   }))
 
+val logLevelProjectList: Seq[ProjectReference] = {
+  if (System.getProperty(PekkoDependency.pekkoBuildVersionPropertyName) == "main") {
+    Seq.empty
+  } else {
+    Seq[ProjectReference](managementLoglevelsLogback)
+  }
+} ++ {
+  if (System.getProperty(PekkoDependency.pekkoBuildVersionPropertyName) == "main"
+    && !Common.testWithSlf4J2) {
+    Seq.empty
+  } else {
+    Seq[ProjectReference](managementLoglevelsLogback)
+  }
+} ++ Seq[ProjectReference](managementLoglevelsLog4j2Slf4j2)
+
+val projectList: Seq[ProjectReference] = Seq[ProjectReference](
+  // When this aggregate is updated the list of modules in ManifestInfo.checkSameVersion
+  // in management should also be updated
+  discoveryAwsApi,
+  discoveryAwsApiAsync,
+  discoveryConsul,
+  discoveryKubernetesApi,
+  discoveryMarathonApi,
+  management,
+  managementPki,
+  managementClusterHttp,
+  managementClusterBootstrap) ++ logLevelProjectList ++ Seq[ProjectReference](
+  integrationTestAwsApiEc2TagBased,
+  integrationTestLocal,
+  integrationTestAwsApiEcs,
+  integrationTestKubernetesApi,
+  integrationTestKubernetesApiJava,
+  integrationTestKubernetesDns,
+  integrationTestMarathonApiDocker,
+  leaseKubernetes,
+  leaseKubernetesIntTest,
+  docs)
+
 // root
 lazy val root = project
   .in(file("."))
   .enablePlugins(ScalaUnidocPlugin)
   .disablePlugins(MimaPlugin)
-  .aggregate(
-    // When this aggregate is updated the list of modules in ManifestInfo.checkSameVersion
-    // in management should also be updated
-    discoveryAwsApi,
-    discoveryAwsApiAsync,
-    discoveryConsul,
-    discoveryKubernetesApi,
-    discoveryMarathonApi,
-    management,
-    managementPki,
-    managementClusterHttp,
-    managementClusterBootstrap,
-    managementLoglevelsLogback,
-    managementLoglevelsLog4j2,
-    managementLoglevelsLog4j2Slf4j2,
-    integrationTestAwsApiEc2TagBased,
-    integrationTestLocal,
-    integrationTestAwsApiEcs,
-    integrationTestKubernetesApi,
-    integrationTestKubernetesApiJava,
-    integrationTestKubernetesDns,
-    integrationTestMarathonApiDocker,
-    leaseKubernetes,
-    leaseKubernetesIntTest,
-    docs)
+  .aggregate(projectList: _*)
   .settings(
     name := "pekko-management-root",
     GlobalScope / parallelExecution := false)
