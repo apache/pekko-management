@@ -67,7 +67,9 @@ lazy val root = project
     GlobalScope / parallelExecution := false)
   .enablePlugins(NoPublish)
 
-lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set.empty // temporarily disable mima checks
+val mimaCompareVersion = "1.0.0"
+lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set(
+  organization.value %% name.value % mimaCompareVersion)
 
 lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
