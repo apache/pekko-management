@@ -11,9 +11,10 @@ on:
     - cron: '0 2 * * *'  # every day 2am
 
 jobs:
-   integration-test:
+  integration-test:
     name: Integration Tests for Kubernetes API
     runs-on: ubuntu-20.04
+    if: github.repository == 'apache/incubator-pekko-management'
     strategy:
       fail-fast: false
     steps:

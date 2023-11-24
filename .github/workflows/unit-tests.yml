@@ -13,6 +13,7 @@ jobs:
   test:
     name: Build and Test
     runs-on: ubuntu-20.04
+    if: github.repository == 'apache/incubator-pekko-management'
     strategy:
       fail-fast: false
       matrix:
@@ -65,6 +66,7 @@ jobs:
   slf4j2-test:
     name: Test Logback with slf4J2
     runs-on: ubuntu-20.04
+    if: github.repository == 'apache/incubator-pekko-management'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
