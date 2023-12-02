@@ -26,9 +26,9 @@ object Dependencies {
   val jacksonVersion = "2.14.3"
 
   val log4j2Version = "2.17.2"
-  val log4j2Slf4j2Version = "2.21.1"
-  val logbackVersion = "1.2.11"
-  val logbackSlf4j2Version = "1.3.13"
+  val log4j2Slf4j2Version = "2.22.0"
+  val logbackVersion = "1.2.13"
+  val logbackSlf4j2Version = "1.3.14"
   val slf4j2Version = "2.0.9"
 
   // often called-in transitively with insecure versions of databind / core
@@ -113,7 +113,7 @@ object Dependencies {
   val managementLoglevelsLogbackSlf4j2Overrides = if (Common.testWithSlf4J2) {
     Seq(
       "org.slf4j" % "slf4j-api" % "2.0.9",
-      "ch.qos.logback" % "logback-classic" % "1.3.13" % Test)
+      "ch.qos.logback" % "logback-classic" % "1.3.14" % Test)
   } else {
     Seq.empty
   }
