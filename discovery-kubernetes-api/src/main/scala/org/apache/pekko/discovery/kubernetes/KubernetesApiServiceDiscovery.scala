@@ -38,12 +38,7 @@ import pekko.http.scaladsl.model.headers.{ Authorization, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pki.kubernetes.PemManagersProvider
 
-import javax.net.ssl.{
-  KeyManager,
-  KeyManagerFactory,
-  SSLContext,
-  TrustManager
-}
+import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 
 object KubernetesApiServiceDiscovery {
 

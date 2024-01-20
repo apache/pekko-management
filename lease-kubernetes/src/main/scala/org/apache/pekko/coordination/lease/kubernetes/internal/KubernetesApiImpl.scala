@@ -26,11 +26,7 @@ import pekko.Done
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
 import pekko.coordination.lease.{ LeaseException, LeaseTimeoutException }
-import pekko.coordination.lease.kubernetes.{
-  KubernetesApi,
-  KubernetesSettings,
-  LeaseResource
-}
+import pekko.coordination.lease.kubernetes.{ KubernetesApi, KubernetesSettings, LeaseResource }
 import pekko.event.{ LogSource, Logging }
 import pekko.http.scaladsl.{ ConnectionContext, Http, HttpsConnectionContext }
 import pekko.http.scaladsl.marshalling.Marshal
@@ -40,12 +36,7 @@ import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pattern.after
 import pekko.pki.kubernetes.PemManagersProvider
 
-import javax.net.ssl.{
-  KeyManager,
-  KeyManagerFactory,
-  SSLContext,
-  TrustManager
-}
+import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 
 /**
  * Could be shared between leases: https://github.com/akka/akka-management/issues/680
