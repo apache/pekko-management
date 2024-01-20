@@ -13,10 +13,9 @@
 
 package org.apache.pekko.coordination.lease.kubernetes.internal
 
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.security.KeyStore
-import java.security.SecureRandom
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, Paths }
+import java.security.{ KeyStore, SecureRandom }
 
 import scala.collection.immutable
 import scala.concurrent.Future
@@ -26,26 +25,18 @@ import org.apache.pekko
 import pekko.Done
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
-import pekko.coordination.lease.LeaseException
-import pekko.coordination.lease.LeaseTimeoutException
-import pekko.coordination.lease.kubernetes.KubernetesApi
-import pekko.coordination.lease.kubernetes.KubernetesSettings
-import pekko.coordination.lease.kubernetes.LeaseResource
+import pekko.coordination.lease.{ LeaseException, LeaseTimeoutException }
+import pekko.coordination.lease.kubernetes.{ KubernetesApi, KubernetesSettings, LeaseResource }
 import pekko.event.{ LogSource, Logging }
-import pekko.http.scaladsl.ConnectionContext
-import pekko.http.scaladsl.Http
-import pekko.http.scaladsl.HttpsConnectionContext
+import pekko.http.scaladsl.{ ConnectionContext, Http, HttpsConnectionContext }
 import pekko.http.scaladsl.marshalling.Marshal
 import pekko.http.scaladsl.model._
-import pekko.http.scaladsl.model.headers.Authorization
-import pekko.http.scaladsl.model.headers.OAuth2BearerToken
+import pekko.http.scaladsl.model.headers.{ Authorization, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pattern.after
 import pekko.pki.kubernetes.PemManagersProvider
-import javax.net.ssl.KeyManager
-import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
+
+import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 
 /**
  * Could be shared between leases: https://github.com/akka/akka-management/issues/680
@@ -337,7 +328,7 @@ PUTs must contain resourceVersions. Response:
     val file = Paths.get(path)
     if (Files.exists(file)) {
       try {
-        Some(new String(Files.readAllBytes(file), "utf-8"))
+        Some(new String(Files.readAllBytes(file), StandardCharsets.UTF_8))
       } catch {
         case NonFatal(e) =>
           log.error(e, "Error reading {} from {}", name, path)

@@ -13,23 +13,20 @@
 
 package org.apache.pekko.pki.kubernetes
 
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.nio.charset.Charset
+import java.io.{ ByteArrayInputStream, File }
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.security.KeyStore
-import java.security.PrivateKey
-import java.security.cert.Certificate
-import java.security.cert.CertificateFactory
+import java.security.{ KeyStore, PrivateKey }
+import java.security.cert.{ Certificate, CertificateFactory }
 import scala.concurrent.blocking
+import scala.util.Random
+
 import org.apache.pekko
 import pekko.annotation.InternalApi
-import pekko.pki.pem.DERPrivateKeyLoader
-import pekko.pki.pem.PEMDecoder
+import pekko.pki.pem.{ DERPrivateKeyLoader, PEMDecoder }
 import pekko.util.ccompat.JavaConverters._
-import javax.net.ssl.TrustManager
-import javax.net.ssl.TrustManagerFactory
-import scala.util.Random
+
+import javax.net.ssl.{ TrustManager, TrustManagerFactory }
 
 /**
  * INTERNAL API
@@ -60,7 +57,7 @@ private[pekko] object PemManagersProvider {
    */
   @InternalApi def loadPrivateKey(filename: String): PrivateKey = blocking {
     val bytes = Files.readAllBytes(new File(filename).toPath)
-    val pemData = new String(bytes, Charset.forName("UTF-8"))
+    val pemData = new String(bytes, StandardCharsets.UTF_8)
     DERPrivateKeyLoader.load(PEMDecoder.decode(pemData))
   }
 

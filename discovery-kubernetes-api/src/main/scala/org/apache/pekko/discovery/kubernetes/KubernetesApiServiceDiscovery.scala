@@ -14,16 +14,15 @@
 package org.apache.pekko.discovery.kubernetes
 
 import java.net.InetAddress
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.security.KeyStore
-import java.security.SecureRandom
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, Paths }
+import java.security.{ KeyStore, SecureRandom }
 import scala.collection.immutable.Seq
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
-import scala.util.control.NoStackTrace
-import scala.util.control.NonFatal
+import scala.util.control.{ NoStackTrace, NonFatal }
+
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
@@ -35,15 +34,11 @@ import pekko.event.{ LogSource, Logging }
 import pekko.http.scaladsl.HttpsConnectionContext
 import pekko.http.scaladsl._
 import pekko.http.scaladsl.model._
-import pekko.http.scaladsl.model.headers.Authorization
-import pekko.http.scaladsl.model.headers.OAuth2BearerToken
+import pekko.http.scaladsl.model.headers.{ Authorization, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pki.kubernetes.PemManagersProvider
 
-import javax.net.ssl.KeyManager
-import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
+import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 
 object KubernetesApiServiceDiscovery {
 
@@ -215,7 +210,7 @@ class KubernetesApiServiceDiscovery(implicit system: ActorSystem) extends Servic
     val file = Paths.get(path)
     if (Files.exists(file)) {
       try {
-        Some(new String(Files.readAllBytes(file), "utf-8"))
+        Some(new String(Files.readAllBytes(file), StandardCharsets.UTF_8))
       } catch {
         case NonFatal(e) =>
           log.error(e, "Error reading {} from {}", name, path)
