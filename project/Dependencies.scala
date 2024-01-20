@@ -16,8 +16,10 @@ object Dependencies {
   val scala3Version = "3.3.1"
   val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
 
-  val pekkoVersion = PekkoDependency.pekkoVersion
-  val pekkoHttpVersion = "1.0.0"
+  val pekkoVersion = PekkoCoreDependency.version
+  val pekkoBinaryVersion = pekkoVersion.take(3)
+  val pekkoHttpVersion = PekkoHttpDependency.version
+  val pekkoHttpBinaryVersion = pekkoHttpVersion.take(3)
 
   val scalaTestVersion = "3.2.14"
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"

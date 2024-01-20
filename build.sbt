@@ -23,27 +23,29 @@ commands := commands.value.filterNot { command =>
   }
 }
 
+// pekkoInlineEnabled must be set to false since no 1.0.x branch has been made yet
+ThisBuild / pekkoInlineEnabled := false
+
 ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 
 inThisBuild(Def.settings(
   Global / onLoad := {
     sLog.value.info(
-      s"Building Pekko Management ${version.value} against Pekko ${PekkoDependency.pekkoVersion} on Scala ${(root / scalaVersion).value}")
+      s"Building Pekko Management ${version.value} against Pekko ${Dependencies.pekkoVersion} and Pekko HTTP ${Dependencies.pekkoHttpVersion} on Scala ${(root / scalaVersion).value}")
     (Global / onLoad).value
   }))
 
 val logLevelProjectList: Seq[ProjectReference] = {
-  if (System.getProperty(PekkoDependency.pekkoBuildVersionPropertyName) == "main") {
+  if (Dependencies.pekkoVersion.startsWith("1.1.")) {
     Seq.empty
   } else {
     Seq[ProjectReference](managementLoglevelsLogback)
   }
 } ++ {
-  if (System.getProperty(PekkoDependency.pekkoBuildVersionPropertyName) == "main"
-    && !Common.testWithSlf4J2) {
+  if (Dependencies.pekkoVersion.startsWith("1.1.") && !Common.testWithSlf4J2) {
     Seq.empty
   } else {
-    Seq[ProjectReference](managementLoglevelsLogback)
+    Seq[ProjectReference](managementLoglevelsLog4j2)
   }
 } ++ Seq[ProjectReference](managementLoglevelsLog4j2Slf4j2)
 
@@ -310,16 +312,16 @@ lazy val docs = project
     Paradox / siteSubdirName := s"docs/pekko-management/${if (isSnapshot.value) "snapshot" else version.value}",
     Compile / paradoxProperties ++= Map(
       "date.year" -> Common.currentYear,
-      "project.url" -> "https://pekko.apache.org/docs/pekko-management/current/",
-      "canonical.base_url" -> "https://pekko.apache.org/docs/pekko-management/current",
-      "scaladoc.base_url" -> s"https://pekko.apache.org/api/pekko-management/current/",
+      "project.url" -> "https://pekko.apache.org/docs/pekko-management/1.0/",
+      "canonical.base_url" -> "https://pekko.apache.org/docs/pekko-management/1.0",
+      "scaladoc.base_url" -> s"https://pekko.apache.org/api/pekko-management/1.0/",
       "scala.binary.version" -> scalaBinaryVersion.value,
       "pekko.version" -> Dependencies.pekkoVersion,
-      "extref.pekko.base_url" -> s"https://pekko.apache.org/docs/pekko/current/%s",
-      "scaladoc.pekko.base_url" -> s"https://pekko.apache.org/api/pekko/current/",
-      "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/current/%s",
-      "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/current/",
-      "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/current/%s"),
+      "extref.pekko.base_url" -> s"https://pekko.apache.org/docs/pekko/${Dependencies.pekkoBinaryVersion}/%s",
+      "scaladoc.pekko.base_url" -> s"https://pekko.apache.org/api/pekko/${Dependencies.pekkoBinaryVersion}/",
+      "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/%s",
+      "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/",
+      "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/1.0/%s"),
     Compile / paradoxMarkdownToHtml / sourceGenerators += Def.taskDyn {
       val targetFile = (Compile / paradox / sourceManaged).value / "license-report.md"
 
