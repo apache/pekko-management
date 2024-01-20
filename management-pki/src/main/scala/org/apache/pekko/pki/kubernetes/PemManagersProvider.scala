@@ -67,7 +67,7 @@ private[pekko] object PemManagersProvider {
    * INTERNAL API
    */
   @InternalApi def loadCertificates(filename: String): Iterable[Certificate] = blocking {
-    certFactory.generateCertificate(Files.newInputStream(new File(filename).toPath))
+    certFactory.generateCertificates(Files.newInputStream(new File(filename).toPath))
   }
 
 }
