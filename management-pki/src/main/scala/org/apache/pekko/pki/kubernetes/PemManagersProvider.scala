@@ -13,7 +13,7 @@
 
 package org.apache.pekko.pki.kubernetes
 
-import java.io.File
+import java.io.{ ByteArrayInputStream, File }
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.security.{ KeyStore, PrivateKey }
@@ -67,7 +67,8 @@ private[pekko] object PemManagersProvider {
    * INTERNAL API
    */
   @InternalApi def loadCertificates(filename: String): Iterable[Certificate] = blocking {
-    certFactory.generateCertificates(Files.newInputStream(new File(filename).toPath)).asScala
+    val bytes = Files.readAllBytes(new File(filename).toPath)
+    certFactory.generateCertificates(new ByteArrayInputStream(bytes)).asScala
   }
 
 }
