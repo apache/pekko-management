@@ -12,7 +12,6 @@ import net.bzzt.reproduciblebuilds.ReproducibleBuildsPlugin.reproducibleBuildsCh
 import sbt.Keys.parallelExecution
 
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
-ThisBuild / apacheSonatypeProjectProfile := "pekko"
 ThisBuild / versionScheme := Some(VersionScheme.SemVerSpec)
 sourceDistName := "apache-pekko-management"
 sourceDistIncubating := true
