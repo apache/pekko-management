@@ -1,6 +1,6 @@
 # Istio
 
-[Istio](https://istio.io/) is a service mesh that handles many of the concerns of service to service communication for you, such as routing, load balancing, authentication, authorization, and observability. In certain use cases, it can complement an Pekko cluster well. Typically, Pekko cluster communication is used for multiple nodes of the same service to communicate with each other, to achieve things such as sharding, replication and peer to peer communication, while a service mesh might be used for nodes of different services to communicate with each other, through REST and gRPC APIs.
+[Istio](https://istio.io/) is a service mesh that handles many of the concerns of service to service communication for you, such as routing, load balancing, authentication, authorization, and observability. In certain use cases, it can complement a Pekko cluster well. Typically, Pekko cluster communication is used for multiple nodes of the same service to communicate with each other, to achieve things such as sharding, replication and peer to peer communication, while a service mesh might be used for nodes of different services to communicate with each other, through REST and gRPC APIs.
 
 To bootstrap a Pekko cluster in Istio, Istio must be configured to allow Pekko cluster communication to bypass the Istio sidecar proxy. Istio's routing design is made such that services don't need to be aware of each others location, they just communicate with the proxy, and the mesh figures out how to route and secure the communication. However, Pekko cluster communication is fundamentally location aware, in order to, for example, route messages to sharded actors. Hence a service mesh is not a suitable communication medium for cluster traffic, so it needs to be bypassed.
 
@@ -32,7 +32,7 @@ If you offer any other services on other ports, they can be added as a comma sep
 
 ## Example
 
-Here is an example deployment spec for an Pekko cluster deployed to Istio, which uses the explicit include inbound ports annotation to ensure that incoming remoting and management traffic isn't redirected through the proxy:
+Here is an example deployment spec for a Pekko cluster deployed to Istio, which uses the explicit include inbound ports annotation to ensure that incoming remoting and management traffic isn't redirected through the proxy:
 
 ```yaml
 apiVersion: apps/v1

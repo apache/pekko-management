@@ -108,7 +108,7 @@ does not support `publishNotReadyAddresses` yet then use the `kubernetes-api` di
 
 ### Running in Istio
 
-For considerations and configuration necessary for bootstrapping a Pekko cluster in Istio, see @ref[Bootstrapping an Pekko cluster in Istio](istio.md).
+For considerations and configuration necessary for bootstrapping a Pekko cluster in Istio, see @ref[Bootstrapping a Pekko cluster in Istio](istio.md).
 
 ### Running the Kubernetes demos
 
