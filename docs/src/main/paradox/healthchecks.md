@@ -53,7 +53,7 @@ Application specific health checks can be added a `name = <fully qualified class
 
 @@snip [reference.conf](/management-cluster-http/src/main/resources/reference.conf)  { #health }
 
-## Hosting health checks as an Pekko Management Route
+## Hosting health checks as a Pekko Management Route
 
 Health checks can be hosted via the Pekko management HTTP server. The `pekko.management.HealthCheckRoutes` is enabled
 by default as a Pekko management route provider.
