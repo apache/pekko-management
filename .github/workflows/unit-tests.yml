@@ -37,13 +37,13 @@ jobs:
           git checkout scratch
 
       - name: Setup Java ${{ matrix.javaVersion }}
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ matrix.javaVersion }}
 
       - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.4.0
+        uses: coursier/cache-action@v6
 
       # hack to solve "Cannot assign requested address" issue - https://github.community/t/github-action-and-oserror-errno-99-cannot-assign-requested-address/173973/1
       - name: Add the current IP address, long hostname and short hostname record to /etc/hosts file
@@ -79,13 +79,13 @@ jobs:
           git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
           git checkout scratch
       - name: Setup Java 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 8
 
       - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.4.0
+        uses: coursier/cache-action@v6
 
       - name: Create all API docs for artifacts/website and all reference docs
         run: sbt -Dpekko.test.slf4j2=true management-loglevels-logback/test
@@ -105,13 +105,13 @@ jobs:
           git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
           git checkout scratch
       - name: Setup Java 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
 
       - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.4.0
+        uses: coursier/cache-action@v6
 
       - name: Create all API docs for artifacts/website and all reference docs
         run: sbt "unidoc; docs/paradox"

@@ -30,13 +30,13 @@ jobs:
           git checkout scratch
 
       - name: Setup Java 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
 
       - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.4.0
+        uses: coursier/cache-action@v6
 
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.7.2
