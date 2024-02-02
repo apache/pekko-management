@@ -20,13 +20,13 @@ jobs:
         run: cp .jvmopts-ci .jvmopts
 
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 8
 
       - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.4.0
+        uses: coursier/cache-action@v6
 
       - name: Install graphviz
         run: sudo apt-get install -y graphviz
