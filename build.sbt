@@ -14,7 +14,7 @@ import sbt.Keys.parallelExecution
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / versionScheme := Some(VersionScheme.SemVerSpec)
 sourceDistName := "apache-pekko-management"
-sourceDistIncubating := true
+sourceDistIncubating := false
 
 commands := commands.value.filterNot { command =>
   command.nameOption.exists { name =>
@@ -291,7 +291,7 @@ lazy val integrationTestLocal = pekkoIntTestModule("local")
   .enablePlugins(JavaAppPackaging, AshScriptPlugin, NoPublish)
 
 lazy val themeSettings = Seq(
-  pekkoParadoxGithub := Some("https://github.com/apache/incubator-pekko-management"))
+  pekkoParadoxGithub := Some("https://github.com/apache/pekko-management"))
 
 lazy val docs = project
   .in(file("docs"))

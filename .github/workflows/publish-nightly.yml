@@ -9,7 +9,7 @@ jobs:
   publish-artifacts:
     name: Publish artifacts to Apache Nexus
     runs-on: ubuntu-20.04
-    if: github.repository == 'apache/incubator-pekko-management'
+    if: github.repository == 'apache/pekko-management'
     steps:
       - name: Checkout
         uses: actions/checkout@v4

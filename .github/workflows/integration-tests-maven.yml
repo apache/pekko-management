@@ -13,7 +13,7 @@ jobs:
   integration-test:
     name: Integration Tests for Kubernetes API with Maven
     runs-on: ubuntu-20.04
-    if: github.repository == 'apache/incubator-pekko-management'
+    if: github.repository == 'apache/pekko-management'
     strategy:
       fail-fast: false    
     steps:

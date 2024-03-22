@@ -1,12 +1,12 @@
 # Bootstrap environments
 
-A set of integration tests projects can be found in [integration-test folder of the Pekko Management project](https://github.com/apache/incubator-pekko-management/tree/master/integration-test).
+A set of integration tests projects can be found in [integration-test folder of the Pekko Management project](https://github.com/apache/pekko-management/tree/master/integration-test).
 These test various Pekko management features together in various environments such as Kubernetes.
 
 The following samples exist as standalone projects for Apache Pekko as a starting point:
 
-* [Pekko Cluster bootstrap using the Kubernetes API with Java/Maven](https://github.com/apache/incubator-pekko-samples/tree/main/pekko-sample-cluster-kubernetes-java)
-* [Pekko Cluster bootstrap using the Kubernetes API with Scala/sbt](https://github.com/apache/incubator-pekko-samples/tree/main/pekko-sample-cluster-kubernetes-scala)
+* [Pekko Cluster bootstrap using the Kubernetes API with Java/Maven](https://github.com/apache/pekko-samples/tree/main/pekko-sample-cluster-kubernetes-java)
+* [Pekko Cluster bootstrap using the Kubernetes API with Scala/sbt](https://github.com/apache/pekko-samples/tree/main/pekko-sample-cluster-kubernetes-scala)
 
 ## Local
 

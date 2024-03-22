@@ -8,8 +8,8 @@ In preparation for production, we need to do two main things:
 The final configuration file and deployment spec are in the sample application.
 In this guide we will show snippets. Locations of the samples:
 
-* [Java](https://github.com/apache/incubator-pekko-samples/blob/main/pekko-sample-cluster-kubernetes-java) 
-* [Scala](https://github.com/apache/incubator-pekko-samples/blob/main/pekko-sample-cluster-kubernetes-scala)
+* [Java](https://github.com/apache/pekko-samples/blob/main/pekko-sample-cluster-kubernetes-java) 
+* [Scala](https://github.com/apache/pekko-samples/blob/main/pekko-sample-cluster-kubernetes-scala)
 
 ## Deployment Spec
 
