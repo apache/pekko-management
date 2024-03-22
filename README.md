@@ -19,7 +19,7 @@ The documentation is available at
 
 ### Running the Build
 - Open a command window and change directory to your preferred base directory
-- Use git to clone the [repo](https://github.com/apache/incubator-pekko-management) or download a source release from https://pekko.apache.org (and unzip or untar it, as appropriate)
+- Use git to clone the [repo](https://github.com/apache/pekko-management) or download a source release from https://pekko.apache.org (and unzip or untar it, as appropriate)
 - Change directory to the directory where you installed the source (you should have a file called `build.sbt` in this directory)
 - `sbt compile` compiles the main source for project default version of Scala (2.13)
     - `sbt +compile` will compile for all supported versions of Scala
@@ -58,16 +58,16 @@ The following scripts can be used to run the integration tests:
 
 There are several ways to interact with the Apache Pekko community:
 
-- [GitHub discussions](https://github.com/apache/incubator-pekko-management/discussions): for questions and general discussion.
+- [GitHub discussions](https://github.com/apache/pekko-management/discussions): for questions and general discussion.
 - [Pekko users mailing list](https://lists.apache.org/list.html?users@pekko.apache.org): for Pekko user discussions.
 - [Pekko dev mailing list](https://lists.apache.org/list.html?dev@pekko.apache.org): for Pekko development discussions.
-- [GitHub issues](https://github.com/apache/incubator-pekko-management/issues): for bug reports and feature requests. Please search the existing issues before creating new ones. If you are unsure whether you have found a bug, consider asking in GitHub discussions or the mailing list first.
+- [GitHub issues](https://github.com/apache/pekko-management/issues): for bug reports and feature requests. Please search the existing issues before creating new ones. If you are unsure whether you have found a bug, consider asking in GitHub discussions or the mailing list first.
 
 ## Contributions & Maintainers
 
 Contributions are very welcome. If you have an idea on how to improve Apache Pekko Management, don't hesitate to create an issue or submit a pull request.
 
-See [CONTRIBUTING.md](https://github.com/apache/incubator-pekko-management/blob/main/CONTRIBUTING.md) for details on the development workflow and how to create your pull request.
+See [CONTRIBUTING.md](https://github.com/apache/pekko-management/blob/main/CONTRIBUTING.md) for details on the development workflow and how to create your pull request.
 
 ## Project Status
 
@@ -89,4 +89,4 @@ Apache Pekko Management is governed by the [Apache code of conduct](https://www.
 
 ## License
 
-Apache Pekko Management is available under the Apache License, version 2.0. See [LICENSE](https://github.com/apache/incubator-pekko-management/blob/main/LICENSE) file for details.
+Apache Pekko Management is available under the Apache License, version 2.0. See [LICENSE](https://github.com/apache/pekko-management/blob/main/LICENSE) file for details.

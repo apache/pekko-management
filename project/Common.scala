@@ -30,13 +30,13 @@ object Common extends AutoPlugin {
       startYear := Some(2022),
       homepage := Some(url("https://pekko.apache.org/")),
       scmInfo := Some(
-        ScmInfo(url("https://github.com/apache/incubator-pekko-management"),
-          "git@github.com:apache/incubator-pekko-management.git")),
+        ScmInfo(url("https://github.com/apache/pekko-management"),
+          "git@github.com:apache/pekko-management.git")),
       developers += Developer(
         "contributors",
         "Contributors",
         "dev@pekko.apache.org",
-        url("https://github.com/apache/incubator-pekko-management/graphs/contributors")),
+        url("https://github.com/apache/pekko-management/graphs/contributors")),
       description := "Apache Pekko Management is a suite of tools for operating Apache Pekko Clusters.",
       crossScalaVersions := Dependencies.crossScalaVersions,
       projectInfoVersion := (if (isSnapshot.value) "snapshot" else version.value),
@@ -81,7 +81,7 @@ object Common extends AutoPlugin {
       Compile / doc / scalacOptions ++= Seq(
         "-doc-source-url", {
           val branch = if (isSnapshot.value) "master" else s"v${version.value}"
-          s"https://github.com/apache/incubator-pekko-management/tree/${branch}€{FILE_PATH_EXT}#L€{FILE_LINE}"
+          s"https://github.com/apache/pekko-management/tree/${branch}€{FILE_PATH_EXT}#L€{FILE_LINE}"
         },
         "-doc-canonical-base-url",
         "https://pekko.apache.org/api/pekko-management/current/"),

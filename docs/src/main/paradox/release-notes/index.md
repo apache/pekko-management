@@ -21,10 +21,10 @@ We haven't had to fix any significant bugs that were in Akka Management 1.1.4.
 
 ### Additions
 
-* Scala 3 support ([PR80](https://github.com/apache/incubator-pekko-management/pull/80))
+* Scala 3 support ([PR80](https://github.com/apache/pekko-management/pull/80))
     * minimum of Scala 3.3.0 needed
 
 ### Dependency Upgrades
 We have tried to limit the changes to third party dependencies that are used in Pekko Management 1.0.0. These are some exceptions:
 
-* Jackson 2.14.3 ([#7](https://github.com/apache/incubator-pekko/issues/7))
+* Jackson 2.14.3 ([#7](https://github.com/apache/pekko/issues/7))

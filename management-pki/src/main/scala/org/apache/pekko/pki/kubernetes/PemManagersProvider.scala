@@ -32,7 +32,7 @@ import javax.net.ssl.{ TrustManager, TrustManagerFactory }
  * INTERNAL API
  * Convenience methods to ease building an SSLContext from k8s-provided PEM files.
  */
-// Duplicate from https://github.com/apache/incubator-pekko/blob/964dcf53eb9a81a65944a1b1d51575091fe0a031/remote/src/main/scala/org/apache/pekko/remote/artery/tcp/ssl/PemManagersProvider.scala
+// Duplicate from https://github.com/apache/pekko/blob/964dcf53eb9a81a65944a1b1d51575091fe0a031/remote/src/main/scala/org/apache/pekko/remote/artery/tcp/ssl/PemManagersProvider.scala
 // Eventually that will be a bit more open and we can reuse the class from Pekko in pekko-management.
 // See also https://github.com/akka/akka-http/issues/3772
 @InternalApi
