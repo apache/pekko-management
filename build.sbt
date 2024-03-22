@@ -274,7 +274,7 @@ lazy val integrationTestAwsApiEcs = pekkoIntTestModule("aws-api-ecs")
     discoveryAwsApiAsync)
   .enablePlugins(JavaAppPackaging, AshScriptPlugin, DockerPlugin, NoPublish)
   .settings(
-    dockerBaseImage := "openjdk:10-jre-slim",
+    dockerBaseImage := "openjdk:11-jre-slim",
     Docker / com.typesafe.sbt.SbtNativePackager.autoImport.packageName := "ecs-integration-test-app",
     Docker / version := "1.0")
 
