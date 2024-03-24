@@ -321,6 +321,7 @@ lazy val docs = project
       "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/%s",
       "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/",
       "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/1.0/%s"),
+    Global / pekkoParadoxIncubatorNotice := None,
     Compile / paradoxMarkdownToHtml / sourceGenerators += Def.taskDyn {
       val targetFile = (Compile / paradox / sourceManaged).value / "license-report.md"
 
