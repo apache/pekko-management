@@ -11,9 +11,9 @@ import sbt._
 
 object Dependencies {
   // keep in sync with .github/workflows/unit-tests.yml
-  val scala212Version = "2.12.18"
-  val scala213Version = "2.13.12"
-  val scala3Version = "3.3.1"
+  val scala212Version = "2.12.19"
+  val scala213Version = "2.13.13"
+  val scala3Version = "3.3.3"
   val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
 
   val pekkoVersion = PekkoCoreDependency.version
@@ -28,10 +28,10 @@ object Dependencies {
   val jacksonVersion = "2.14.3"
 
   val log4j2Version = "2.17.2"
-  val log4j2Slf4j2Version = "2.22.1"
+  val log4j2Slf4j2Version = "2.23.1"
   val logbackVersion = "1.2.13"
   val logbackSlf4j2Version = "1.3.14"
-  val slf4j2Version = "2.0.11"
+  val slf4j2Version = "2.0.12"
 
   // often called-in transitively with insecure versions of databind / core
   private val jacksonDatabind = Seq(
