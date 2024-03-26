@@ -22,9 +22,6 @@ commands := commands.value.filterNot { command =>
   }
 }
 
-// pekkoInlineEnabled must be set to false since no 1.0.x branch has been made yet
-ThisBuild / pekkoInlineEnabled := false
-
 ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 
 inThisBuild(Def.settings(
