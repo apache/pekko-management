@@ -13,22 +13,9 @@
 
 package org.apache.pekko.management;
 
-import org.apache.pekko.actor.ActorSystem;
-import org.apache.pekko.actor.BootstrapSetup;
-import org.apache.pekko.actor.ExtendedActorSystem;
-import org.apache.pekko.actor.setup.ActorSystemSetup;
-import org.apache.pekko.management.HealthCheckSettings;
-import org.apache.pekko.management.NamedHealthCheck;
-import org.apache.pekko.management.javadsl.HealthChecks;
-import org.apache.pekko.management.javadsl.LivenessCheckSetup;
-import org.apache.pekko.management.javadsl.ReadinessCheckSetup;
-import org.apache.pekko.testkit.javadsl.TestKit;
-import com.typesafe.config.ConfigFactory;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.scalatestplus.junit.JUnitSuite;
+import static org.junit.Assert.assertEquals;
 
+import com.typesafe.config.ConfigFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,8 +23,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
-
-import static org.junit.Assert.assertEquals;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.actor.BootstrapSetup;
+import org.apache.pekko.actor.ExtendedActorSystem;
+import org.apache.pekko.actor.setup.ActorSystemSetup;
+import org.apache.pekko.management.javadsl.HealthChecks;
+import org.apache.pekko.management.javadsl.LivenessCheckSetup;
+import org.apache.pekko.management.javadsl.ReadinessCheckSetup;
+import org.apache.pekko.testkit.javadsl.TestKit;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Test;
+import org.scalatestplus.junit.JUnitSuite;
 
 public class HealthCheckTest extends JUnitSuite {
   private static Throwable cause = new RuntimeException("oh dear");

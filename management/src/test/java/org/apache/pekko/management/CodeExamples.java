@@ -13,17 +13,16 @@
 
 package org.apache.pekko.management;
 
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+import javax.net.ssl.SSLContext;
 import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.http.javadsl.ConnectionContext;
 import org.apache.pekko.http.javadsl.HttpsConnectionContext;
 import org.apache.pekko.http.javadsl.server.directives.SecurityDirectives;
 import org.apache.pekko.management.javadsl.PekkoManagement;
-
-import javax.net.ssl.SSLContext;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 
 /** Compile-only, for documentation code snippets */
 public class CodeExamples {

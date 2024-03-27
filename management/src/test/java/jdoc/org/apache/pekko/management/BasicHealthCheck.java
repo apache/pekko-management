@@ -13,11 +13,10 @@
 
 package jdoc.org.apache.pekko.management;
 
-import org.apache.pekko.actor.ActorSystem;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
+import org.apache.pekko.actor.ActorSystem;
 
 // #basic
 public class BasicHealthCheck implements Supplier<CompletionStage<Boolean>> {
