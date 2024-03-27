@@ -41,7 +41,7 @@ object Dependencies {
     "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % jacksonVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVersion,
     // Specifying guava dependency because older transitive dependency has security vulnerability
-    "com.google.guava" % "guava" % "31.1-jre")
+    "com.google.guava" % "guava" % "33.1.0-jre")
 
   val discoveryConsul = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
