@@ -14,8 +14,8 @@
 package jdoc.org.apache.pekko.management.cluster.bootstrap;
 
 import org.apache.pekko.actor.ActorSystem;
-import org.apache.pekko.management.scaladsl.PekkoManagement;
 import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap;
+import org.apache.pekko.management.scaladsl.PekkoManagement;
 
 public class ClusterBootstrapCompileOnly {
   public static void bootstrap() {

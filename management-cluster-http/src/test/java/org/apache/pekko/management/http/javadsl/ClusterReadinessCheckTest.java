@@ -13,10 +13,9 @@
 
 package org.apache.pekko.management.http.javadsl;
 
+import java.util.concurrent.CompletionStage;
 import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.management.cluster.javadsl.ClusterMembershipCheck;
-
-import java.util.concurrent.CompletionStage;
 
 public class ClusterReadinessCheckTest {
 

@@ -13,13 +13,12 @@
 
 package jdoc.org.apache.pekko.management;
 
-import org.apache.pekko.actor.ActorSystem;
-import org.apache.pekko.cluster.Cluster;
-import org.apache.pekko.cluster.MemberStatus;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.cluster.Cluster;
+import org.apache.pekko.cluster.MemberStatus;
 
 // #cluster
 class ClusterCheck implements Supplier<CompletionStage<Boolean>> {
