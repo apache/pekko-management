@@ -21,7 +21,7 @@ addSbtPlugin("net.bzzt" % "sbt-reproducible-builds" % "0.32")
 addSbtPlugin("com.github.pjfanning" % "sbt-source-dist" % "0.1.12")
 addSbtPlugin("com.github.pjfanning" % "sbt-pekko-build" % "0.3.3")
 addSbtPlugin("com.github.sbt" % "sbt-license-report" % "1.6.1")
-addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "1.0.2")
+addSbtPlugin("com.github.sbt" % "sbt-git" % "2.0.1")
 addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.3")
 
 addSbtPlugin("org.apache.pekko" % "pekko-sbt-paradox" % "1.0.1")
