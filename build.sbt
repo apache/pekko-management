@@ -31,19 +31,8 @@ inThisBuild(Def.settings(
     (Global / onLoad).value
   }))
 
-val logLevelProjectList: Seq[ProjectReference] = {
-  if (Dependencies.pekkoVersion.startsWith("1.1.")) {
-    Seq.empty
-  } else {
-    Seq[ProjectReference](managementLoglevelsLogback)
-  }
-} ++ {
-  if (Dependencies.pekkoVersion.startsWith("1.1.") && !Common.testWithSlf4J2) {
-    Seq.empty
-  } else {
-    Seq[ProjectReference](managementLoglevelsLog4j2)
-  }
-} ++ Seq[ProjectReference](managementLoglevelsLog4j2Slf4j2)
+val logLevelProjectList: Seq[ProjectReference] =
+  Seq[ProjectReference](managementLoglevelsLogback, managementLoglevelsLog4j2)
 
 val projectList: Seq[ProjectReference] = Seq[ProjectReference](
   // When this aggregate is updated the list of modules in ManifestInfo.checkSameVersion
@@ -149,14 +138,6 @@ lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
     name := "pekko-management-loglevels-log4j2",
     libraryDependencies := Dependencies.managementLoglevelsLog4j2,
     mimaPreviousArtifactsSet)
-  .dependsOn(management)
-
-lazy val managementLoglevelsLog4j2Slf4j2 = pekkoModule("management-loglevels-log4j2-slf4j2")
-  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
-  .disablePlugins(MimaPlugin)
-  .settings(
-    name := "pekko-management-loglevels-log4j2-slf4j2",
-    libraryDependencies := Dependencies.managementLoglevelsLog4j2Slf4j2)
   .dependsOn(management)
 
 lazy val managementClusterHttp = pekkoModule("management-cluster-http")
