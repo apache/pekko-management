@@ -128,7 +128,6 @@ lazy val managementLoglevelsLogback = pekkoModule("management-loglevels-logback"
   .settings(
     name := "pekko-management-loglevels-logback",
     libraryDependencies := Dependencies.managementLoglevelsLogback,
-    dependencyOverrides := Dependencies.managementLoglevelsLogbackSlf4j2Overrides,
     mimaPreviousArtifactsSet)
   .dependsOn(management)
 

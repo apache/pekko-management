@@ -28,10 +28,8 @@ object Dependencies {
   val jacksonVersion = "2.14.3"
 
   val log4j2Version = "2.23.1"
-  val log4j2Slf4j2Version = "2.23.1"
-  val logbackVersion = "1.2.13"
-  val logbackSlf4j2Version = "1.3.14"
-  val slf4j2Version = "2.0.12"
+  val logbackVersion = "1.3.14"
+  val slf4jVersion = "2.0.12"
 
   // often called-in transitively with insecure versions of databind / core
   private val jacksonDatabind = Seq(
@@ -112,35 +110,14 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test)
 
-  val managementLoglevelsLogbackSlf4j2Overrides = if (Common.testWithSlf4J2) {
-    Seq(
-      "org.slf4j" % "slf4j-api" % slf4j2Version,
-      "ch.qos.logback" % "logback-classic" % logbackSlf4j2Version % Test)
-  } else {
-    Seq.empty
-  }
-
   val managementLoglevelsLog4j2 = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
+    "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.logging.log4j" % "log4j-core" % log4j2Version,
     "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
     "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test)
-
-  val managementLoglevelsLog4j2Slf4j2 = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "org.slf4j" % "slf4j-api" % slf4j2Version,
-    "org.apache.logging.log4j" % "log4j-core" % log4j2Slf4j2Version,
-    "org.apache.logging.log4j" % "log4j-api" % log4j2Slf4j2Version,
-    "org.apache.logging.log4j" % "log4j-slf4j2-impl" % log4j2Slf4j2Version,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,

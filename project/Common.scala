@@ -96,8 +96,6 @@ object Common extends AutoPlugin {
   override lazy val buildSettings = Seq(
     dynverSonatypeSnapshots := true)
 
-  val testWithSlf4J2: Boolean = java.lang.Boolean.getBoolean("pekko.test.slf4j2")
-
   private def isJdk8 =
     VersionNumber(sys.props("java.specification.version")).matchesSemVer(SemanticSelector(s"=1.8"))
 }
