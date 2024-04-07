@@ -117,7 +117,7 @@ object Dependencies {
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.logging.log4j" % "log4j-core" % log4j2Version,
     "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
-    "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+    "org.apache.logging.log4j" % "log4j-slf4j2-impl" % log4j2Version,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
