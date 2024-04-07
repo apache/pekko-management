@@ -177,7 +177,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "com.github.tomakehurst" % "wiremock-jre8" % "2.35.2" % Test,
+    "com.github.tomakehurst" % "wiremock-jre8" % "3.0.1" % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % "it,test",
     "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % "it,test",
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % "it,test")
