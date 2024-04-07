@@ -103,6 +103,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
+    "org.slf4j" % "slf4j-api" % slf4jVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
