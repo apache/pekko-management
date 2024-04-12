@@ -21,7 +21,7 @@ object Dependencies {
   val pekkoHttpVersion = PekkoHttpDependency.version
   val pekkoHttpBinaryVersion = pekkoHttpVersion.take(3)
 
-  val scalaTestVersion = "3.2.14"
+  val scalaTestVersion = "3.2.18"
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"
 
   val awsSdkVersion = "1.12.696"
