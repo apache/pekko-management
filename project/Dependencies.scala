@@ -56,7 +56,7 @@ object Dependencies {
     "org.eclipse.jetty" % "jetty-alpn-openjdk8-server" % jettyVersion % Test,
     "org.eclipse.jetty" % "jetty-alpn-java-client" % jettyVersion % Test,
     "org.eclipse.jetty" % "jetty-alpn-openjdk8-client" % jettyVersion % Test,
-    "org.eclipse.jetty.hhtp2" % "http2-server" % jettyVersion % Test,
+    "org.eclipse.jetty.http2" % "http2-server" % jettyVersion % Test,
     "com.google.guava" % "guava" % guavaVersion % Test,
     "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion % Test,
     "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVersion % Test,
