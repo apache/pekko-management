@@ -25,6 +25,7 @@ object Dependencies {
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"
 
   val awsSdkVersion = "1.12.705"
+  val guavaVersion = "33.1.0-jre"
   val jacksonVersion = "2.16.2"
 
   val log4j2Version = "2.23.1"
@@ -39,7 +40,30 @@ object Dependencies {
     "com.fasterxml.jackson.datatype" % "jackson-datatype-guava" % jacksonVersion,
     "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVersion,
     // Specifying guava dependency because older transitive dependency has security vulnerability
-    "com.google.guava" % "guava" % "33.1.0-jre")
+    "com.google.guava" % "guava" % guavaVersion)
+
+  // wiremock has very outdated, CVE vulnerable dependencies
+  private val jettyVersion = "9.4.54.v20240208"
+  private val wireMockDependencies = Seq(
+    "com.github.tomakehurst" % "wiremock-jre8" % "2.35.2" % Test,
+    "org.eclipse.jetty" % "jetty-server" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-servlet" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-servlets" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-webapp" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-proxy" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-alpn-server" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-alpn-java-server" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-alpn-openjdk8-server" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-alpn-java-client" % jettyVersion % Test,
+    "org.eclipse.jetty" % "jetty-alpn-openjdk8-client" % jettyVersion % Test,
+    "org.eclipse.jetty.hhtp2" % "http2-server" % jettyVersion % Test,
+    "com.google.guava" % "guava" % guavaVersion % Test,
+    "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion % Test,
+    "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVersion % Test,
+    "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion % Test,
+    "commons-io" % "commons-io" % "2.16.1" % Test,
+    "commons-fileupload" % "commons-fileupload" % "1.5" % Test,
+    "com.jayway.jsonpath" % "json-path" % "2.9.0" % Test)
 
   val discoveryConsul = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
@@ -155,10 +179,10 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "com.github.tomakehurst" % "wiremock-jre8" % "2.35.2" % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % "it,test",
     "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % "it,test",
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % "it,test")
+    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % "it,test") ++
+    wireMockDependencies
 
   val leaseKubernetesTest = Seq(
     "org.scalatest" %% "scalatest" % scalaTestVersion)
