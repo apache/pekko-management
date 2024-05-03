@@ -13,28 +13,29 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
-import scala.concurrent.duration._
-import org.apache.pekko
-import pekko.Done
-import pekko.actor.ActorSystem
-import pekko.coordination.lease.kubernetes.internal.CRDKubernetesApiImpl
-import pekko.http.scaladsl.model.StatusCodes
-import pekko.testkit.TestKit
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.typesafe.config.ConfigFactory
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.BeforeAndAfterEach
+import org.apache.pekko.Done
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.coordination.lease.kubernetes.internal.NativeKubernetesApiImpl
+import org.apache.pekko.http.scaladsl.model.StatusCodes
+import org.apache.pekko.testkit.TestKit
+import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class KubernetesApiSpec
+import java.time.temporal.TemporalAccessor
+import java.time.{ Instant, LocalDateTime, ZoneId }
+import scala.concurrent.duration._
+
+class NativeKubernetesApiSpec
     extends TestKit(
       ActorSystem(
-        "KubernetesApiSpec",
+        "NativeKubernetesApiSpec",
         ConfigFactory.parseString("""pekko.coordination.lease.kubernetes {
         |    lease-operation-timeout = 10s
         |}
@@ -62,7 +63,7 @@ class KubernetesApiSpec
 
   implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration)
 
-  val underTest = new CRDKubernetesApiImpl(system, settings) {
+  val underTest = new NativeKubernetesApiImpl(system, settings) {
     // avoid touching slow CI filesystem
     override protected def readConfigVarFromFilesystem(path: String, name: String): Option[String] = None
   }
@@ -78,25 +79,30 @@ class KubernetesApiSpec
     wireMockServer.resetAll()
   }
 
-  "Kubernetes lease resource" should {
+  private def toRFC3339MicroString(t: TemporalAccessor): String =
+    NativeKubernetesApiImpl.RFC3339MICRO_FORMATTER.withZone(ZoneId.of("UTC")).format(t)
+  private def fromRFC3339MicroString(s: String): Long =
+    LocalDateTime.parse(s, NativeKubernetesApiImpl.RFC3339MICRO_FORMATTER).atZone(
+      ZoneId.of("UTC")).toInstant.toEpochMilli
+
+  "Kubernetes native lease resource" should {
     "be able to be created" in {
       val version = "1234"
       stubFor(
-        post(urlEqualTo("/apis/pekko.apache.org/v1/namespaces/lease/leases/lease-1"))
+        post(urlEqualTo("/apis/coordination.k8s.io/v1/namespaces/lease/leases/"))
           .willReturn(aResponse().withStatus(201).withHeader("Content-Type", "application/json").withBody(s"""
                |{
-               |    "apiVersion": "pekko.apache.org/v1",
+               |    "apiVersion": "coordination.k8s.io/v1",
                |    "kind": "Lease",
                |    "metadata": {
                |        "name": "lease-1",
                |        "namespace": "pekko-lease-tests",
                |        "resourceVersion": "$version",
-               |        "selfLink": "/apis/pekko.apache.org/v1/namespaces/pekko-lease-tests/leases/lease-1",
                |        "uid": "c369949e-296c-11e9-9c62-16f8dd5735ba"
                |    },
                |    "spec": {
-               |        "owner": "",
-               |        "time": 1549439255948
+               |        "holderIdentity": "",
+               |        "acquireTime": "2024-05-03T13:55:17.655342Z"
                |    }
                |}
             """.stripMargin)))
@@ -109,76 +115,76 @@ class KubernetesApiSpec
     }
 
     "update a lease successfully" in {
-      val owner = "client1"
+      val holderIdentity = "client1"
       val lease = "lease-1"
       val version = "2"
       val updatedVersion = "3"
-      val timestamp = System.currentTimeMillis()
+      val timestamp = toRFC3339MicroString(Instant.now())
       stubFor(
-        put(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease"))
+        put(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/$lease"))
           .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(s"""
                |{
-               |    "apiVersion": "pekko.apache.org/v1",
+               |    "apiVersion": "coordination.k8s.io/v1",
                |    "kind": "Lease",
                |    "metadata": {
                |        "name": "lease-1",
                |        "namespace": "pekko-lease-tests",
                |        "resourceVersion": "$updatedVersion",
-               |        "selfLink": "/apis/pekko.apache.org/v1/namespaces/pekko-lease-tests/leases/$lease",
                |        "uid": "c369949e-296c-11e9-9c62-16f8dd5735ba"
                |    },
                |    "spec": {
-               |        "owner": "$owner",
-               |        "time": $timestamp
+               |        "holderIdentity": "$holderIdentity",
+               |        "acquireTime": "$timestamp"
                |    }
                |}
             """.stripMargin)))
 
-      val response = underTest.updateLeaseResource(lease, owner, version, timestamp).futureValue
-      response shouldEqual Right(LeaseResource(Some(owner), updatedVersion, timestamp))
+      val response =
+        underTest.updateLeaseResource(lease, holderIdentity, version, fromRFC3339MicroString(timestamp)).futureValue
+      response shouldEqual Right(LeaseResource(Some(holderIdentity), updatedVersion, fromRFC3339MicroString(timestamp)))
     }
 
     "update a lease conflict" in {
       val owner = "client1"
-      val conflictedOwner = "client2"
+      val conflictedHolderIdentity = "client2"
       val lease = "lease-1"
       val version = "2"
       val updatedVersion = "3"
-      val timestamp = System.currentTimeMillis()
+      val timestamp = toRFC3339MicroString(Instant.now())
       // Conflict
       stubFor(
-        put(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease"))
+        put(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/$lease"))
           .willReturn(aResponse().withStatus(StatusCodes.Conflict.intValue)))
 
       // Read to get version
       stubFor(
-        get(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
+        get(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse().withStatus(StatusCodes.OK.intValue).withHeader("Content-Type", "application/json").withBody(s"""
                |{
-               |    "apiVersion": "pekko.apache.org/v1",
+               |    "apiVersion": "coordination.k8s.io/v1",
                |    "kind": "Lease",
                |    "metadata": {
                |        "name": "lease-1",
                |        "namespace": "pekko-lease-tests",
                |        "resourceVersion": "$updatedVersion",
-               |        "selfLink": "/apis/pekko.apache.org/v1/namespaces/pekko-lease-tests/leases/$lease",
                |        "uid": "c369949e-296c-11e9-9c62-16f8dd5735ba"
                |    },
                |    "spec": {
-               |        "owner": "$conflictedOwner",
-               |        "time": $timestamp
+               |        "holderIdentity": "$conflictedHolderIdentity",
+               |        "acquireTime": "$timestamp"
                |    }
                |}
             """.stripMargin)))
 
-      val response = underTest.updateLeaseResource(lease, owner, version, timestamp).futureValue
-      response shouldEqual Left(LeaseResource(Some(conflictedOwner), updatedVersion, timestamp))
+      val response = underTest.updateLeaseResource(lease, owner, version, fromRFC3339MicroString(timestamp)).futureValue
+      response shouldEqual Left(LeaseResource(Some(conflictedHolderIdentity), updatedVersion,
+        fromRFC3339MicroString(timestamp)))
     }
 
     "remove lease via DELETE" in {
       val lease = "lease-1"
       stubFor(
-        delete(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease"))
+        delete(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/$lease"))
           .willReturn(aResponse().withStatus(StatusCodes.OK.intValue)))
 
       val response = underTest.removeLease(lease).futureValue
@@ -189,28 +195,27 @@ class KubernetesApiSpec
       val owner = "client1"
       val lease = "lease-1"
       val version = "2"
-      val timestamp = System.currentTimeMillis()
+      val timestamp = toRFC3339MicroString(Instant.now())
 
       stubFor(
-        get(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
+        get(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
             .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
             .withHeader("Content-Type", "application/json")
             .withBody(s"""
                |{
-               |    "apiVersion": "pekko.apache.org/v1",
+               |    "apiVersion": "coordination.k8s.io/v1",
                |    "kind": "Lease",
                |    "metadata": {
                |        "name": "lease-1",
                |        "namespace": "pekko-lease-tests",
                |        "resourceVersion": "$version",
-               |        "selfLink": "/apis/pekko.apache.org/v1/namespaces/pekko-lease-tests/leases/$lease",
                |        "uid": "c369949e-296c-11e9-9c62-16f8dd5735ba"
                |    },
                |    "spec": {
-               |        "owner": "$owner",
-               |        "time": $timestamp
+               |        "holderIdentity": "$owner",
+               |        "acquireTime": $timestamp
                |    }
                |}
             """.stripMargin)))
@@ -226,11 +231,11 @@ class KubernetesApiSpec
       val lease = "lease-1"
 
       stubFor(
-        get(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease"))
+        get(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/$lease"))
           .willReturn(aResponse().withStatus(StatusCodes.NotFound.intValue)))
 
       stubFor(
-        post(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
+        post(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/")).willReturn(
           aResponse()
             .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
@@ -247,7 +252,7 @@ class KubernetesApiSpec
       val lease = "lease-1"
       val owner = "client"
       stubFor(
-        put(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
+        put(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
             .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
@@ -260,7 +265,7 @@ class KubernetesApiSpec
     "timeout on remove lease " in {
       val lease = "lease-1"
       stubFor(
-        delete(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
+        delete(urlEqualTo(s"/apis/coordination.k8s.io/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
             .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)))

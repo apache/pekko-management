@@ -16,7 +16,7 @@ package org.apache.pekko.coordination.lease.kubernetes
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.coordination.lease.TimeoutSettings
-import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
+import pekko.coordination.lease.kubernetes.internal.CRDKubernetesApiImpl
 import pekko.coordination.lease.scaladsl.LeaseProvider
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
 import org.scalatest.time.{ Milliseconds, Seconds, Span }
@@ -35,8 +35,8 @@ abstract class LeaseSpec() extends AnyWordSpec with ScalaFutures with BeforeAndA
 
   lazy val underTest = LeaseProvider(system)
   // for cleanup
-  val config = system.settings.config.getConfig(KubernetesLease.configPath)
-  lazy val k8sApi = new KubernetesApiImpl(system, KubernetesSettings(config, TimeoutSettings(config)))
+  val config = system.settings.config.getConfig(AbstractKubernetesLease.configPath)
+  lazy val k8sApi = new CRDKubernetesApiImpl(system, KubernetesSettings(config, TimeoutSettings(config)))
   val leaseName = "lease-1"
   val client1 = "client1"
   val client2 = "client2"

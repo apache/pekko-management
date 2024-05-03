@@ -12,7 +12,7 @@ package org.apache.pekko.coordination.lease.kubernetes
 import org.apache.pekko
 import pekko.Done
 import pekko.actor.ActorSystem
-import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
+import pekko.coordination.lease.kubernetes.internal.CRDKubernetesApiImpl
 import pekko.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{ BeforeAndAfterAll, CancelAfterFailure }
@@ -51,7 +51,7 @@ class KubernetesApiIntegrationTest extends TestKit(ActorSystem("KubernetesApiInt
     apiServerRequestTimeout = 1.second,
     false)
 
-  val underTest = new KubernetesApiImpl(system, settings)
+  val underTest = new CRDKubernetesApiImpl(system, settings)
   val leaseName = "lease-1"
   val client1 = "client-1"
   val client2 = "client-2"

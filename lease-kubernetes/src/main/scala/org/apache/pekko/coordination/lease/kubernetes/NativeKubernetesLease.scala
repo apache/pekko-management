@@ -13,17 +13,17 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
+import org.apache.pekko.actor.ExtendedActorSystem
+import org.apache.pekko.coordination.lease.LeaseSettings
+import org.apache.pekko.coordination.lease.kubernetes.internal.NativeKubernetesApiImpl
+
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.apache.pekko
-import pekko.actor.ExtendedActorSystem
-import pekko.coordination.lease.kubernetes.internal.CRDKubernetesApiImpl
-import pekko.coordination.lease.LeaseSettings
-
-class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: AtomicBoolean, settings: LeaseSettings)
+class NativeKubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: AtomicBoolean,
+    settings: LeaseSettings)
     extends AbstractKubernetesLease(system, leaseTaken, settings) {
 
-  override def k8sApi = new CRDKubernetesApiImpl(system, k8sSettings)
+  override def k8sApi = new NativeKubernetesApiImpl(system, k8sSettings)
 
   def this(leaseSettings: LeaseSettings, system: ExtendedActorSystem) =
     this(system, new AtomicBoolean(false), leaseSettings)

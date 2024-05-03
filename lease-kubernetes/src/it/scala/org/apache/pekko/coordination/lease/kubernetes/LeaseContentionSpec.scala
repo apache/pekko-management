@@ -18,7 +18,7 @@ import scala.concurrent.Future
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.coordination.lease.TimeoutSettings
-import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
+import pekko.coordination.lease.kubernetes.internal.CRDKubernetesApiImpl
 import pekko.coordination.lease.scaladsl.LeaseProvider
 import pekko.testkit.TestKit
 import com.typesafe.config.ConfigFactory
@@ -53,7 +53,7 @@ class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec",
   implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration)
 
   // for cleanup
-  val k8sApi = new KubernetesApiImpl(system,
+  val k8sApi = new CRDKubernetesApiImpl(system,
     KubernetesSettings(system,
       TimeoutSettings(system.settings.config.getConfig("pekko.coordination.lease.kubernetes"))))
 
@@ -78,7 +78,7 @@ class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec",
       // could make this more contended with a countdown latch so they all start at the same time
       val leases: immutable.Seq[(String, Boolean)] = Future.sequence((0 until nrClients).map(i => {
         val clientName = s"client$i"
-        val lease = underTest.getLease(lease1, KubernetesLease.configPath, clientName)
+        val lease = underTest.getLease(lease1, AbstractKubernetesLease.configPath, clientName)
         Future {
           lease.acquire()
         }.flatMap(identity).map(granted => (clientName, granted))

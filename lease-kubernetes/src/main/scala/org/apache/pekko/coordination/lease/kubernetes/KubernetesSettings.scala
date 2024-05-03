@@ -39,7 +39,7 @@ private[pekko] object KubernetesSettings {
   }
 
   def apply(system: ActorSystem, leaseTimeoutSettings: TimeoutSettings): KubernetesSettings = {
-    apply(system.settings.config.getConfig(KubernetesLease.configPath), leaseTimeoutSettings)
+    apply(system.settings.config.getConfig(AbstractKubernetesLease.configPath), leaseTimeoutSettings)
   }
   def apply(config: Config, leaseTimeoutSettings: TimeoutSettings): KubernetesSettings = {
 
