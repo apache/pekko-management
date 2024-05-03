@@ -17,7 +17,7 @@ import scala.concurrent.duration._
 import org.apache.pekko
 import pekko.Done
 import pekko.actor.ActorSystem
-import pekko.coordination.lease.kubernetes.internal.CRDKubernetesApiImpl
+import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
 import pekko.http.scaladsl.model.StatusCodes
 import pekko.testkit.TestKit
 import com.github.tomakehurst.wiremock.WireMockServer
@@ -62,7 +62,7 @@ class KubernetesApiSpec
 
   implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration)
 
-  val underTest = new CRDKubernetesApiImpl(system, settings) {
+  val underTest = new KubernetesApiImpl(system, settings) {
     // avoid touching slow CI filesystem
     override protected def readConfigVarFromFilesystem(path: String, name: String): Option[String] = None
   }

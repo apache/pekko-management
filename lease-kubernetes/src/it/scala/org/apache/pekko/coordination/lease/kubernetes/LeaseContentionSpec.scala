@@ -18,7 +18,7 @@ import scala.concurrent.Future
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.coordination.lease.TimeoutSettings
-import pekko.coordination.lease.kubernetes.internal.CRDKubernetesApiImpl
+import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
 import pekko.coordination.lease.scaladsl.LeaseProvider
 import pekko.testkit.TestKit
 import com.typesafe.config.ConfigFactory
@@ -53,7 +53,7 @@ class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec",
   implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration)
 
   // for cleanup
-  val k8sApi = new CRDKubernetesApiImpl(system,
+  val k8sApi = new KubernetesApiImpl(system,
     KubernetesSettings(system,
       TimeoutSettings(system.settings.config.getConfig("pekko.coordination.lease.kubernetes"))))
 

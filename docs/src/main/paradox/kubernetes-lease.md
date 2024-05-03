@@ -34,7 +34,9 @@ different `ActorSystem` names because they all need a separate lease.
     - For @extref:[Cluster Singleton](pekko:typed/cluster-singleton.html#lease) there will be one per singleton.
     - For @extref:[Cluster Sharding](pekko:typed/cluster-sharding.html#lease), there will be one per shard per type.
 
-### Dependency
+### Configuring
+
+#### Dependency
 
 @@dependency[sbt,Maven,Gradle] {
   symbol1=PekkoManagementVersion
@@ -43,8 +45,6 @@ different `ActorSystem` names because they all need a separate lease.
   artifact="pekko-lease-kubernetes_$scala.binary.version$"
   version=PekkoManagementVersion
 }
-
-### Custom Resource implementation
 
 #### Creating the Custom Resource Definition for the lease
 
@@ -60,6 +60,16 @@ Where lease.yml contains:
 
 @@snip[lease.yaml](/lease-kubernetes/lease.yml)
 
+#### Enable the native implementation
+
+To enable the native implementation, the lease class must be changed in the configuration to the following value:
+
+```
+pekko.coordination.lease.kubernetes { 
+  lease-class = "org.apache.pekko.coordination.lease.kubernetes.NativeKubernetesLease"
+}
+```
+
 #### Role based access control
 
 Each pod needs permission to read/create and update lease resources. They only need access
@@ -73,7 +83,12 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: lease-access
 rules:
+  # Using CRD implementation
   - apiGroups: ["pekko.apache.org"]
+    resources: ["leases"]
+    verbs: ["get", "create", "update", "list"]
+  # Using native implementation
+  - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "create", "update", "list"]
 ---
@@ -123,54 +138,27 @@ The lease gets created only during an actual Split Brain.
 
 @@@
 
-### Native Lease implementation
+#### Enable in SBR
 
-To enable this implementation, the lease class must be changed in the configuration to the following value: 
+To enable the lease for use within SBR:
 
 ```
-pekko.coordination.lease.kubernetes { 
-  lease-class = "org.apache.pekko.coordination.lease.kubernetes.NativeKubernetesLease"
+
+pekko {
+  cluster {
+    downing-provider-class = "org.apache.pekko.cluster.sbr.SplitBrainResolverProvider"
+    split-brain-resolver {
+      active-strategy = "lease-majority"
+      lease-majority {
+        lease-implementation = "pekko.coordination.lease.kubernetes"
+      }
+    }
+  }
 }
+
 ```
 
-#### Configure RBAC
-
-Each pod needs permission to read/create and update lease resources. They only need access
-for the namespace they are in.
-
-An example RBAC that can be used:
-
-```yaml
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: lease-access
-rules:
-  - apiGroups: ["coordination.k8s.io"]
-    resources: ["leases"]
-    verbs: ["get", "create", "update", "list"]
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: lease-access
-subjects:
-  - kind: User
-    name: system:serviceaccount:<YOUR NAMESPACE>:default
-roleRef:
-  kind: Role
-  name: lease-access
-  apiGroup: rbac.authorization.k8s.io
-```
-
-This defines a `Role` that is allowed to `get`, `create` and `update` lease objects and a `RoleBinding`
-that gives the default service user this role in `<YOUR NAMESPACE>`.
-
-Future versions may also require `delete` access for cleaning up old resources. Current uses within Pekko
-only create a single lease so cleanup is not an issue.
-
-
-### Full configuration options
+#### Full configuration options
 
 @@snip [reference.conf](/lease-kubernetes/src/main/resources/reference.conf)
 

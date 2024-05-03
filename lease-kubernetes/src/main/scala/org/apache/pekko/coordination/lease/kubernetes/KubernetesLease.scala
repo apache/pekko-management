@@ -17,13 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.pekko
 import pekko.actor.ExtendedActorSystem
-import pekko.coordination.lease.kubernetes.internal.CRDKubernetesApiImpl
+import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
 import pekko.coordination.lease.LeaseSettings
 
 class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: AtomicBoolean, settings: LeaseSettings)
     extends AbstractKubernetesLease(system, leaseTaken, settings) {
 
-  override def k8sApi = new CRDKubernetesApiImpl(system, k8sSettings)
+  override def k8sApi = new KubernetesApiImpl(system, k8sSettings)
 
   def this(leaseSettings: LeaseSettings, system: ExtendedActorSystem) =
     this(system, new AtomicBoolean(false), leaseSettings)

@@ -28,7 +28,7 @@ import pekko.http.scaladsl.unmarshalling.Unmarshal
  * Could be shared between leases: https://github.com/akka/akka-management/issues/680
  * INTERNAL API
  */
-@InternalApi private[pekko] class CRDKubernetesApiImpl(system: ActorSystem, settings: KubernetesSettings)
+@InternalApi private[pekko] class KubernetesApiImpl(system: ActorSystem, settings: KubernetesSettings)
     extends AbstractKubernetesApiImpl(system, settings) {
 
   import system.dispatcher
