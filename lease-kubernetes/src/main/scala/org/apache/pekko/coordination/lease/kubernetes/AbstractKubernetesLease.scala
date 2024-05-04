@@ -20,7 +20,7 @@ import scala.concurrent.Future
 import scala.util.{ Failure, Success }
 import scala.annotation.nowarn
 import org.apache.pekko
-import org.apache.pekko.coordination.lease.kubernetes.AbstractKubernetesLease.makeDNS1039Compatible
+import pekko.coordination.lease.kubernetes.AbstractKubernetesLease.makeDNS1039Compatible
 import pekko.actor.ExtendedActorSystem
 import pekko.coordination.lease.kubernetes.LeaseActor._
 import pekko.coordination.lease.scaladsl.Lease

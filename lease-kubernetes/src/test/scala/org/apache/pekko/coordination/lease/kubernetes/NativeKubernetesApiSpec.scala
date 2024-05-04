@@ -17,23 +17,25 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
+import java.time.temporal.TemporalAccessor
+import java.time.{ Instant, LocalDateTime, ZoneId }
+
+import org.apache.pekko
+import pekko.Done
+import pekko.actor.ActorSystem
+import pekko.coordination.lease.kubernetes.internal.NativeKubernetesApiImpl
+import pekko.http.scaladsl.model.StatusCodes
+import pekko.testkit.TestKit
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.typesafe.config.ConfigFactory
-import org.apache.pekko.Done
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.coordination.lease.kubernetes.internal.NativeKubernetesApiImpl
-import org.apache.pekko.http.scaladsl.model.StatusCodes
-import org.apache.pekko.testkit.TestKit
 import org.scalatest.{ BeforeAndAfterAll, BeforeAndAfterEach }
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-import java.time.temporal.TemporalAccessor
-import java.time.{ Instant, LocalDateTime, ZoneId }
 import scala.concurrent.duration._
 
 class NativeKubernetesApiSpec
