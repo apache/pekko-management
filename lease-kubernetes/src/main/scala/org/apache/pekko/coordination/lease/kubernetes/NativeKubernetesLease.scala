@@ -17,9 +17,10 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
-import org.apache.pekko.actor.ExtendedActorSystem
-import org.apache.pekko.coordination.lease.LeaseSettings
-import org.apache.pekko.coordination.lease.kubernetes.internal.NativeKubernetesApiImpl
+import org.apache.pekko
+import pekko.actor.ExtendedActorSystem
+import pekko.coordination.lease.LeaseSettings
+import pekko.coordination.lease.kubernetes.internal.NativeKubernetesApiImpl
 
 import java.util.concurrent.atomic.AtomicBoolean
 

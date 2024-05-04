@@ -24,7 +24,7 @@ import spray.json.{ DefaultJsonProtocol, JsonFormat, RootJsonFormat }
 @InternalApi
 case class LeaseCustomResource(
     metadata: Metadata,
-    spec: CustomSpec,
+    spec: Spec,
     kind: String = "Lease",
     apiVersion: String = "pekko.apache.org/v1")
 
@@ -38,7 +38,7 @@ case class Metadata(name: String, resourceVersion: Option[String])
  * INTERNAL API
  */
 @InternalApi
-case class CustomSpec(owner: String, time: Long)
+case class Spec(owner: String, time: Long)
 
 /**
  * INTERNAL API
@@ -62,7 +62,7 @@ case class NativeSpec(holderIdentity: String, acquireTime: String)
 @InternalApi
 trait KubernetesJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val metadataFormat: JsonFormat[Metadata] = jsonFormat2(Metadata.apply)
-  implicit val customSpecFormat: JsonFormat[CustomSpec] = jsonFormat2(CustomSpec.apply)
+  implicit val specFormat: JsonFormat[Spec] = jsonFormat2(Spec.apply)
   implicit val nativeSpecFormat: JsonFormat[NativeSpec] = jsonFormat2(NativeSpec.apply)
   implicit val leaseCustomResourceFormat: RootJsonFormat[LeaseCustomResource] = jsonFormat4(LeaseCustomResource.apply)
   implicit val leaseNativeResourceFormat: RootJsonFormat[NativeLeaseResource] = jsonFormat4(NativeLeaseResource.apply)

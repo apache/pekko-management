@@ -56,7 +56,7 @@ PUTs must contain resourceVersions. Response:
       ownerName: String,
       version: String,
       time: Long = System.currentTimeMillis()): Future[Either[LeaseResource, LeaseResource]] = {
-    val lcr = LeaseCustomResource(Metadata(leaseName, Some(version)), CustomSpec(ownerName, System.currentTimeMillis()))
+    val lcr = LeaseCustomResource(Metadata(leaseName, Some(version)), Spec(ownerName, System.currentTimeMillis()))
     for {
       entity <- Marshal(lcr).to[RequestEntity]
       response <- {
@@ -133,7 +133,7 @@ PUTs must contain resourceVersions. Response:
       .toLowerCase
 
   override def createLeaseResource(name: String): Future[Option[LeaseResource]] = {
-    val lcr = LeaseCustomResource(Metadata(name, None), CustomSpec("", System.currentTimeMillis()))
+    val lcr = LeaseCustomResource(Metadata(name, None), Spec("", System.currentTimeMillis()))
     for {
       entity <- Marshal(lcr).to[RequestEntity]
       response <- makeRequest(

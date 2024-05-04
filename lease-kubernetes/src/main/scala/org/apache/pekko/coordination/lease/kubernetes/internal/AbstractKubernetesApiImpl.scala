@@ -13,18 +13,19 @@
 
 package org.apache.pekko.coordination.lease.kubernetes.internal
 
-import org.apache.pekko.Done
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.coordination.lease.kubernetes.{ KubernetesApi, KubernetesSettings, LeaseResource }
-import org.apache.pekko.coordination.lease.{ LeaseException, LeaseTimeoutException }
-import org.apache.pekko.event.{ LogSource, Logging, LoggingAdapter }
-import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.model.headers.{ Authorization, OAuth2BearerToken }
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import org.apache.pekko.http.scaladsl.{ ConnectionContext, Http, HttpExt, HttpsConnectionContext }
-import org.apache.pekko.pattern.after
-import org.apache.pekko.pki.kubernetes.PemManagersProvider
+import org.apache.pekko
+import pekko.Done
+import pekko.actor.ActorSystem
+import pekko.annotation.InternalApi
+import pekko.coordination.lease.kubernetes.{ KubernetesApi, KubernetesSettings, LeaseResource }
+import pekko.coordination.lease.{ LeaseException, LeaseTimeoutException }
+import pekko.event.{ LogSource, Logging, LoggingAdapter }
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.model.headers.{ Authorization, OAuth2BearerToken }
+import pekko.http.scaladsl.unmarshalling.Unmarshal
+import pekko.http.scaladsl.{ ConnectionContext, Http, HttpExt, HttpsConnectionContext }
+import pekko.pattern.after
+import pekko.pki.kubernetes.PemManagersProvider
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{ Files, Paths }
