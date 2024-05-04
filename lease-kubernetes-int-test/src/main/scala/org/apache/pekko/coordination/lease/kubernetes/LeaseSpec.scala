@@ -35,7 +35,7 @@ abstract class LeaseSpec() extends AnyWordSpec with ScalaFutures with BeforeAndA
 
   lazy val underTest = LeaseProvider(system)
   // for cleanup
-  val config = system.settings.config.getConfig(AbstractKubernetesLease.configPath)
+  val config = system.settings.config.getConfig(KubernetesLease.configPath)
   lazy val k8sApi = new KubernetesApiImpl(system, KubernetesSettings(config, TimeoutSettings(config)))
   val leaseName = "lease-1"
   val client1 = "client1"

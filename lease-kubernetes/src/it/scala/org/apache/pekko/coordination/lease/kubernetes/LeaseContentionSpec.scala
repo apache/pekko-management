@@ -78,7 +78,7 @@ class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec",
       // could make this more contended with a countdown latch so they all start at the same time
       val leases: immutable.Seq[(String, Boolean)] = Future.sequence((0 until nrClients).map(i => {
         val clientName = s"client$i"
-        val lease = underTest.getLease(lease1, AbstractKubernetesLease.configPath, clientName)
+        val lease = underTest.getLease(lease1, KubernetesLease.configPath, clientName)
         Future {
           lease.acquire()
         }.flatMap(identity).map(granted => (clientName, granted))

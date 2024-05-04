@@ -20,6 +20,10 @@ import pekko.actor.ExtendedActorSystem
 import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
 import pekko.coordination.lease.LeaseSettings
 
+object KubernetesLease {
+  val configPath: String = AbstractKubernetesLease.configPath
+}
+
 class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: AtomicBoolean, settings: LeaseSettings)
     extends AbstractKubernetesLease(system, leaseTaken, settings) {
 
