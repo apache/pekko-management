@@ -15,7 +15,7 @@ version := "1.1.4"
 
 scalaVersion := "2.13.11"
 
-val pekkoManagementVersion = "1.10.0"
+val pekkoManagementVersion = "1.0.0"
 
 libraryDependencies ++= Vector(
   "org.apache.pekko" %% "pekko-management-cluster-bootstrap" % pekkoManagementVersion,

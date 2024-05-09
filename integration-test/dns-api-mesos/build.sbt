@@ -20,4 +20,4 @@ libraryDependencies += "org.apache.pekko" %% "pekko-management-cluster-bootstrap
 libraryDependencies += "org.apache.pekko" %% "pekko-management-cluster-http" % pekkoManagementVersion(
   version.value)
 
-libraryDependencies += "org.apache.pekko" %% "pekko-discovery" % "2.5.20"
+libraryDependencies += "org.apache.pekko" %% "pekko-discovery" % "1.0.2"
