@@ -65,6 +65,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
       "pekko-discovery-marathon-api",
       "pekko-discovery-aws-api-async",
       "pekko-discovery-kubernetes-api",
+      "pekko-lease-kubernetes",
       "pekko-management",
       "pekko-management-cluster-bootstrap",
       "pekko-management-cluster-http"),
