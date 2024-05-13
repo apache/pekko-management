@@ -16,7 +16,7 @@
 # under the License.
 
 # The new Kubernetes Native Lease adds new classes and fields 
-ProblemFilters.exclude[ReversedMissingMethodProblem]("org.apache.pekko.http.scaladsl.settings.Http2ServerSettings.frameTypeThrottleFrameTypes")
-ProblemFilters.exclude[ReversedMissingMethodProblem]("org.apache.pekko.http.scaladsl.settings.Http2ServerSettings.frameTypeThrottleCost")
-ProblemFilters.exclude[ReversedMissingMethodProblem]("org.apache.pekko.http.scaladsl.settings.Http2ServerSettings.frameTypeThrottleBurst")
-ProblemFilters.exclude[ReversedMissingMethodProblem]("org.apache.pekko.http.scaladsl.settings.Http2ServerSettings.frameTypeThrottleInterval")
+ProblemFilters.exclude[ReversedMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.internal.KubernetesJsonSupport.org$apache$pekko$coordination$lease$kubernetes$internal$KubernetesJsonSupport$_setter_$nativeSpecFormat_=")
+ProblemFilters.exclude[ReversedMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.internal.KubernetesJsonSupport.org$apache$pekko$coordination$lease$kubernetes$internal$KubernetesJsonSupport$_setter_$leaseNativeResourceFormat_=")
+ProblemFilters.exclude[ReversedMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.internal.KubernetesJsonSupport.nativeSpecFormat")
+ProblemFilters.exclude[ReversedMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.internal.KubernetesJsonSupport.leaseNativeResourceFormat")
