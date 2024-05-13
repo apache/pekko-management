@@ -14,21 +14,30 @@
 package org.apache.pekko.coordination.lease.kubernetes
 
 import java.util.concurrent.atomic.AtomicBoolean
-
 import org.apache.pekko
 import pekko.actor.ExtendedActorSystem
 import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
 import pekko.coordination.lease.LeaseSettings
 
+import scala.concurrent.Future
+
 object KubernetesLease {
   val configPath: String = AbstractKubernetesLease.configPath
 }
 
-class KubernetesLease private[pekko] (system: ExtendedActorSystem, leaseTaken: AtomicBoolean, settings: LeaseSettings)
+class KubernetesLease(system: ExtendedActorSystem, leaseTaken: AtomicBoolean, settings: LeaseSettings)
     extends AbstractKubernetesLease(system, leaseTaken, settings) {
 
   override def k8sApi = new KubernetesApiImpl(system, k8sSettings)
 
   def this(leaseSettings: LeaseSettings, system: ExtendedActorSystem) =
     this(system, new AtomicBoolean(false), leaseSettings)
+
+  override def checkLease(): Boolean = super.checkLease()
+
+  override def release(): Future[Boolean] = super.release()
+
+  override def acquire(): Future[Boolean] = super.acquire()
+
+  override def acquire(leaseLostCallback: Option[Throwable] => Unit): Future[Boolean] = super.acquire(leaseLostCallback)
 }
