@@ -7,10 +7,14 @@ The API, configuration and behavior may change based on feedback from initial us
 
 @@@
 
-This module is an implementation of a [Pekko Coordination Lease](https://pekko.apache.org/docs/pekko/current/coordination.html#lease) backed 
-by a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in Kubernetes.
-Resources in Kubernetes offer [concurrency control and consistency](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) 
-that have been used to build a distributed lease/lock.
+This module is an implementation of a [Pekko Coordination Lease](https://pekko.apache.org/docs/pekko/current/coordination.html#lease) in Kubernetes backed 
+by two implementations:
+
+* a [Custom Resource Definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/). Resources in Kubernetes offer [concurrency control and consistency](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
+  that have been used to build a distributed lease/lock.
+* a native [Kubernetes Lease Object](https://kubernetes.io/docs/concepts/architecture/leases/).
+
+
 
 A lease can be used for:
 
@@ -44,7 +48,7 @@ different `ActorSystem` names because they all need a separate lease.
 
 #### Creating the Custom Resource Definition for the lease
 
-This requires admin privileges to your Kubernetes / Open Shift cluster but only needs doing once.
+For the CRD Implementation, a Custom Resource must be created. This requires admin privileges to your Kubernetes / Open Shift cluster but only needs doing once.
 
 Kubernetes:
 
@@ -55,6 +59,16 @@ kubectl apply -f lease.yml
 Where lease.yml contains:
 
 @@snip[lease.yaml](/lease-kubernetes/lease.yml)
+
+#### Enable the native implementation
+
+To enable the native implementation, the lease class must be changed in the configuration to the following value:
+
+```
+pekko.coordination.lease.kubernetes { 
+  lease-class = "org.apache.pekko.coordination.lease.kubernetes.NativeKubernetesLease"
+}
+```
 
 #### Role based access control
 
@@ -69,7 +83,12 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: lease-access
 rules:
+  # Using CRD implementation
   - apiGroups: ["pekko.apache.org"]
+    resources: ["leases"]
+    verbs: ["get", "create", "update", "list"]
+  # Using native implementation
+  - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "create", "update", "list"]
 ---
@@ -79,7 +98,7 @@ metadata:
   name: lease-access
 subjects:
   - kind: User
-    name: system:serviceaccount:<YOUR NAMSPACE>:default
+    name: system:serviceaccount:<YOUR NAMESPACE>:default
 roleRef:
   kind: Role
   name: lease-access

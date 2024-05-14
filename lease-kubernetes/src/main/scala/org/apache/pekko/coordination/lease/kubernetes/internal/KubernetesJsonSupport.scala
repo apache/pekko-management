@@ -44,8 +44,26 @@ case class Spec(owner: String, time: Long)
  * INTERNAL API
  */
 @InternalApi
+case class NativeLeaseResource(
+    metadata: Metadata,
+    spec: NativeSpec,
+    kind: String = "Lease",
+    apiVersion: String = "coordination.k8s.io/v1")
+
+/**
+ * INTERNAL API
+ */
+@InternalApi
+case class NativeSpec(holderIdentity: String, acquireTime: String)
+
+/**
+ * INTERNAL API
+ */
+@InternalApi
 trait KubernetesJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val metadataFormat: JsonFormat[Metadata] = jsonFormat2(Metadata.apply)
   implicit val specFormat: JsonFormat[Spec] = jsonFormat2(Spec.apply)
+  implicit val nativeSpecFormat: JsonFormat[NativeSpec] = jsonFormat2(NativeSpec.apply)
   implicit val leaseCustomResourceFormat: RootJsonFormat[LeaseCustomResource] = jsonFormat4(LeaseCustomResource.apply)
+  implicit val leaseNativeResourceFormat: RootJsonFormat[NativeLeaseResource] = jsonFormat4(NativeLeaseResource.apply)
 }
