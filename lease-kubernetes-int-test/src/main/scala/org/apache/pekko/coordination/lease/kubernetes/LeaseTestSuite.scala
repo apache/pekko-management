@@ -50,9 +50,11 @@ object LeaseTestSuite {
       case Success(_) =>
         log.info("Test failed, see the logs")
         CoordinatedShutdown(as).run(TestFailedReason)
+        System.exit(1)
       case Failure(exception) =>
         log.error(exception, "Test exception")
         CoordinatedShutdown(as).run(TestFailedReason)
+        System.exit(1)
     }
   }
 
