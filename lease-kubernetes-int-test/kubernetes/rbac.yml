@@ -3,7 +3,16 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: lease-access
 rules:
-  - apiGroups: ["akka.io"]
+  - apiGroups: ["pekko.apache.org"]
+    resources: ["leases"]
+    verbs: ["get", "create", "update", "delete", "list"]
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: native-lease-access
+rules:
+  - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
     verbs: ["get", "create", "update", "delete", "list"]
 ---
@@ -20,4 +29,16 @@ subjects:
 roleRef:
   kind: Role
   name: lease-access
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: native-lease-access
+subjects:
+  - kind: ServiceAccount
+    name: default
+roleRef:
+  kind: Role
+  name: native-lease-access
   apiGroup: rbac.authorization.k8s.io

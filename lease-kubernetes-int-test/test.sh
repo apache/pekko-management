@@ -6,12 +6,13 @@ set -exu
 
 JOB_NAME=lease-test
 PROJECT_DIR=lease-kubernetes-int-test
+JOB_YML=$1
 
 eval $(minikube -p minikube docker-env)
 sbt "lease-kubernetes-int-test / docker:publishLocal"
 
-kubectl apply -f $PROJECT_DIR/kubernetes/rbac.yml
-kubectl delete -f $PROJECT_DIR/kubernetes/job.yml || true
+kubectl apply -f "$PROJECT_DIR/kubernetes/rbac.yml"
+kubectl delete -f "$PROJECT_DIR/kubernetes/$JOB_YML" || true
 
 for i in {1..10}
 do
@@ -22,7 +23,7 @@ done
 
 echo "Old jobs cleaned up. Creating new job"
 
-kubectl create -f $PROJECT_DIR/kubernetes/job.yml
+kubectl create -f "$PROJECT_DIR/kubernetes/$JOB_YML"
 
 # Add in a default sleep when we know a min amount of time it'll take
 
