@@ -58,7 +58,8 @@ jobs:
           kubectl proxy --port=8080 &
           echo 'Running tests'
           sbt ";lease-kubernetes/it:test"
-          ./lease-kubernetes-int-test/test.sh
+          ./lease-kubernetes-int-test/test.sh job.yml
+          ./lease-kubernetes-int-test/test.sh job-native.yml
 
       - name: Print logs on failure
         if: ${{ failure() }}
