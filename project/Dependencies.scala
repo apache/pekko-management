@@ -75,6 +75,14 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion % Test,
     "ch.qos.logback" % "logback-classic" % logbackVersion % Test) ++ jacksonDatabind ++ jacksonDatatype // consul depends on insecure version of jackson
 
+  val discoveryEureka = Seq(
+    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
+    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
+    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
+    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
+    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
+    "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
+
   val discoveryKubernetesApi = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,

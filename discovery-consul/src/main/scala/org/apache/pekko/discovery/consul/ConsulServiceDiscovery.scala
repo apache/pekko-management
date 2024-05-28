@@ -31,7 +31,6 @@ import pekko.util.ccompat.JavaConverters._
 import java.net.InetAddress
 import java.util
 import java.util.concurrent.TimeoutException
-import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.util.Try

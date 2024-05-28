@@ -105,6 +105,13 @@ lazy val discoveryConsul = pekkoModule("discovery-consul")
     libraryDependencies := Dependencies.discoveryConsul,
     mimaPreviousArtifactsSet)
 
+lazy val discoveryEureka = pekkoModule("discovery-eureka")
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .settings(
+    name := "pekko-discovery-eureka",
+    libraryDependencies := Dependencies.discoveryMarathonApi,
+    mimaPreviousArtifactsSet)
+
 // gathers all enabled routes and serves them (HTTP or otherwise)
 lazy val management = pekkoModule("management")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
