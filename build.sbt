@@ -34,7 +34,7 @@ inThisBuild(Def.settings(
 val logLevelProjectList: Seq[ProjectReference] =
   Seq[ProjectReference](managementLoglevelsLogback, managementLoglevelsLog4j2)
 
-val projectList: Seq[ProjectReference] = Seq[ProjectReference](
+val userProjects: Seq[ProjectReference] = Seq[ProjectReference](
   // When this aggregate is updated the list of modules in ManifestInfo.checkSameVersion
   // in management should also be updated
   discoveryAwsApi,
@@ -42,10 +42,14 @@ val projectList: Seq[ProjectReference] = Seq[ProjectReference](
   discoveryConsul,
   discoveryKubernetesApi,
   discoveryMarathonApi,
+  leaseKubernetes,
   management,
   managementPki,
   managementClusterHttp,
-  managementClusterBootstrap) ++ logLevelProjectList ++ Seq[ProjectReference](
+  managementClusterBootstrap) ++ logLevelProjectList
+
+val projectList: Seq[ProjectReference] = 
+  userProjects ++ Seq[ProjectReference](
   integrationTestAwsApiEc2TagBased,
   integrationTestLocal,
   integrationTestAwsApiEcs,
@@ -53,9 +57,9 @@ val projectList: Seq[ProjectReference] = Seq[ProjectReference](
   integrationTestKubernetesApiJava,
   integrationTestKubernetesDns,
   integrationTestMarathonApiDocker,
-  leaseKubernetes,
   leaseKubernetesIntTest,
-  docs)
+  docs,
+  billOfMaterials)
 
 // root
 lazy val root = project
@@ -165,6 +169,15 @@ lazy val leaseKubernetes = pekkoModule("lease-kubernetes")
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(JavaFormatterPlugin.toBeScopedSettings))
   .dependsOn(managementPki)
+
+lazy val billOfMaterials = Project("bill-of-materials", file("bill-of-materials"))
+  .enablePlugins(BillOfMaterialsPlugin)
+  .disablePlugins(MimaPlugin)
+  .settings(
+    name := "pekko-management-bom",
+    licenses := List(License.Apache2),
+    bomIncludeProjects := userProjects,
+    description := s"${description.value} (depending on Scala ${CrossVersion.binaryScalaVersion(scalaVersion.value)})")  
 
 lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
   .enablePlugins(JavaAppPackaging, DockerPlugin)
