@@ -48,18 +48,18 @@ val userProjects: Seq[ProjectReference] = Seq[ProjectReference](
   managementClusterHttp,
   managementClusterBootstrap) ++ logLevelProjectList
 
-val projectList: Seq[ProjectReference] = 
+val projectList: Seq[ProjectReference] =
   userProjects ++ Seq[ProjectReference](
-  integrationTestAwsApiEc2TagBased,
-  integrationTestLocal,
-  integrationTestAwsApiEcs,
-  integrationTestKubernetesApi,
-  integrationTestKubernetesApiJava,
-  integrationTestKubernetesDns,
-  integrationTestMarathonApiDocker,
-  leaseKubernetesIntTest,
-  docs,
-  billOfMaterials)
+    integrationTestAwsApiEc2TagBased,
+    integrationTestLocal,
+    integrationTestAwsApiEcs,
+    integrationTestKubernetesApi,
+    integrationTestKubernetesApiJava,
+    integrationTestKubernetesDns,
+    integrationTestMarathonApiDocker,
+    leaseKubernetesIntTest,
+    docs,
+    billOfMaterials)
 
 // root
 lazy val root = project
@@ -177,7 +177,7 @@ lazy val billOfMaterials = Project("bill-of-materials", file("bill-of-materials"
     name := "pekko-management-bom",
     licenses := List(License.Apache2),
     bomIncludeProjects := userProjects,
-    description := s"${description.value} (depending on Scala ${CrossVersion.binaryScalaVersion(scalaVersion.value)})")  
+    description := s"${description.value} (depending on Scala ${CrossVersion.binaryScalaVersion(scalaVersion.value)})")
 
 lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
   .enablePlugins(JavaAppPackaging, DockerPlugin)
