@@ -24,7 +24,7 @@ object Dependencies {
   val scalaTestVersion = "3.2.18"
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"
 
-  val awsSdkVersion = "1.12.730"
+  val awsSdkVersion = "1.12.734"
   val guavaVersion = "33.2.1-jre"
   val jacksonVersion = "2.17.1"
 
@@ -104,7 +104,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    ("software.amazon.awssdk" % "ecs" % "2.25.60").exclude("software.amazon.awssdk", "apache-client"),
+    ("software.amazon.awssdk" % "ecs" % "2.25.64").exclude("software.amazon.awssdk", "apache-client"),
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test) ++ jacksonDatabind // aws-java-sdk depends on insecure version of jackson
 
   val managementHttp = Seq(
