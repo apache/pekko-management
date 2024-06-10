@@ -50,14 +50,6 @@ val userProjects: Seq[ProjectReference] = Seq[ProjectReference](
 
 val projectList: Seq[ProjectReference] =
   userProjects ++ Seq[ProjectReference](
-    integrationTestAwsApiEc2TagBased,
-    integrationTestLocal,
-    integrationTestAwsApiEcs,
-    integrationTestKubernetesApi,
-    integrationTestKubernetesApiJava,
-    integrationTestKubernetesDns,
-    integrationTestMarathonApiDocker,
-    leaseKubernetesIntTest,
     docs,
     billOfMaterials)
 
