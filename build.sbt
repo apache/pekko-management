@@ -27,7 +27,8 @@ ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 inThisBuild(Def.settings(
   Global / onLoad := {
     sLog.value.info(
-      s"Building Pekko Management ${version.value} against Pekko ${Dependencies.pekkoVersion} and Pekko HTTP ${Dependencies.pekkoHttpVersion} on Scala ${(root / scalaVersion).value}")
+      s"Building Pekko Management ${version.value} against Pekko ${Dependencies
+          .pekkoVersion} and Pekko HTTP ${Dependencies.pekkoHttpVersion} on Scala ${(root / scalaVersion).value}")
     (Global / onLoad).value
   }))
 
