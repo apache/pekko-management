@@ -34,7 +34,7 @@ import pekko.stream.Materializer
 import pekko.util.FutureConverters._
 import pekko.util.ccompat.JavaConverters._
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
-import software.amazon.awssdk.retries.internal.DefaultStandardRetryStrategy
+import software.amazon.awssdk.retries.DefaultRetryStrategy
 import software.amazon.awssdk.services.ecs._
 import software.amazon.awssdk.services.ecs.model.{
   DescribeTasksRequest,
@@ -54,8 +54,7 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val cluster = config.getString("cluster")
 
   private lazy val ecsClient = {
-    val retryStrategy = DefaultStandardRetryStrategy.builder().maxAttempts(0).build()
-    val conf = ClientOverrideConfiguration.builder().retryStrategy(retryStrategy).build()
+    val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
     EcsAsyncClient.builder().overrideConfiguration(conf).build()
   }
 
