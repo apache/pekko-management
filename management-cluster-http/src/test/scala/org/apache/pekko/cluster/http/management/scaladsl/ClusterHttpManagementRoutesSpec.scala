@@ -33,7 +33,7 @@ import pekko.management.cluster._
 import pekko.management.scaladsl.ManagementRouteProviderSettings
 import pekko.stream.scaladsl.Sink
 import pekko.util.{ ByteString, Timeout, Version }
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.PatienceConfiguration.{ Timeout => ScalatestTimeout }
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
