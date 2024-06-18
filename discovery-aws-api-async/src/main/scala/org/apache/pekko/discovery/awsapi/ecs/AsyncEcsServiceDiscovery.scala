@@ -29,8 +29,8 @@ import pekko.pattern.after
 import pekko.util.FutureConverters._
 import pekko.util.ccompat.JavaConverters._
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
-import software.amazon.awssdk.core.retry.RetryPolicy
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient
+import software.amazon.awssdk.retries.DefaultRetryStrategy
 import software.amazon.awssdk.services.ecs._
 import software.amazon.awssdk.services.ecs.model.{ Tag => _, _ }
 
@@ -50,7 +50,7 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     .toList
 
   private[this] lazy val ecsClient = {
-    val conf = ClientOverrideConfiguration.builder().retryPolicy(RetryPolicy.none).build()
+    val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
     val httpClient = NettyNioAsyncHttpClient.create()
     EcsAsyncClient.builder().overrideConfiguration(conf).httpClient(httpClient).build()
   }
