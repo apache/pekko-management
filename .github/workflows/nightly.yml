@@ -2,6 +2,7 @@ name: Nightly Tests
 
 on:
   workflow_dispatch:
+  pull_request:
   schedule:
     - cron: '0 2 * * *'  # every day 2am
 
@@ -12,13 +13,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { javaVersion: 8,  scalaVersion: 2.12, pekkoVersion: 'default' }
-          - { javaVersion: 8,  scalaVersion: 2.12, pekkoVersion: '1.0.x' }
-          - { javaVersion: 8,  scalaVersion: 2.13, pekkoVersion: 'default' }
-          - { javaVersion: 8,  scalaVersion: 2.13, pekkoVersion: '1.0.x' }
-          - { javaVersion: 8,  scalaVersion: 3.3,  pekkoVersion: 'default' }
-          - { javaVersion: 8,  scalaVersion: 3.3,  pekkoVersion: '1.0.x' }
+        scalaVersion: ['2.12', '2.13', '3.3']
+        javaVersion: [8, 11, 17, 21]
+        pekkoVersion: ['default', '1.0.x']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
