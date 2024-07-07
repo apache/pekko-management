@@ -26,7 +26,7 @@ object Dependencies {
 
   val awsSdkVersion = "1.12.753"
   val guavaVersion = "33.2.1-jre"
-  val jacksonVersion = "2.17.1"
+  val jacksonVersion = "2.17.2"
 
   val log4j2Version = "2.23.1"
   val logbackVersion = "1.3.14"
