@@ -109,7 +109,7 @@ lazy val discoveryEureka = pekkoModule("discovery-eureka")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-discovery-eureka",
-    libraryDependencies := Dependencies.discoveryMarathonApi,
+    libraryDependencies := Dependencies.discoveryEureka,
     mimaPreviousArtifactsSet)
 
 // gathers all enabled routes and serves them (HTTP or otherwise)

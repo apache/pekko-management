@@ -20,12 +20,70 @@
 package org.apache.pekko.discovery.eureka
 
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
+import org.apache.pekko.discovery.ServiceDiscovery.{Resolved, ResolvedTarget}
+import org.apache.pekko.discovery.eureka.JsonFormat._
+import org.apache.pekko.discovery.{Lookup, ServiceDiscovery}
+import org.apache.pekko.event.{LogSource, Logging}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.headers._
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, MediaRange, MediaTypes, Uri}
+import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
 
+import java.net.InetAddress
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
+import scala.util.Try
 
-class EurekaServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
+class EurekaServiceDiscovery(implicit system: ActorSystem) extends ServiceDiscovery {
 
-  override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[ServiceDiscovery.Resolved] = ???
+  import system.dispatcher
+
+  private val log = Logging(system, getClass)(LogSource.fromClass)
+  private val settings = EurekaSettings(system)
+  private val (schema, host, port, path, group) = (settings.schema, settings.host, settings.port, settings.path, settings.groupName)
+  private val http = Http()
+
+  override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[ServiceDiscovery.Resolved] = {
+
+    val uriPath = Uri.Path.Empty / path / "apps" / lookup.serviceName
+    val uri = Uri.from(scheme = schema, host = host, port = port).withPath(uriPath)
+    val request = HttpRequest(uri = uri, headers = Seq(`Accept-Encoding`(HttpEncodings.gzip), Accept(MediaRange(MediaTypes.`application/json`))))
+
+    log.info("Requesting seed nodes by: {}", request.uri)
+
+    for {
+      response <- http.singleRequest(request)
+      entity <- response.entity.toStrict(resolveTimeout)
+      response <- {
+        log.debug("Eureka response: [{}]", entity.data.utf8String)
+        val unmarshalled = Unmarshal(entity).to[EurekaResponse]
+        unmarshalled.failed.foreach { _ =>
+          log.error(
+            "Failed to unmarshal Eureka response status [{}], entity: [{}], uri: [{}]",
+            response.status.value,
+            entity.data.utf8String,
+            uri)
+        }
+        unmarshalled
+      }
+      instances <- pick(response.application.instance)
+    } yield Resolved(lookup.serviceName, targets(instances))
+
+  }
+
+  private[eureka] def pick(instances: Seq[EurekaResponse.Instance]): Future[Seq[EurekaResponse.Instance]] = {
+    Future.successful(instances.collect({
+      case instance if instance.status == "UP" && instance.appGroupName == group => instance
+    }))
+  }
+
+  private[eureka] def targets(instances: Seq[EurekaResponse.Instance]): Seq[ResolvedTarget] = {
+    instances.map { instance =>
+      ResolvedTarget(
+        host = instance.ipAddr,
+        port = Some(instance.port.port),
+        address = Try(InetAddress.getByName(instance.ipAddr)).toOption)
+    }
+  }
+
 }
