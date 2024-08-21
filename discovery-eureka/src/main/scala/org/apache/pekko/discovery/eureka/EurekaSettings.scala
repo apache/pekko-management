@@ -34,7 +34,7 @@ import pekko.annotation.ApiMayChange
 final class EurekaSettings(system: ExtendedActorSystem) extends Extension {
   private val eurekaConfig = system.settings.config.getConfig("pekko.discovery.eureka")
 
-  val schema: String =  eurekaConfig.getString("eureka-schema")
+  val schema: String = eurekaConfig.getString("eureka-schema")
   val host: String = eurekaConfig.getString("eureka-host")
   val port: Int = eurekaConfig.getInt("eureka-port")
   val path: String = eurekaConfig.getString("eureka-path")

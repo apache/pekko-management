@@ -21,23 +21,23 @@ package org.apache.pekko.discovery.eureka
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
-import org.apache.pekko.discovery.eureka.{EurekaServiceDiscovery, JsonFormat}
+import org.apache.pekko.discovery.eureka.{ EurekaServiceDiscovery, JsonFormat }
 import org.apache.pekko.testkit.TestKitBase
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpecLike
 import spray.json._
 
 import java.net.InetAddress
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration.DurationInt
 import scala.io.Source
 import scala.util.Try
 
 class EurekaServiceDiscoverySpec
-  extends AnyWordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with TestKitBase
@@ -76,7 +76,7 @@ class EurekaServiceDiscoverySpec
         ResolvedTarget(
           host = "192.168.1.1",
           port = Some(8558),
-          address = Try(InetAddress.getByName("192.168.1.1")).toOption),
+          address = Try(InetAddress.getByName("192.168.1.1")).toOption)
       )
 
       val result = for {
@@ -84,7 +84,7 @@ class EurekaServiceDiscoverySpec
         resolved <- Future.successful(EurekaServiceDiscovery.targets(picked))
       } yield resolved
 
-      result.futureValue should contain (
+      result.futureValue should contain(
         ResolvedTarget(
           host = "127.0.0.1",
           port = Some(8558),

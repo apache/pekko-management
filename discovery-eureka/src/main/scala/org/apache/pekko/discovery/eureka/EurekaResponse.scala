@@ -21,10 +21,13 @@ package org.apache.pekko.discovery.eureka
 
 object EurekaResponse {
   case class Application(name: String, instance: Seq[Instance])
-  case class Instance(hostName: String, app: String, vipAddress: String, secureVipAddress: String, ipAddr: String, status: String, port: PortWrapper, securePort: PortWrapper, healthCheckUrl: String, statusPageUrl: String, homePageUrl: String, appGroupName: String, dataCenterInfo: DataCenterInfo, lastDirtyTimestamp: String)
+  case class Instance(hostName: String, app: String, vipAddress: String, secureVipAddress: String, ipAddr: String,
+      status: String, port: PortWrapper, securePort: PortWrapper, healthCheckUrl: String, statusPageUrl: String,
+      homePageUrl: String, appGroupName: String, dataCenterInfo: DataCenterInfo, lastDirtyTimestamp: String)
   case class Status()
   case class PortWrapper(port: Int, enabled: Boolean)
-  case class DataCenterInfo(name: String = "MyOwn", clz : String = "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo")
+  case class DataCenterInfo(name: String = "MyOwn",
+      clz: String = "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo")
 }
 
 import EurekaResponse._

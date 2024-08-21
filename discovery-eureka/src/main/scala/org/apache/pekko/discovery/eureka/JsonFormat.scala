@@ -13,7 +13,7 @@
 
 package org.apache.pekko.discovery.eureka
 
-import org.apache.pekko.discovery.eureka.EurekaResponse.{Application, DataCenterInfo, Instance, PortWrapper}
+import org.apache.pekko.discovery.eureka.EurekaResponse.{ Application, DataCenterInfo, Instance, PortWrapper }
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json._
 
@@ -23,7 +23,7 @@ object JsonFormat extends SprayJsonSupport with DefaultJsonProtocol {
     override def read(json: JsValue): PortWrapper = {
       json.asJsObject.getFields("$", "@enabled") match {
         case Seq(JsNumber(port), JsString(enabled)) => PortWrapper(port.toInt, enabled.toBoolean)
-        case _ => throw DeserializationException("PortWrapper expected")
+        case _                                      => throw DeserializationException("PortWrapper expected")
       }
     }
 
@@ -34,9 +34,9 @@ object JsonFormat extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val dataCenterInfoFormat: JsonFormat[DataCenterInfo] = new JsonFormat[DataCenterInfo] {
 
     override def read(json: JsValue): DataCenterInfo = {
-      json.asJsObject.getFields("name","@class") match {
+      json.asJsObject.getFields("name", "@class") match {
         case Seq(JsString(name), JsString(clz)) => DataCenterInfo(name, clz)
-        case _ => throw DeserializationException("DataCenterInfo expected")
+        case _                                  => throw DeserializationException("DataCenterInfo expected")
       }
     }
 
