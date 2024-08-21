@@ -21,6 +21,7 @@ package org.apache.pekko.discovery.eureka
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.discovery.ServiceDiscovery.{Resolved, ResolvedTarget}
+import org.apache.pekko.discovery.eureka.EurekaServiceDiscovery.{pick, targets}
 import org.apache.pekko.discovery.eureka.JsonFormat._
 import org.apache.pekko.discovery.{Lookup, ServiceDiscovery}
 import org.apache.pekko.event.{LogSource, Logging}
@@ -33,6 +34,23 @@ import java.net.InetAddress
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
+
+object EurekaServiceDiscovery {
+  private[eureka] def pick(instances: Seq[EurekaResponse.Instance], group: String): Future[Seq[EurekaResponse.Instance]] = {
+    Future.successful(instances.collect({
+      case instance if instance.status == "UP" && instance.appGroupName == group => instance
+    }))
+  }
+
+  private[eureka] def targets(instances: Seq[EurekaResponse.Instance]): Seq[ResolvedTarget] = {
+    instances.map { instance =>
+      ResolvedTarget(
+        host = instance.ipAddr,
+        port = Some(instance.port.port),
+        address = Try(InetAddress.getByName(instance.ipAddr)).toOption)
+    }
+  }
+}
 
 class EurekaServiceDiscovery(implicit system: ActorSystem) extends ServiceDiscovery {
 
@@ -66,24 +84,9 @@ class EurekaServiceDiscovery(implicit system: ActorSystem) extends ServiceDiscov
         }
         unmarshalled
       }
-      instances <- pick(response.application.instance)
+      instances <- pick(response.application.instance, group)
     } yield Resolved(lookup.serviceName, targets(instances))
 
-  }
-
-  private[eureka] def pick(instances: Seq[EurekaResponse.Instance]): Future[Seq[EurekaResponse.Instance]] = {
-    Future.successful(instances.collect({
-      case instance if instance.status == "UP" && instance.appGroupName == group => instance
-    }))
-  }
-
-  private[eureka] def targets(instances: Seq[EurekaResponse.Instance]): Seq[ResolvedTarget] = {
-    instances.map { instance =>
-      ResolvedTarget(
-        host = instance.ipAddr,
-        port = Some(instance.port.port),
-        address = Try(InetAddress.getByName(instance.ipAddr)).toOption)
-    }
   }
 
 }

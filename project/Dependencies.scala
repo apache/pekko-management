@@ -83,6 +83,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion % Test,
+    "org.kiwiproject" % "embedded-eureka" % "1.0.8" % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 
   val discoveryKubernetesApi = Seq(
