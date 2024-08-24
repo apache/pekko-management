@@ -41,6 +41,12 @@ object ManagementLogMarker {
     LogMarker("pekkoManagementBound", Map(Properties.HttpAddress -> boundAddress))
 
   /**
+   * Marker "pekkoStartupCheckFailed" of log event when a startup check fails.
+   */
+  val startupCheckFailed: LogMarker =
+    LogMarker("pekkoStartupCheckFailed")
+
+  /**
    * Marker "pekkoReadinessCheckFailed" of log event when a readiness check fails.
    */
   val readinessCheckFailed: LogMarker =

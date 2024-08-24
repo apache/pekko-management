@@ -29,10 +29,13 @@ class HealthCheckRoutesSpec extends AnyWordSpec with Matchers with ScalatestRout
   private val eas = system.asInstanceOf[ExtendedActorSystem]
 
   private def testRoute(
+      startupResultValue: Future[Either[String, Unit]] = Future.successful(Right(())),
       readyResultValue: Future[Either[String, Unit]] = Future.successful(Right(())),
       aliveResultValue: Future[Either[String, Unit]] = Future.successful(Right(()))): Route = {
     new HealthCheckRoutes(eas) {
       override protected val healthChecks: HealthChecks = new HealthChecks {
+        override def startupResult(): Future[Either[String, Unit]] = startupResultValue
+        override def startup(): Future[Boolean] = startupResultValue.map(_.isRight)
         override def readyResult(): Future[Either[String, Unit]] = readyResultValue
         override def ready(): Future[Boolean] = readyResultValue.map(_.isRight)
         override def aliveResult(): Future[Either[String, Unit]] = aliveResultValue
@@ -41,6 +44,7 @@ class HealthCheckRoutesSpec extends AnyWordSpec with Matchers with ScalatestRout
     }.routes(ManagementRouteProviderSettings(Uri("http://whocares"), readOnly = false))
   }
 
+  tests("/startup", result => testRoute(startupResultValue = result))
   tests("/ready", result => testRoute(readyResultValue = result))
   tests("/alive", result => testRoute(aliveResultValue = result))
 

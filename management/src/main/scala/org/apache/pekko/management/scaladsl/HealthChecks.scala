@@ -40,6 +40,16 @@ object HealthChecks {
 abstract class HealthChecks {
 
   /**
+   * Returns Future(true) if the system has started
+   */
+  def startup(): Future[Boolean]
+
+  /**
+   * Returns Future(result) containing the system's startup result
+   */
+  def startupResult(): Future[Either[String, Unit]]
+
+  /**
    * Returns Future(true) if the system is ready to receive user traffic
    */
   def ready(): Future[Boolean]
@@ -61,6 +71,23 @@ abstract class HealthChecks {
    */
   def aliveResult(): Future[Either[String, Unit]]
 }
+
+object StartupCheckSetup {
+
+  /**
+   * Programmatic definition of startup checks
+   */
+  def apply(createHealthChecks: ActorSystem => immutable.Seq[HealthChecks.HealthCheck]): StartupCheckSetup = {
+    new StartupCheckSetup(createHealthChecks)
+  }
+
+}
+
+/**
+ * Setup for startup checks, constructor is *Internal API*, use factories in [[StartupCheckSetup]]
+ */
+final class StartupCheckSetup private (
+    val createHealthChecks: ActorSystem => immutable.Seq[HealthChecks.HealthCheck]) extends Setup
 
 object ReadinessCheckSetup {
 

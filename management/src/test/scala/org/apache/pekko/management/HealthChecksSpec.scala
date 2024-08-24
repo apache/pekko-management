@@ -19,7 +19,7 @@ import pekko.actor.setup.ActorSystemSetup
 import pekko.actor.{ ActorSystem, BootstrapSetup, ExtendedActorSystem }
 import pekko.management.HealthChecksSpec.{ ctxException, failedCause }
 import pekko.management.internal.{ CheckFailedException, CheckTimeoutException }
-import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup }
+import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup, StartupCheckSetup }
 import pekko.testkit.TestKit
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
@@ -114,14 +114,17 @@ class HealthChecksSpec
   val DoesNotExist = NamedHealthCheck("DoesNotExist", "org.apache.pekko.management.DoesNotExist")
   val CtrExceptionCheck = NamedHealthCheck("CtrExceptionCheck", "org.apache.pekko.management.CtrException")
 
-  def settings(readiness: im.Seq[NamedHealthCheck], liveness: im.Seq[NamedHealthCheck]) =
-    new HealthCheckSettings(readiness, liveness, "ready", "alive", 500.millis)
+  def settings(startup: im.Seq[NamedHealthCheck], readiness: im.Seq[NamedHealthCheck],
+      liveness: im.Seq[NamedHealthCheck]) =
+    new HealthCheckSettings(startup, readiness, liveness, "startup", "ready", "alive", 500.millis)
 
   "HealthCheck" should {
     "succeed by default" in {
-      val checks = HealthChecks(eas, settings(Nil, Nil))
+      val checks = HealthChecks(eas, settings(Nil, Nil, Nil))
+      checks.startupResult().futureValue shouldEqual Right(())
       checks.aliveResult().futureValue shouldEqual Right(())
       checks.readyResult().futureValue shouldEqual Right(())
+      checks.startup().futureValue shouldEqual true
       checks.alive().futureValue shouldEqual true
       checks.ready().futureValue shouldEqual true
     }
@@ -130,9 +133,12 @@ class HealthChecksSpec
         eas,
         settings(
           im.Seq(OkCheck),
+          im.Seq(OkCheck),
           im.Seq(OkCheck)))
+      checks.startupResult().futureValue shouldEqual Right(())
       checks.aliveResult().futureValue shouldEqual Right(())
       checks.readyResult().futureValue shouldEqual Right(())
+      checks.startup().futureValue shouldEqual true
       checks.alive().futureValue shouldEqual true
       checks.ready().futureValue shouldEqual true
     }
@@ -141,9 +147,12 @@ class HealthChecksSpec
         eas,
         settings(
           im.Seq(NoArgsCtrCheck),
+          im.Seq(NoArgsCtrCheck),
           im.Seq(NoArgsCtrCheck)))
+      checks.startupResult().futureValue shouldEqual Right(())
       checks.aliveResult().futureValue shouldEqual Right(())
       checks.readyResult().futureValue shouldEqual Right(())
+      checks.startup().futureValue shouldEqual true
       checks.alive().futureValue shouldEqual true
       checks.ready().futureValue shouldEqual true
     }
@@ -152,9 +161,12 @@ class HealthChecksSpec
         eas,
         settings(
           im.Seq(FalseCheck),
+          im.Seq(FalseCheck),
           im.Seq(FalseCheck)))
+      checks.startupResult().futureValue.isRight shouldEqual false
       checks.readyResult().futureValue.isRight shouldEqual false
       checks.aliveResult().futureValue.isRight shouldEqual false
+      checks.startup().futureValue shouldEqual false
       checks.ready().futureValue shouldEqual false
       checks.alive().futureValue shouldEqual false
     }
@@ -163,10 +175,15 @@ class HealthChecksSpec
         eas,
         settings(
           im.Seq(ThrowsCheck),
+          im.Seq(ThrowsCheck),
           im.Seq(ThrowsCheck)))
+      checks.startupResult().failed.futureValue shouldEqual
+      CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
       checks.readyResult().failed.futureValue shouldEqual
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
       checks.aliveResult().failed.futureValue shouldEqual
+      CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
+      checks.startup().failed.futureValue shouldEqual
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
       checks.ready().failed.futureValue shouldEqual
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
@@ -178,10 +195,14 @@ class HealthChecksSpec
         OkCheck,
         ThrowsCheck,
         FalseCheck)
-      val hc = HealthChecks(eas, settings(checks, checks))
+      val hc = HealthChecks(eas, settings(checks, checks, checks))
+      hc.startupResult().failed.futureValue shouldEqual
+      CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
       hc.readyResult().failed.futureValue shouldEqual
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
       hc.aliveResult().failed.futureValue shouldEqual
+      CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
+      hc.startup().failed.futureValue shouldEqual
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
       hc.ready().failed.futureValue shouldEqual
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
@@ -191,9 +212,11 @@ class HealthChecksSpec
     "return failure if check throws" in {
       val checks = im.Seq(
         NaughtyCheck)
-      val hc = HealthChecks(eas, settings(checks, checks))
+      val hc = HealthChecks(eas, settings(checks, checks, checks))
+      hc.startupResult().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
       hc.readyResult().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
       hc.aliveResult().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
+      hc.startup().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
       hc.ready().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
       hc.alive().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
     }
@@ -201,10 +224,14 @@ class HealthChecksSpec
       val checks = im.Seq(
         SlowCheck,
         OkCheck)
-      val hc = HealthChecks(eas, settings(checks, checks))
+      val hc = HealthChecks(eas, settings(checks, checks, checks))
+      Await.result(hc.startupResult().failed, 1.second) shouldEqual CheckTimeoutException(
+        "Check [org.apache.pekko.management.Slow] timed out after 500 milliseconds")
       Await.result(hc.readyResult().failed, 1.second) shouldEqual CheckTimeoutException(
         "Check [org.apache.pekko.management.Slow] timed out after 500 milliseconds")
       Await.result(hc.aliveResult().failed, 1.second) shouldEqual CheckTimeoutException(
+        "Check [org.apache.pekko.management.Slow] timed out after 500 milliseconds")
+      Await.result(hc.startup().failed, 1.second) shouldEqual CheckTimeoutException(
         "Check [org.apache.pekko.management.Slow] timed out after 500 milliseconds")
       Await.result(hc.ready().failed, 1.second) shouldEqual CheckTimeoutException(
         "Check [org.apache.pekko.management.Slow] timed out after 500 milliseconds")
@@ -214,43 +241,46 @@ class HealthChecksSpec
     "provide useful error if user's ctr is invalid" in {
       intercept[InvalidHealthCheckException] {
         val checks = im.Seq(InvalidCtrCheck)
-        HealthChecks(eas, settings(checks, checks))
+        HealthChecks(eas, settings(checks, checks, checks))
       }.getMessage shouldEqual "Health checks: [NamedHealthCheck(InvalidCtr,org.apache.pekko.management.InvalidCtr)] must have a no args constructor or a single argument constructor that takes an ActorSystem"
     }
     "provide useful error if invalid type" in {
       intercept[InvalidHealthCheckException] {
         val checks = im.Seq(WrongTypeCheck)
-        HealthChecks(eas, settings(checks, checks))
+        HealthChecks(eas, settings(checks, checks, checks))
       }.getMessage shouldEqual "Health checks: [NamedHealthCheck(WrongType,org.apache.pekko.management.WrongType)] must have type: () => Future[Boolean]"
     }
     "provide useful error if class not found" in {
       intercept[InvalidHealthCheckException] {
         val checks =
           im.Seq(DoesNotExist, OkCheck)
-        HealthChecks(eas, settings(checks, checks))
+        HealthChecks(eas, settings(checks, checks, checks))
       }.getMessage shouldEqual "Health check: [org.apache.pekko.management.DoesNotExist] not found"
     }
     "provide useful error if class ctr throws" in {
       intercept[InvalidHealthCheckException] {
         val checks =
           im.Seq(OkCheck, CtrExceptionCheck)
-        HealthChecks(eas, settings(checks, checks))
+        HealthChecks(eas, settings(checks, checks, checks))
       }.getCause shouldEqual ctxException
     }
     "be possible to define via ActorSystem Setup" in {
+      val startupSetup = StartupCheckSetup(system => List(new Ok(system), new False(system)))
       val readinessSetup = ReadinessCheckSetup(system => List(new Ok(system), new False(system)))
       val livenessSetup = LivenessCheckSetup(system => List(new False(system)))
       // bootstrapSetup is needed for config (otherwise default config)
       val bootstrapSetup = BootstrapSetup(ConfigFactory.parseString("some=thing"))
-      val actorSystemSetup = ActorSystemSetup(bootstrapSetup, readinessSetup, livenessSetup)
+      val actorSystemSetup = ActorSystemSetup(bootstrapSetup, startupSetup, readinessSetup, livenessSetup)
       val sys2 = ActorSystem("HealthCheckSpec2", actorSystemSetup).asInstanceOf[ExtendedActorSystem]
       try {
         val checks = HealthChecks(
           sys2,
-          settings(Nil, Nil) // no checks from config
+          settings(Nil, Nil, Nil) // no checks from config
         )
+        checks.startupResult().futureValue shouldEqual Left("Check [org.apache.pekko.management.False] not ok")
         checks.aliveResult().futureValue shouldEqual Left("Check [org.apache.pekko.management.False] not ok")
         checks.readyResult().futureValue shouldEqual Left("Check [org.apache.pekko.management.False] not ok")
+        checks.startup().futureValue shouldEqual false
         checks.alive().futureValue shouldEqual false
         checks.ready().futureValue shouldEqual false
       } finally {

@@ -30,6 +30,7 @@ import org.apache.pekko.actor.setup.ActorSystemSetup;
 import org.apache.pekko.management.javadsl.HealthChecks;
 import org.apache.pekko.management.javadsl.LivenessCheckSetup;
 import org.apache.pekko.management.javadsl.ReadinessCheckSetup;
+import org.apache.pekko.management.javadsl.StartupCheckSetup;
 import org.apache.pekko.testkit.javadsl.TestKit;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -78,9 +79,17 @@ public class HealthCheckTest extends JUnitSuite {
         new HealthChecks(
             system,
             HealthCheckSettings.create(
-                healthChecks, healthChecks, "ready", "alive", java.time.Duration.ofSeconds(1)));
+                healthChecks,
+                healthChecks,
+                healthChecks,
+                "startup",
+                "ready",
+                "alive",
+                java.time.Duration.ofSeconds(1)));
+    assertEquals(true, checks.startupResult().toCompletableFuture().get().isSuccess());
     assertEquals(true, checks.aliveResult().toCompletableFuture().get().isSuccess());
     assertEquals(true, checks.readyResult().toCompletableFuture().get().isSuccess());
+    assertEquals(true, checks.startup().toCompletableFuture().get());
     assertEquals(true, checks.alive().toCompletableFuture().get());
     assertEquals(true, checks.ready().toCompletableFuture().get());
   }
@@ -94,9 +103,35 @@ public class HealthCheckTest extends JUnitSuite {
         new HealthChecks(
             system,
             HealthCheckSettings.create(
-                healthChecks, healthChecks, "ready", "alive", java.time.Duration.ofSeconds(1)));
+                healthChecks,
+                healthChecks,
+                healthChecks,
+                "startup",
+                "ready",
+                "alive",
+                java.time.Duration.ofSeconds(1)));
+    assertEquals(true, checks.startupResult().toCompletableFuture().get().isSuccess());
     assertEquals(true, checks.aliveResult().toCompletableFuture().get().isSuccess());
     assertEquals(true, checks.readyResult().toCompletableFuture().get().isSuccess());
+    assertEquals(true, checks.startup().toCompletableFuture().get());
+    assertEquals(true, checks.alive().toCompletableFuture().get());
+    assertEquals(true, checks.ready().toCompletableFuture().get());
+  }
+
+  @Test
+  public void creatableThroughLegacyConstructor() throws Exception {
+    List<NamedHealthCheck> healthChecks =
+        Collections.singletonList(
+            new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
+    HealthChecks checks =
+        new HealthChecks(
+            system,
+            HealthCheckSettings.create(
+                healthChecks, healthChecks, "ready", "alive", java.time.Duration.ofSeconds(1)));
+    assertEquals(true, checks.startupResult().toCompletableFuture().get().isSuccess());
+    assertEquals(true, checks.aliveResult().toCompletableFuture().get().isSuccess());
+    assertEquals(true, checks.readyResult().toCompletableFuture().get().isSuccess());
+    assertEquals(true, checks.startup().toCompletableFuture().get());
     assertEquals(true, checks.alive().toCompletableFuture().get());
     assertEquals(true, checks.ready().toCompletableFuture().get());
   }
@@ -110,7 +145,13 @@ public class HealthCheckTest extends JUnitSuite {
         new HealthChecks(
             system,
             HealthCheckSettings.create(
-                healthChecks, healthChecks, "ready", "alive", java.time.Duration.ofSeconds(1)));
+                healthChecks,
+                healthChecks,
+                healthChecks,
+                "startup",
+                "ready",
+                "alive",
+                java.time.Duration.ofSeconds(1)));
     try {
       checks.alive().toCompletableFuture().get();
       Assert.fail("Expected exception");
@@ -121,6 +162,8 @@ public class HealthCheckTest extends JUnitSuite {
 
   @Test
   public void defineViaActorSystemSetup() throws Exception {
+    StartupCheckSetup startupCheckSetup =
+        StartupCheckSetup.create(system -> Collections.singletonList(new NotOk(system)));
     ReadinessCheckSetup readinessSetup =
         ReadinessCheckSetup.create(system -> Arrays.asList(new Ok(), new NotOk(system)));
     LivenessCheckSetup livenessSetup =
@@ -128,7 +171,7 @@ public class HealthCheckTest extends JUnitSuite {
     // bootstrapSetup is needed for config (otherwise default config)
     BootstrapSetup bootstrapSetup = BootstrapSetup.create(ConfigFactory.parseString("some=thing"));
     ActorSystemSetup actorSystemSetup =
-        ActorSystemSetup.create(bootstrapSetup, readinessSetup, livenessSetup);
+        ActorSystemSetup.create(bootstrapSetup, startupCheckSetup, readinessSetup, livenessSetup);
     ExtendedActorSystem sys2 =
         (ExtendedActorSystem) ActorSystem.create("HealthCheckTest2", actorSystemSetup);
     try {
@@ -138,11 +181,15 @@ public class HealthCheckTest extends JUnitSuite {
               HealthCheckSettings.create(
                   Collections.emptyList(),
                   Collections.emptyList(),
+                  Collections.emptyList(),
+                  "startup",
                   "ready",
                   "alive",
                   java.time.Duration.ofSeconds(1)));
+      assertEquals(false, checks.startupResult().toCompletableFuture().get().isSuccess());
       assertEquals(false, checks.aliveResult().toCompletableFuture().get().isSuccess());
       assertEquals(false, checks.readyResult().toCompletableFuture().get().isSuccess());
+      assertEquals(false, checks.startup().toCompletableFuture().get());
       assertEquals(false, checks.alive().toCompletableFuture().get());
       assertEquals(false, checks.ready().toCompletableFuture().get());
     } finally {

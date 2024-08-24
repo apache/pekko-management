@@ -38,6 +38,18 @@ final class HealthChecks(system: ExtendedActorSystem, settings: HealthCheckSetti
   private val delegate = new HealthChecksImpl(system, settings)
 
   /**
+   * Returns CompletionStage(result), containing the system's startup result
+   */
+  def startupResult(): CompletionStage[CheckResult] =
+    delegate.startupResult().map(new CheckResult(_))(system.dispatcher).asJava
+
+  /**
+   * Returns CompletionStage(true) if the system has started
+   */
+  def startup(): CompletionStage[java.lang.Boolean] =
+    startupResult().thenApply(((r: CheckResult) => r.isSuccess).asJava)
+
+  /**
    * Returns CompletionStage(result), containing the system's readiness result
    */
   def readyResult(): CompletionStage[CheckResult] =
@@ -63,6 +75,23 @@ final class HealthChecks(system: ExtendedActorSystem, settings: HealthCheckSetti
   def alive(): CompletionStage[java.lang.Boolean] =
     aliveResult().thenApply(((r: CheckResult) => r.isSuccess).asJava)
 }
+
+object StartupCheckSetup {
+
+  /**
+   * Programmatic definition of startup checks
+   */
+  def create(createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]])
+      : StartupCheckSetup = {
+    new StartupCheckSetup(createHealthChecks)
+  }
+}
+
+/**
+ * Setup for startup checks, constructor is *Internal API*, use factories in [[StartupCheckSetup]]
+ */
+final class StartupCheckSetup private (
+    val createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]) extends Setup
 
 object ReadinessCheckSetup {
 
