@@ -17,7 +17,7 @@ import com.google.common.net.HostAndPort
 import com.orbitz.consul.Consul
 import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration
 import com.orbitz.consul.model.health.ImmutableService
-import com.pszymczyk.consul.{ ConsulProcess, ConsulStarterBuilder }
+import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
@@ -28,6 +28,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpecLike
+import org.testcontainers.consul.ConsulContainer
 
 import java.net.InetAddress
 import scala.concurrent.duration._
@@ -39,12 +40,16 @@ class ConsulDiscoverySpec
     with TestKitBase
     with ScalaFutures {
 
-  private val consul: ConsulProcess = ConsulStarterBuilder.consulStarter().withHttpPort(8500).build().start()
+  private val consul = new ConsulContainer("hashicorp/consul:1.15")
+  consul.start()
 
   "Consul Discovery" should {
     "work for defaults" in {
+      val consulPort = consul.getFirstMappedPort()
       val consulAgent =
-        Consul.builder().withHostAndPort(HostAndPort.fromParts(consul.getAddress, consul.getHttpPort)).build()
+        Consul.builder()
+          .withHostAndPort(HostAndPort.fromParts(consul.getHost(), consulPort))
+          .build()
       consulAgent
         .catalogClient()
         .register(
@@ -63,13 +68,24 @@ class ConsulDiscoverySpec
             .address("localhost")
             .build())
 
-      val lookupService = new ConsulServiceDiscovery(system)
-      val resolved = lookupService.lookup("test", 10.seconds).futureValue
-      resolved.addresses should contain(
-        ResolvedTarget(
-          host = "127.0.0.1",
-          port = Some(1234),
-          address = Some(InetAddress.getByName("127.0.0.1"))))
+      val cfg = ConfigFactory.parseString(s"""
+        pekko.discovery.pekko-consul {
+          consul-host = "${consul.getHost()}"
+          consul-port = $consulPort
+        }
+        """).withFallback(system.settings.config)
+      val testSystem = ActorSystem("defaultTest", cfg)
+      try {
+        val lookupService = new ConsulServiceDiscovery(testSystem)
+        val resolved = lookupService.lookup("test", 10.seconds).futureValue
+        resolved.addresses should contain(
+          ResolvedTarget(
+            host = "127.0.0.1",
+            port = Some(1234),
+            address = Some(InetAddress.getByName("127.0.0.1"))))
+      } finally {
+        testSystem.terminate()
+      }
     }
   }
 
