@@ -81,8 +81,8 @@ class ConsulDiscoverySpec
         resolved.addresses should contain(
           ResolvedTarget(
             host = "127.0.0.1",
-          port = Some(1234),
-          address = Some(InetAddress.getByName("127.0.0.1"))))
+            port = Some(1234),
+            address = Some(InetAddress.getByName("127.0.0.1"))))
       } finally {
         testSystem.terminate()
       }
