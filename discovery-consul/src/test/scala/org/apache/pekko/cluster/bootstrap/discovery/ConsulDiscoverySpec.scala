@@ -46,7 +46,7 @@ class ConsulDiscoverySpec
     "work for defaults" in {
       val consulAgent =
         Consul.builder()
-          .withHostAndPort(HostAndPort.fromParts(consul.getHost, consul.getMappedPort(8500)))
+          .withHostAndPort(HostAndPort.fromParts(consul.getHost(), consul.getFirstMappedPort()))
           .build()
       consulAgent
         .catalogClient()
