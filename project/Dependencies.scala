@@ -69,7 +69,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
     "com.orbitz.consul" % "consul-client" % "1.5.3",
-    "com.pszymczyk.consul" % "embedded-consul" % "2.2.1" % Test,
+    "org.testcontainers" % "consul" % "1.20.1" % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion % Test,
