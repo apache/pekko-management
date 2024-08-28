@@ -17,6 +17,7 @@ import com.google.common.net.HostAndPort
 import com.orbitz.consul.Consul
 import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration
 import com.orbitz.consul.model.health.ImmutableService
+import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
@@ -44,9 +45,10 @@ class ConsulDiscoverySpec
 
   "Consul Discovery" should {
     "work for defaults" in {
+      val consulPort = consul.getFirstMappedPort()
       val consulAgent =
         Consul.builder()
-          .withHostAndPort(HostAndPort.fromParts(consul.getHost(), consul.getFirstMappedPort()))
+          .withHostAndPort(HostAndPort.fromParts(consul.getHost(), consulPort))
           .build()
       consulAgent
         .catalogClient()
@@ -66,13 +68,24 @@ class ConsulDiscoverySpec
             .address("localhost")
             .build())
 
-      val lookupService = new ConsulServiceDiscovery(system)
-      val resolved = lookupService.lookup("test", 10.seconds).futureValue
-      resolved.addresses should contain(
-        ResolvedTarget(
-          host = "127.0.0.1",
+      val cfg = ConfigFactory.parseString(s"""
+        pekko.discovery.pekko-consul {
+          consul-host = "${consul.getHost()}"
+          consul-port = $consulPort
+        }
+        """).withFallback(system.settings.config)
+      val testSystem = ActorSystem("defaultTest", cfg)
+      try {
+        val lookupService = new ConsulServiceDiscovery(testSystem)
+        val resolved = lookupService.lookup("test", 10.seconds).futureValue
+        resolved.addresses should contain(
+          ResolvedTarget(
+            host = "127.0.0.1",
           port = Some(1234),
           address = Some(InetAddress.getByName("127.0.0.1"))))
+      } finally {
+        testSystem.terminate()
+      }
     }
   }
 
