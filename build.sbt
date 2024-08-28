@@ -41,6 +41,7 @@ val userProjects: Seq[ProjectReference] = Seq[ProjectReference](
   discoveryAwsApi,
   discoveryAwsApiAsync,
   discoveryConsul,
+  discoveryEureka,
   discoveryKubernetesApi,
   discoveryMarathonApi,
   leaseKubernetes,
