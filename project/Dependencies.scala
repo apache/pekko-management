@@ -68,7 +68,7 @@ object Dependencies {
   val discoveryConsul = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
-    "com.orbitz.consul" % "consul-client" % "1.5.3",
+    "org.kiwiproject" % "consul-client" % "0.6.0",
     "com.pszymczyk.consul" % "embedded-consul" % "2.2.1" % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
