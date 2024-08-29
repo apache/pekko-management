@@ -22,8 +22,8 @@ import org.apache.pekko.management.HealthCheckSettings
 import scala.concurrent.duration.DurationInt
 
 /**
-  * Compile checks deliberately placed in a non-standard pekko package.
-  */ 
+ * Compile checks deliberately placed in a non-standard pekko package.
+ */
 object HealthCheckSettingsCheck {
   val settings = new HealthCheckSettings(
     Seq.empty,
