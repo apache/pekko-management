@@ -55,7 +55,7 @@ class EurekaServiceDiscoverySpec
        |}
        |""".stripMargin).withFallback(ConfigFactory.load())
 
-  override implicit lazy val system: ActorSystem = ActorSystem("test")
+  override implicit lazy val system: ActorSystem = ActorSystem("test", testConfig)
   implicit val ec: ExecutionContext = system.dispatcher
 
   implicit override val patienceConfig: PatienceConfig =
