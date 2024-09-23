@@ -44,7 +44,7 @@ object JsonFormat extends SprayJsonSupport with DefaultJsonProtocol {
       "name" -> JsString(obj.name),
       "@class" -> JsString(obj.clz))
   }
-  implicit val instanceFormat: JsonFormat[Instance] = jsonFormat14(Instance.apply)
+  implicit val instanceFormat: JsonFormat[Instance] = jsonFormat13(Instance.apply)
   implicit val applicationFormat: JsonFormat[Application] = jsonFormat2(Application.apply)
   implicit val rootFormat: RootJsonFormat[EurekaResponse] = jsonFormat2(EurekaResponse.apply)
 }
