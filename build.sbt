@@ -108,6 +108,7 @@ lazy val discoveryConsul = pekkoModule("discovery-consul")
 
 lazy val discoveryEureka = pekkoModule("discovery-eureka")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .disablePlugins(MimaPlugin)
   .settings(
     name := "pekko-discovery-eureka",
     libraryDependencies := Dependencies.discoveryEureka,
