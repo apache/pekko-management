@@ -19,10 +19,11 @@
 
 package org.apache.pekko.discovery.eureka
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.discovery.ServiceDiscovery.ResolvedTarget
-import org.apache.pekko.discovery.eureka.{ EurekaServiceDiscovery, JsonFormat }
-import org.apache.pekko.testkit.TestKitBase
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.discovery.ServiceDiscovery.ResolvedTarget
+import pekko.discovery.eureka.{ EurekaServiceDiscovery, JsonFormat }
+import pekko.testkit.TestKitBase
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers

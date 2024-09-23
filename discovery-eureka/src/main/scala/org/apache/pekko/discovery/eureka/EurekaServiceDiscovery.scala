@@ -19,31 +19,33 @@
 
 package org.apache.pekko.discovery.eureka
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import org.apache.pekko.discovery.eureka.EurekaServiceDiscovery.{ pick, targets }
-import org.apache.pekko.discovery.eureka.JsonFormat._
-import org.apache.pekko.discovery.{ Lookup, ServiceDiscovery }
-import org.apache.pekko.event.{ LogSource, Logging }
-import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.model.headers._
-import org.apache.pekko.http.scaladsl.model.{ HttpRequest, MediaRange, MediaTypes, Uri }
-import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.eureka.EurekaServiceDiscovery.{ pick, targets }
+import pekko.discovery.eureka.JsonFormat._
+import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.event.{ LogSource, Logging }
+import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.model.{ HttpRequest, MediaRange, MediaTypes, Uri }
+import pekko.http.scaladsl.model.headers._
+import pekko.http.scaladsl.unmarshalling.Unmarshal
 
 import java.net.InetAddress
+import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 
 object EurekaServiceDiscovery {
   private[eureka] def pick(
-      instances: Seq[EurekaResponse.Instance], group: String): Future[Seq[EurekaResponse.Instance]] = {
+      instances: immutable.Seq[EurekaResponse.Instance], group: String): Future[immutable.Seq[EurekaResponse.Instance]] = {
     Future.successful(instances.collect {
       case instance if instance.status == "UP" && instance.appGroupName == group => instance
     })
   }
 
-  private[eureka] def targets(instances: Seq[EurekaResponse.Instance]): Seq[ResolvedTarget] = {
+  private[eureka] def targets(instances: immutable.Seq[EurekaResponse.Instance]): immutable.Seq[ResolvedTarget] = {
     instances.map { instance =>
       ResolvedTarget(
         host = instance.ipAddr,
@@ -68,7 +70,7 @@ class EurekaServiceDiscovery(implicit system: ActorSystem) extends ServiceDiscov
     val uriPath = Uri.Path.Empty / path / "apps" / lookup.serviceName
     val uri = Uri.from(scheme = schema, host = host, port = port).withPath(uriPath)
     val request = HttpRequest(uri = uri,
-      headers = Seq(`Accept-Encoding`(HttpEncodings.gzip), Accept(MediaRange(MediaTypes.`application/json`))))
+      headers = immutable.Seq(`Accept-Encoding`(HttpEncodings.gzip), Accept(MediaRange(MediaTypes.`application/json`))))
 
     log.info("Requesting seed nodes by: {}", request.uri)
 

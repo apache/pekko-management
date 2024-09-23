@@ -19,8 +19,10 @@
 
 package org.apache.pekko.discovery.eureka
 
+import scala.collection.immutable
+
 object EurekaResponse {
-  case class Application(name: String, instance: Seq[Instance])
+  case class Application(name: String, instance: immutable.Seq[Instance])
   case class Instance(hostName: String, app: String, vipAddress: String, secureVipAddress: String, ipAddr: String,
       status: String, port: PortWrapper, securePort: PortWrapper, healthCheckUrl: String, statusPageUrl: String,
       homePageUrl: String, appGroupName: String, dataCenterInfo: DataCenterInfo, lastDirtyTimestamp: String)
