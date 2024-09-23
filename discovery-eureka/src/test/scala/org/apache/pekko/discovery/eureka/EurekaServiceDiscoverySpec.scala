@@ -24,6 +24,8 @@ import pekko.actor.ActorSystem
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
 import pekko.discovery.eureka.{ EurekaServiceDiscovery, JsonFormat }
 import pekko.testkit.TestKitBase
+import com.typesafe.config.ConfigFactory
+import org.kiwiproject.eureka.EmbeddedEurekaServer
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
@@ -44,7 +46,25 @@ class EurekaServiceDiscoverySpec
     with TestKitBase
     with ScalaFutures {
 
+  private val embeddedEurekaServer = new EmbeddedEurekaServer()
+  embeddedEurekaServer.start()
+  private val testConfig = ConfigFactory.parseString(
+    s"""
+       |pekko.discovery.eureka {
+       |  eureka-port = ${embeddedEurekaServer.getEurekaPort()}
+       |}
+       |""".stripMargin).withFallback(ConfigFactory.load())
+
+  override implicit lazy val system: ActorSystem = ActorSystem("test")
   implicit val ec: ExecutionContext = system.dispatcher
+
+  implicit override val patienceConfig: PatienceConfig =
+    PatienceConfig(timeout = scaled(Span(30, Seconds)), interval = scaled(Span(50, Millis)))
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+    embeddedEurekaServer.stop()
+  }
 
   "Eureka Discovery" should {
     "work for defaults" in {
@@ -53,7 +73,7 @@ class EurekaServiceDiscoverySpec
       resolved.addresses should contain(
         ResolvedTarget(
           host = "127.0.0.1",
-          port = Some(8558),
+          port = Some(embeddedEurekaServer.getEurekaPort()),
           address = Try(InetAddress.getByName("127.0.0.1")).toOption))
     }
 
@@ -93,15 +113,6 @@ class EurekaServiceDiscoverySpec
     }
 
   }
-
-  override def afterAll(): Unit = {
-    super.afterAll()
-  }
-
-  override implicit lazy val system: ActorSystem = ActorSystem("test")
-
-  implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = scaled(Span(30, Seconds)), interval = scaled(Span(50, Millis)))
 
   private def resourceAsString(name: String): String =
     Source.fromInputStream(getClass.getClassLoader.getResourceAsStream(name)).mkString

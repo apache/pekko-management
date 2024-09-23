@@ -84,7 +84,8 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion % Test,
     "org.kiwiproject" % "embedded-eureka" % "1.0.8" % Test,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
+    "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
+    "ch.qos.logback" % "logback-classic" % logbackVersion % Test)
 
   val discoveryKubernetesApi = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
