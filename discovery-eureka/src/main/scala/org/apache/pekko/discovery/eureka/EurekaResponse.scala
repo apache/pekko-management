@@ -23,9 +23,9 @@ import scala.collection.immutable
 
 object EurekaResponse {
   case class Application(name: String, instance: immutable.Seq[Instance])
-  case class Instance(hostName: String, app: String, vipAddress: String, ipAddr: String,
-      status: String, port: PortWrapper, securePort: PortWrapper, healthCheckUrl: String, statusPageUrl: String,
-      homePageUrl: String, appGroupName: String, dataCenterInfo: DataCenterInfo, lastDirtyTimestamp: String)
+  case class Instance(hostName: String, app: String, vipAddress: String, ipAddr: Option[String],
+      status: String, port: PortWrapper, securePort: PortWrapper, dataCenterInfo: Option[DataCenterInfo],
+      lastDirtyTimestamp: String)
   case class Status()
   case class PortWrapper(port: Int, enabled: Boolean)
   case class DataCenterInfo(name: String = "MyOwn",

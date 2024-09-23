@@ -39,19 +39,18 @@ import scala.util.Try
 
 object EurekaServiceDiscovery {
   private[eureka] def pick(
-      instances: immutable.Seq[EurekaResponse.Instance], group: String)
-      : Future[immutable.Seq[EurekaResponse.Instance]] = {
+      instances: immutable.Seq[EurekaResponse.Instance]): Future[immutable.Seq[EurekaResponse.Instance]] = {
     Future.successful(instances.collect {
-      case instance if instance.status == "UP" && instance.appGroupName == group => instance
+      case instance if instance.status == "UP" => instance
     })
   }
 
   private[eureka] def targets(instances: immutable.Seq[EurekaResponse.Instance]): immutable.Seq[ResolvedTarget] = {
     instances.map { instance =>
       ResolvedTarget(
-        host = instance.ipAddr,
+        host = instance.hostName,
         port = Some(instance.port.port),
-        address = Try(InetAddress.getByName(instance.ipAddr)).toOption)
+        address = instance.ipAddr.flatMap(ip => Try(InetAddress.getByName(ip)).toOption))
     }
   }
 }
@@ -62,8 +61,8 @@ class EurekaServiceDiscovery(implicit system: ActorSystem) extends ServiceDiscov
 
   private val log = Logging(system, getClass)(LogSource.fromClass)
   private val settings = EurekaSettings(system)
-  private val (scheme, host, port, path, group) =
-    (settings.scheme, settings.host, settings.port, settings.path, settings.groupName)
+  private val (scheme, host, port, path) =
+    (settings.scheme, settings.host, settings.port, settings.path)
   private val http = Http()
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[ServiceDiscovery.Resolved] = {
@@ -90,7 +89,7 @@ class EurekaServiceDiscovery(implicit system: ActorSystem) extends ServiceDiscov
         }
         unmarshalled
       }
-      instances <- pick(response.application.instance, group)
+      instances <- pick(response.application.instance)
     } yield Resolved(lookup.serviceName, targets(instances))
 
   }

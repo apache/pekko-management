@@ -69,16 +69,17 @@ class EurekaServiceDiscoverySpec
   "Eureka Discovery" should {
     "work for defaults" in {
       val application = "BANK-ACCOUNT"
+      val host = "acme.com"
       embeddedEurekaServer.getRegistry().registerApplication(
-        application, "instanceId1", "vipAddress1", "UP")
+        application, host, "https://acme-vip.com", "UP")
 
       val lookupService = new EurekaServiceDiscovery()
       val resolved = lookupService.lookup(application, 10.seconds).futureValue
       resolved.addresses should contain(
         ResolvedTarget(
-          host = "127.0.0.1",
-          port = Some(embeddedEurekaServer.getEurekaPort()),
-          address = Try(InetAddress.getByName("127.0.0.1")).toOption))
+          host = host,
+          port = Some(7001),
+          address = None))
     }
 
     "pick status and group then resolved targets" in {
@@ -91,7 +92,7 @@ class EurekaServiceDiscoverySpec
 
       resolved shouldBe List(
         ResolvedTarget(
-          host = "127.0.0.1",
+          host = "localhost",
           port = Some(8558),
           address = Try(InetAddress.getByName("127.0.0.1")).toOption),
         ResolvedTarget(
@@ -105,13 +106,13 @@ class EurekaServiceDiscoverySpec
       )
 
       val result = for {
-        picked <- EurekaServiceDiscovery.pick(instances, "DEFAULT_GROUP")
+        picked <- EurekaServiceDiscovery.pick(instances)
         resolved <- Future.successful(EurekaServiceDiscovery.targets(picked))
       } yield resolved
 
       result.futureValue should contain(
         ResolvedTarget(
-          host = "127.0.0.1",
+          host = "localhost",
           port = Some(8558),
           address = Try(InetAddress.getByName("127.0.0.1")).toOption))
     }

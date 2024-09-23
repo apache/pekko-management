@@ -38,7 +38,6 @@ final class EurekaSettings(system: ExtendedActorSystem) extends Extension {
   val host: String = eurekaConfig.getString("eureka-host")
   val port: Int = eurekaConfig.getInt("eureka-port")
   val path: String = eurekaConfig.getString("eureka-path")
-  val groupName: String = eurekaConfig.getString("group-name")
 }
 
 @ApiMayChange
