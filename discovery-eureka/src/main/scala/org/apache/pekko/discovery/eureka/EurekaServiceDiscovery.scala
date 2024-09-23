@@ -39,7 +39,8 @@ import scala.util.Try
 
 object EurekaServiceDiscovery {
   private[eureka] def pick(
-      instances: immutable.Seq[EurekaResponse.Instance], group: String): Future[immutable.Seq[EurekaResponse.Instance]] = {
+      instances: immutable.Seq[EurekaResponse.Instance], group: String)
+      : Future[immutable.Seq[EurekaResponse.Instance]] = {
     Future.successful(instances.collect {
       case instance if instance.status == "UP" && instance.appGroupName == group => instance
     })
