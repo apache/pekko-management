@@ -68,8 +68,12 @@ class EurekaServiceDiscoverySpec
 
   "Eureka Discovery" should {
     "work for defaults" in {
+      val application = "BANK-ACCOUNT"
+      embeddedEurekaServer.getRegistry().registerApplication(
+        application, "instanceId1", "vipAddress1", "UP")
+
       val lookupService = new EurekaServiceDiscovery()
-      val resolved = lookupService.lookup("BANK-ACCOUNT", 10.seconds).futureValue
+      val resolved = lookupService.lookup(application, 10.seconds).futureValue
       resolved.addresses should contain(
         ResolvedTarget(
           host = "127.0.0.1",

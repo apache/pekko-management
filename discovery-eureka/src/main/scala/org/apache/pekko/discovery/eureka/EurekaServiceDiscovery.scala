@@ -62,14 +62,14 @@ class EurekaServiceDiscovery(implicit system: ActorSystem) extends ServiceDiscov
 
   private val log = Logging(system, getClass)(LogSource.fromClass)
   private val settings = EurekaSettings(system)
-  private val (schema, host, port, path, group) =
-    (settings.schema, settings.host, settings.port, settings.path, settings.groupName)
+  private val (scheme, host, port, path, group) =
+    (settings.scheme, settings.host, settings.port, settings.path, settings.groupName)
   private val http = Http()
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[ServiceDiscovery.Resolved] = {
 
     val uriPath = Uri.Path.Empty / path / "apps" / lookup.serviceName
-    val uri = Uri.from(scheme = schema, host = host, port = port).withPath(uriPath)
+    val uri = Uri.from(scheme = scheme, host = host, port = port).withPath(uriPath)
     val request = HttpRequest(uri = uri,
       headers = immutable.Seq(`Accept-Encoding`(HttpEncodings.gzip), Accept(MediaRange(MediaTypes.`application/json`))))
 

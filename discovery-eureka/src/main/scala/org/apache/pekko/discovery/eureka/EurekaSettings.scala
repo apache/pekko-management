@@ -34,17 +34,11 @@ import pekko.annotation.ApiMayChange
 final class EurekaSettings(system: ExtendedActorSystem) extends Extension {
   private val eurekaConfig = system.settings.config.getConfig("pekko.discovery.eureka")
 
-  val schema: String = eurekaConfig.getString("eureka-schema")
+  val scheme: String = eurekaConfig.getString("eureka-scheme")
   val host: String = eurekaConfig.getString("eureka-host")
   val port: Int = eurekaConfig.getInt("eureka-port")
   val path: String = eurekaConfig.getString("eureka-path")
   val groupName: String = eurekaConfig.getString("group-name")
-  val statusPageUrl: String = eurekaConfig.getString("status-page-url")
-  val healthCheckUrl: String = eurekaConfig.getString("health-page-url")
-  val homePageUrl: String = eurekaConfig.getString("home-page-url")
-  val servicePort: Int = eurekaConfig.getInt("service-port")
-  val serviceName: String = system.name
-  val renewInterval: Long = eurekaConfig.getLong("renew-interval")
 }
 
 @ApiMayChange
