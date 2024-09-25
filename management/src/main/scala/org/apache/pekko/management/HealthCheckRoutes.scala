@@ -49,6 +49,11 @@ private[pekko] class HealthCheckRoutes(system: ExtendedActorSystem) extends Mana
 
   override def routes(mrps: ManagementRouteProviderSettings): Route = {
     concat(
+      path(PathMatchers.separateOnSlashes(settings.startupPath)) {
+        get {
+          onComplete(healthChecks.startupResult())(healthCheckResponse)
+        }
+      },
       path(PathMatchers.separateOnSlashes(settings.readinessPath)) {
         get {
           onComplete(healthChecks.readyResult())(healthCheckResponse)

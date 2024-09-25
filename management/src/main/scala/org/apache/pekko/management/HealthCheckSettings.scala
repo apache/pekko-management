@@ -33,6 +33,15 @@ object HealthCheckSettings {
 
     new HealthCheckSettings(
       config
+        .getConfig("startup-checks")
+        .root
+        .unwrapped
+        .asScala
+        .collect {
+          case (name, value) if validFQCN(value) => NamedHealthCheck(name, value.toString)
+        }
+        .toList,
+      config
         .getConfig("readiness-checks")
         .root
         .unwrapped
@@ -50,6 +59,7 @@ object HealthCheckSettings {
           case (name, value) if validFQCN(value) => NamedHealthCheck(name, value.toString)
         }
         .toList,
+      config.getString("startup-path"),
       config.getString("readiness-path"),
       config.getString("liveness-path"),
       config.getDuration("check-timeout").asScala)
@@ -64,32 +74,83 @@ object HealthCheckSettings {
    * Java API
    */
   def create(
+      startupChecks: java.util.List[NamedHealthCheck],
+      readinessChecks: java.util.List[NamedHealthCheck],
+      livenessChecks: java.util.List[NamedHealthCheck],
+      startupPath: String,
+      readinessPath: String,
+      livenessPath: String,
+      checkDuration: java.time.Duration) =
+    new HealthCheckSettings(
+      startupChecks.asScala.toList,
+      readinessChecks.asScala.toList,
+      livenessChecks.asScala.toList,
+      startupPath,
+      readinessPath,
+      livenessPath,
+      checkDuration.asScala)
+
+  /**
+   * Java API
+   */
+  @deprecated("Use create that takes `startupChecks` and `startupPath` parameters instead", "1.1.0")
+  def create(
       readinessChecks: java.util.List[NamedHealthCheck],
       livenessChecks: java.util.List[NamedHealthCheck],
       readinessPath: String,
       livenessPath: String,
       checkDuration: java.time.Duration) =
     new HealthCheckSettings(
+      Nil,
       readinessChecks.asScala.toList,
       livenessChecks.asScala.toList,
+      "",
       readinessPath,
       livenessPath,
       checkDuration.asScala)
 }
 
 /**
+ * @param startupChecks List of FQCN of startup checks
  * @param readinessChecks List of FQCN of readiness checks
  * @param livenessChecks List of FQCN of liveness checks
+ * @param startupPath The path to serve startup on
  * @param readinessPath The path to serve readiness on
  * @param livenessPath The path to serve liveness on
  * @param checkTimeout how long to wait for all health checks to complete
  */
 final class HealthCheckSettings(
+    val startupChecks: immutable.Seq[NamedHealthCheck],
     val readinessChecks: immutable.Seq[NamedHealthCheck],
     val livenessChecks: immutable.Seq[NamedHealthCheck],
+    val startupPath: String,
     val readinessPath: String,
     val livenessPath: String,
     val checkTimeout: FiniteDuration) {
+
+  @deprecated("Use constructor that takes `startupChecks` and `startupPath` parameters instead", "1.1.0")
+  def this(
+      readinessChecks: immutable.Seq[NamedHealthCheck],
+      livenessChecks: immutable.Seq[NamedHealthCheck],
+      readinessPath: String,
+      livenessPath: String,
+      checkTimeout: FiniteDuration
+  ) = {
+    this(
+      Nil,
+      readinessChecks,
+      livenessChecks,
+      "",
+      readinessPath,
+      livenessPath,
+      checkTimeout
+    )
+  }
+
+  /**
+   * Java API
+   */
+  def getStartupChecks(): java.util.List[NamedHealthCheck] = startupChecks.asJava
 
   /**
    * Java API

@@ -95,6 +95,8 @@ class LocalBootstrapTest extends AnyWordSpec with ScalaFutures with Matchers wit
     super.afterAll()
   }
 
+  def startupStatusCode(port: Int)(implicit system: ActorSystem): StatusCode =
+    healthCheckStatus(port, "health/startup")
   def readyStatusCode(port: Int)(implicit system: ActorSystem): StatusCode =
     healthCheckStatus(port, "health/ready")
   def aliveStatusCode(port: Int)(implicit system: ActorSystem): StatusCode =
@@ -111,6 +113,14 @@ class LocalBootstrapTest extends AnyWordSpec with ScalaFutures with Matchers wit
     systems.foreach(PekkoManagement(_).start())
     // for http client
     implicit val system: ActorSystem = systems(0)
+
+    "not started up initially" in {
+      eventually {
+        managementPorts.foreach { port =>
+          startupStatusCode(port) shouldEqual StatusCodes.InternalServerError
+        }
+      }
+    }
 
     "not be ready initially" in {
       eventually {

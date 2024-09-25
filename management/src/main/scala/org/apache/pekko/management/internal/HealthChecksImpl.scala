@@ -24,7 +24,8 @@ import pekko.event.Logging
 import pekko.management.{ HealthCheckSettings, InvalidHealthCheckException, ManagementLogMarker, NamedHealthCheck }
 import pekko.management.javadsl.{ LivenessCheckSetup => JLivenessCheckSetup }
 import pekko.management.javadsl.{ ReadinessCheckSetup => JReadinessCheckSetup }
-import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup }
+import pekko.management.javadsl.{ StartupCheckSetup => JStartupCheckSetup }
+import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup, StartupCheckSetup }
 import pekko.util.FutureConverters._
 import pekko.util.ccompat.JavaConverters._
 
@@ -48,11 +49,27 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
   private val log = Logging.withMarker(system, classOf[HealthChecksImpl])
 
   log.info(
+    "Loading startup checks [{}]",
+    settings.startupChecks.map(a => a.name -> a.fullyQualifiedClassName).mkString(", "))
+  log.info(
     "Loading readiness checks [{}]",
     settings.readinessChecks.map(a => a.name -> a.fullyQualifiedClassName).mkString(", "))
   log.info(
     "Loading liveness checks [{}]",
     settings.livenessChecks.map(a => a.name -> a.fullyQualifiedClassName).mkString(", "))
+
+  private val startupChecks: immutable.Seq[HealthCheck] = {
+    val fromScaladslSetup = system.settings.setup.get[StartupCheckSetup] match {
+      case None        => Nil
+      case Some(setup) => setup.createHealthChecks(system)
+    }
+    val fromJavadslSetup = system.settings.setup.get[JStartupCheckSetup] match {
+      case None        => Nil
+      case Some(setup) => convertSuppliersToScala(setup.createHealthChecks(system))
+    }
+    val fromConfig = load(settings.startupChecks)
+    fromConfig ++ fromScaladslSetup ++ fromJavadslSetup
+  }
 
   private val readiness: immutable.Seq[HealthCheck] = {
     val fromScaladslSetup = system.settings.setup.get[ReadinessCheckSetup] match {
@@ -137,6 +154,20 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
             t)
       }
   }
+
+  def startupResult(): Future[Either[String, Unit]] = {
+    val result = check(startupChecks)
+    result.onComplete {
+      case Success(Right(())) =>
+      case Success(Left(reason)) =>
+        log.info(ManagementLogMarker.startupCheckFailed, reason)
+      case Failure(e) =>
+        log.warning(ManagementLogMarker.startupCheckFailed, e.getMessage)
+    }
+    result
+  }
+
+  def startup(): Future[Boolean] = startupResult().map(_.isRight)
 
   def readyResult(): Future[Either[String, Unit]] = {
     val result = check(readiness)

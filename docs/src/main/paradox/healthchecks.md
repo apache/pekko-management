@@ -58,14 +58,14 @@ Application specific health checks can be added a `name = <fully qualified class
 Health checks can be hosted via the Pekko management HTTP server. The `pekko.management.HealthCheckRoutes` is enabled
 by default as a Pekko management route provider.
 
-By default all readiness checks are hosted on `/ready` and liveness checks are hosted on `/alive`. If all of the checks
+By default all startup checks are hosted on `/startup`, readiness checks are hosted on `/ready` and liveness checks are hosted on `/alive`. If all of the checks
 for an endpoint succeed a `200` is returned, if any fail or return `false` a `500` is returned. The paths are
-configurable via `pekko.management.health-checks.readiness-path` and `pekko.management.health-checks.liveness-path` e.g.
+configurable via `pekko.management.health-checks.startup-path`, `pekko.management.health-checks.readiness-path` and `pekko.management.health-checks.liveness-path` e.g.
 
 @@snip [application.conf](/integration-test/local/src/main/resources/application.conf)  { #health }
 
 The `org.apache.pekko.management.HealthCheckRoutes` can be disabled with the following configuration but that also
-means that the configured `readiness-checks` and `liveness-checks` will not be used.
+means that the configured `startup-checks`, `readiness-checks` and `liveness-checks` will not be used.
 
 ```
 pekko.management.http.routes {
