@@ -20,9 +20,9 @@ import com.typesafe.config.Config
 
 import org.apache.pekko.util.OptionConverters._
 
-final class Settings(configNamespace: Option[String], system: ExtendedActorSystem) extends Extension {
+final class Settings(kubernetesApi: Config) extends Extension {
 
-  def this(system: ExtendedActorSystem) = this(None, system)
+  def this(system: ExtendedActorSystem) = this(system.settings.config.getConfig("pekko.discovery.kubernetes-api"))
 
   /**
    * Copied from PekkoManagementSettings, which we don't depend on.
@@ -36,14 +36,6 @@ final class Settings(configNamespace: Option[String], system: ExtendedActorSyste
     def optDefinedValue(key: String): Option[String] =
       if (hasDefined(key)) Some(config.getString(key)) else None
   }
-
-  private val defaultConfig = system.settings.config.getConfig("pekko.discovery.kubernetes-api")
-
-  private val kubernetesApi =
-    configNamespace match {
-      case Some(namespace) => system.settings.config.getConfig(namespace).withFallback(defaultConfig)
-      case _               => defaultConfig
-    }
 
   val apiCaPath: String =
     kubernetesApi.getString("api-ca-path")

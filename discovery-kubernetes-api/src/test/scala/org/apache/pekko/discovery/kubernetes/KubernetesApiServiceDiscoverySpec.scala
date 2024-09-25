@@ -203,9 +203,8 @@ class KubernetesApiServiceDiscoverySpec extends AnyWordSpec with Matchers {
 
   "The discovery loading mechanism" should {
     "allow loading kubernetes-api discovery even if it is not the default" in {
-      implicit val system = ActorSystem()
+      val system = ActorSystem()
       // #kubernetes-api-discovery
-      val d = new KubernetesApiServiceDiscovery()
       val discovery = Discovery(system).loadServiceDiscovery("kubernetes-api")
       // #kubernetes-api-discovery
       discovery shouldBe a[KubernetesApiServiceDiscovery]
