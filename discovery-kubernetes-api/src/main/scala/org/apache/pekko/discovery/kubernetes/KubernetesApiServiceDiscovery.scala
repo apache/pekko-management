@@ -96,13 +96,16 @@ object KubernetesApiServiceDiscovery {
  * An alternative implementation that uses the Kubernetes API. The main advantage of this method is that it allows
  * you to define readiness/health checks that don't affect the bootstrap mechanism.
  */
-class KubernetesApiServiceDiscovery(implicit system: ActorSystem) extends ServiceDiscovery {
+class KubernetesApiServiceDiscovery(providedSettings: Option[Settings] = None)(
+    implicit system: ActorSystem) extends ServiceDiscovery {
 
   import system.dispatcher
 
   private val http = Http()
 
-  private val settings = Settings(system)
+  def this(system: ActorSystem) = this(None)(system)
+
+  private val settings = providedSettings.getOrElse(Settings(system))
 
   private val log = Logging(system, getClass)(LogSource.fromClass)
 

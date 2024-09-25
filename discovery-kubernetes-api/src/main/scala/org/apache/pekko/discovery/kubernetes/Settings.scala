@@ -13,14 +13,15 @@
 
 package org.apache.pekko.discovery.kubernetes
 
-import java.util.Optional
-
-import org.apache.pekko.actor._
 import com.typesafe.config.Config
-
+import org.apache.pekko.actor._
 import org.apache.pekko.util.OptionConverters._
 
-final class Settings(system: ExtendedActorSystem) extends Extension {
+import java.util.Optional
+
+final class Settings(configNameSpace: Option[String], system: ExtendedActorSystem) extends Extension {
+
+  def this(system: ExtendedActorSystem) = this(None, system)
 
   /**
    * Copied from PekkoManagementSettings, which we don't depend on.
@@ -35,39 +36,61 @@ final class Settings(system: ExtendedActorSystem) extends Extension {
       if (hasDefined(key)) Some(config.getString(key)) else None
   }
 
-  private val kubernetesApi = system.settings.config.getConfig("pekko.discovery.kubernetes-api")
+  private val customSettings = configNameSpace.map(system.settings.config.getConfig)
+
+  private val kubernetesApi =
+    system.settings.config.getConfig("pekko.discovery.kubernetes-api")
+
+  private def getString(path: String) = {
+    customSettings match {
+      case Some(customConfig) if customConfig.hasDefined(path) =>
+        customConfig.getString(path)
+      case _ => kubernetesApi.getString(path)
+    }
+  }
+
+  private def getBoolean(path: String) = {
+    customSettings match {
+      case Some(customConfig) if customConfig.hasDefined(path) =>
+        customConfig.getBoolean(path)
+      case _ => kubernetesApi.getBoolean(path)
+    }
+  }
+
+  private def getOptValue(config: String) =
+    customSettings.fold(kubernetesApi.optDefinedValue(config))(_.optDefinedValue(config))
 
   val apiCaPath: String =
-    kubernetesApi.getString("api-ca-path")
+    getString("api-ca-path")
 
   val apiTokenPath: String =
-    kubernetesApi.getString("api-token-path")
+    getString("api-token-path")
 
   val apiServiceHostEnvName: String =
-    kubernetesApi.getString("api-service-host-env-name")
+    getString("api-service-host-env-name")
 
   val apiServicePortEnvName: String =
-    kubernetesApi.getString("api-service-port-env-name")
+    getString("api-service-port-env-name")
 
   val podNamespacePath: String =
-    kubernetesApi.getString("pod-namespace-path")
+    getString("pod-namespace-path")
 
   /** Scala API */
   val podNamespace: Option[String] =
-    kubernetesApi.optDefinedValue("pod-namespace")
+    getOptValue("pod-namespace")
 
   /** Java API */
   def getPodNamespace: Optional[String] = podNamespace.toJava
 
   val podDomain: String =
-    kubernetesApi.getString("pod-domain")
+    getString("pod-domain")
 
   def podLabelSelector(name: String): String =
-    kubernetesApi.getString("pod-label-selector").format(name)
+    getString("pod-label-selector").format(name)
 
-  lazy val rawIp: Boolean = kubernetesApi.getBoolean("use-raw-ip")
+  lazy val rawIp: Boolean = getBoolean("use-raw-ip")
 
-  val containerName: Option[String] = Some(kubernetesApi.getString("container-name")).filter(_.nonEmpty)
+  val containerName: Option[String] = Some(getString("container-name")).filter(_.nonEmpty)
 
   override def toString =
     s"Settings($apiCaPath, $apiTokenPath, $apiServiceHostEnvName, $apiServicePortEnvName, " +
