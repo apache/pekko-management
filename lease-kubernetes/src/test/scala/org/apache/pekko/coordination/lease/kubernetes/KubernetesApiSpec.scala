@@ -60,7 +60,8 @@ class KubernetesApiSpec
 
   WireMock.configureFor(settings.apiServerPort)
 
-  implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration)
+  // double the default timeout for CI (https://github.com/apache/pekko-management/issues/216)
+  implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration.*(2))
 
   val underTest = new KubernetesApiImpl(system, settings) {
     // avoid touching slow CI filesystem
