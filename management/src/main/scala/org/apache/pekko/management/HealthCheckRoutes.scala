@@ -14,18 +14,12 @@
 package org.apache.pekko.management
 
 import org.apache.pekko
-import org.apache.pekko.actor.{
-  ActorSystem,
-  ClassicActorSystemProvider,
-  ExtendedActorSystem,
-  ExtensionId,
-  ExtensionIdProvider
-}
-import org.apache.pekko.annotation.InternalApi
-import org.apache.pekko.http.scaladsl.model._
-import org.apache.pekko.http.scaladsl.server.Directives._
-import org.apache.pekko.http.scaladsl.server.{ PathMatchers, Route }
-import org.apache.pekko.management.scaladsl.{ HealthChecks, ManagementRouteProvider, ManagementRouteProviderSettings }
+import pekko.actor.{ ActorSystem, ClassicActorSystemProvider, ExtendedActorSystem, ExtensionId, ExtensionIdProvider }
+import pekko.annotation.InternalApi
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.server.Directives._
+import pekko.http.scaladsl.server.{ PathMatchers, Route }
+import pekko.management.scaladsl.{ HealthChecks, ManagementRouteProvider, ManagementRouteProviderSettings }
 
 import scala.util.{ Failure, Success, Try }
 
