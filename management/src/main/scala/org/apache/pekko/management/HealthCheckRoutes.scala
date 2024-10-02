@@ -14,12 +14,18 @@
 package org.apache.pekko.management
 
 import org.apache.pekko
-import pekko.actor.ExtendedActorSystem
-import pekko.annotation.InternalApi
-import pekko.http.scaladsl.model._
-import pekko.http.scaladsl.server.Directives._
-import pekko.http.scaladsl.server.{ PathMatchers, Route }
-import pekko.management.scaladsl.{ HealthChecks, ManagementRouteProvider, ManagementRouteProviderSettings }
+import org.apache.pekko.actor.{
+  ActorSystem,
+  ClassicActorSystemProvider,
+  ExtendedActorSystem,
+  ExtensionId,
+  ExtensionIdProvider
+}
+import org.apache.pekko.annotation.InternalApi
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.server.Directives._
+import org.apache.pekko.http.scaladsl.server.{ PathMatchers, Route }
+import org.apache.pekko.management.scaladsl.{ HealthChecks, ManagementRouteProvider, ManagementRouteProviderSettings }
 
 import scala.util.{ Failure, Success, Try }
 
@@ -47,7 +53,12 @@ private[pekko] class HealthCheckRoutes(system: ExtendedActorSystem) extends Mana
         StatusCodes.InternalServerError -> s"Health Check Failed: ${t.getMessage}")
   }
 
-  override def routes(mrps: ManagementRouteProviderSettings): Route = {
+  override def routes(mrps: ManagementRouteProviderSettings): Route = routes()
+
+  // overload method, so user can get the routes without have to unnecessarily provide the
+  // settings
+
+  def routes(): Route = {
     concat(
       path(PathMatchers.separateOnSlashes(settings.startupPath)) {
         get {
@@ -65,4 +76,17 @@ private[pekko] class HealthCheckRoutes(system: ExtendedActorSystem) extends Mana
         }
       })
   }
+}
+
+/**
+ * Providing an extension, so users can get the routes and add it to their own server
+ */
+object HealthCheckRoutes extends ExtensionId[HealthCheckRoutes] with ExtensionIdProvider {
+  override def get(system: ActorSystem): HealthCheckRoutes = super.get(system)
+
+  override def get(system: ClassicActorSystemProvider): HealthCheckRoutes = super.get(system)
+
+  override def lookup: HealthCheckRoutes.type = HealthCheckRoutes
+
+  override def createExtension(system: ExtendedActorSystem): HealthCheckRoutes = new HealthCheckRoutes(system)
 }
