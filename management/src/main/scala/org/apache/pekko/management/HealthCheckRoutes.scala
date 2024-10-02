@@ -73,6 +73,7 @@ private[pekko] class HealthCheckRoutes(system: ExtendedActorSystem) extends Mana
 }
 
 /**
+ * Providing an extension, so users can get the routes and add it to their own server
  * @since 1.1.0
  */
 object HealthCheckRoutes extends ExtensionId[HealthCheckRoutes] with ExtensionIdProvider {
