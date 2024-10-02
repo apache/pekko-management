@@ -24,7 +24,10 @@ import pekko.management.scaladsl.{ HealthChecks, ManagementRouteProvider, Manage
 import scala.util.{ Failure, Success, Try }
 
 /**
- * @since 1.1.0 Users can use [[HealthCheckRoutes]] extension to add the routes to their own server.
+ * INTERNAL API
+ *
+ * We could make this public so users can add it to their own server, not sure
+ * for ManagementRouteProviders
  */
 @InternalApi
 private[pekko] class HealthCheckRoutes(system: ExtendedActorSystem) extends ManagementRouteProvider {
@@ -46,6 +49,9 @@ private[pekko] class HealthCheckRoutes(system: ExtendedActorSystem) extends Mana
 
   override def routes(mrps: ManagementRouteProviderSettings): Route = routes()
 
+  /**
+   * @since 1.1.0
+   */
   def routes(): Route = {
     concat(
       path(PathMatchers.separateOnSlashes(settings.startupPath)) {
@@ -68,7 +74,6 @@ private[pekko] class HealthCheckRoutes(system: ExtendedActorSystem) extends Mana
 
 /**
  * @since 1.1.0
- * Providing an extension, so users can get the routes and add it to their own server
  */
 object HealthCheckRoutes extends ExtensionId[HealthCheckRoutes] with ExtensionIdProvider {
   override def get(system: ActorSystem): HealthCheckRoutes = super.get(system)
