@@ -1,0 +1,133 @@
+{
+  "application": {
+    "name": "test",
+    "instance": [
+      {
+        "instanceId": "test-localhost",
+        "hostName": "localhost",
+        "app": "test",
+        "ipAddr": "127.0.0.1",
+        "status": "UP",
+        "overriddenStatus": "UNKNOWN",
+        "port": {
+          "$": 8558,
+          "@enabled": "true"
+        },
+        "securePort": {
+          "$": 8558,
+          "@enabled": "true"
+        },
+        "countryId": 1,
+        "dataCenterInfo": {
+          "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+          "name": "MyOwn"
+        },
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 1724231438615,
+          "lastRenewalTimestamp": 1724232638269,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 1724231437712
+        },
+        "metadata": {
+          "@class": "java.util.Collections$EmptyMap"
+        },
+        "appGroupName": "DEFAULT_GROUP",
+        "homePageUrl": "http://127.0.0.1:80",
+        "statusPageUrl": "http://127.0.0.1:8558/health/ready",
+        "healthCheckUrl": "http://127.0.0.1:8558/health/alive",
+        "vipAddress": "test",
+        "secureVipAddress": "test",
+        "isCoordinatingDiscoveryServer": "false",
+        "lastUpdatedTimestamp": "1724231438615",
+        "lastDirtyTimestamp": "1724231437542",
+        "actionType": "ADDED"
+      },
+      {
+        "instanceId": "test-not-in-group",
+        "hostName": "10.0.0.1",
+        "app": "test",
+        "ipAddr": "10.0.0.1",
+        "status": "UP",
+        "overriddenStatus": "UNKNOWN",
+        "port": {
+          "$": 8558,
+          "@enabled": "true"
+        },
+        "securePort": {
+          "$": 8558,
+          "@enabled": "true"
+        },
+        "countryId": 1,
+        "dataCenterInfo": {
+          "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+          "name": "MyOwn"
+        },
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 1724231438615,
+          "lastRenewalTimestamp": 1724232638269,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 1724231437712
+        },
+        "metadata": {
+          "@class": "java.util.Collections$EmptyMap"
+        },
+        "appGroupName": "other-group",
+        "homePageUrl": "http://10.0.0.1:80",
+        "statusPageUrl": "http://10.0.0.1:8558/health/ready",
+        "healthCheckUrl": "http://10.0.0.1:8558/health/alive",
+        "vipAddress": "test",
+        "secureVipAddress": "test",
+        "isCoordinatingDiscoveryServer": "false",
+        "lastUpdatedTimestamp": "1724231438615",
+        "lastDirtyTimestamp": "1724231437542",
+        "actionType": "ADDED"
+      },
+      {
+        "instanceId": "test-status-down",
+        "hostName": "192.168.1.1",
+        "app": "test",
+        "ipAddr": "192.168.1.1",
+        "status": "DOWN",
+        "overriddenStatus": "UNKNOWN",
+        "port": {
+          "$": 8558,
+          "@enabled": "true"
+        },
+        "securePort": {
+          "$": 8558,
+          "@enabled": "true"
+        },
+        "countryId": 1,
+        "dataCenterInfo": {
+          "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+          "name": "MyOwn"
+        },
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 1724231438615,
+          "lastRenewalTimestamp": 1724232638269,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 1724231437712
+        },
+        "metadata": {
+          "@class": "java.util.Collections$EmptyMap"
+        },
+        "appGroupName": "DEFAULT_GROUP",
+        "homePageUrl": "http://192.168.1.1:80",
+        "statusPageUrl": "http://192.168.1.1:8558/health/ready",
+        "healthCheckUrl": "http://192.168.1.1:8558/health/alive",
+        "vipAddress": "test",
+        "secureVipAddress": "test",
+        "isCoordinatingDiscoveryServer": "false",
+        "lastUpdatedTimestamp": "1724231438615",
+        "lastDirtyTimestamp": "1724231437542",
+        "actionType": "ADDED"
+      }
+    ]
+  }
+}

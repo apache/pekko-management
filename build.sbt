@@ -41,6 +41,7 @@ val userProjects: Seq[ProjectReference] = Seq[ProjectReference](
   discoveryAwsApi,
   discoveryAwsApiAsync,
   discoveryConsul,
+  discoveryEureka,
   discoveryKubernetesApi,
   discoveryMarathonApi,
   leaseKubernetes,
@@ -103,6 +104,14 @@ lazy val discoveryConsul = pekkoModule("discovery-consul")
   .settings(
     name := "pekko-discovery-consul",
     libraryDependencies := Dependencies.discoveryConsul,
+    mimaPreviousArtifactsSet)
+
+lazy val discoveryEureka = pekkoModule("discovery-eureka")
+  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .disablePlugins(MimaPlugin)
+  .settings(
+    name := "pekko-discovery-eureka",
+    libraryDependencies := Dependencies.discoveryEureka,
     mimaPreviousArtifactsSet)
 
 // gathers all enabled routes and serves them (HTTP or otherwise)
