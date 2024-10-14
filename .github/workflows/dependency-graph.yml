@@ -7,6 +7,7 @@ jobs:
   dependency-graph:
     name: Update Dependency Graph
     runs-on: ubuntu-latest
+    if: github.repository == 'apache/pekko-management'
     steps:
       - uses: actions/checkout@v4
       - name: Install sbt
