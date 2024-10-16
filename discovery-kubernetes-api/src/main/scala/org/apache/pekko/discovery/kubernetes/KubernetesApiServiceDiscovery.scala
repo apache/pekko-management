@@ -239,14 +239,17 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
       val uri = Uri.from(scheme = "https", host = host, port = port).withPath(path).withQuery(query)
 
       val authHeaders = Seq(Authorization(OAuth2BearerToken(token)))
-      val gzipHeaders = if (settings.gzipCompression) Seq(AcceptEncoding.create(HttpEncodings.gzip)) else Seq.empty
-      HttpRequest(uri = uri, headers = authHeaders ++ gzipHeaders)
+      val acceptEncodingHeader = HttpEncodings.getForKey(settings.httpRequestAcceptEncoding)
+        .map(httpEncoding => AcceptEncoding.create(httpEncoding))
+      HttpRequest(uri = uri, headers = authHeaders ++ acceptEncodingHeader)
     }
 
   private def decodeResponse(response: HttpResponse): HttpResponse = {
     val decoder = response.encoding match {
       case HttpEncodings.gzip =>
         Coders.Gzip
+      case HttpEncodings.deflate =>
+        Coders.Deflate
       case _ =>
         Coders.NoCoding
     }
