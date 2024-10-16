@@ -69,9 +69,11 @@ final class Settings(kubernetesApi: Config) extends Extension {
 
   val containerName: Option[String] = Some(kubernetesApi.getString("container-name")).filter(_.nonEmpty)
 
+  val gzipCompression: Boolean = kubernetesApi.getBoolean("use-gzip-compression")
+
   override def toString =
     s"Settings($apiCaPath, $apiTokenPath, $apiServiceHostEnvName, $apiServicePortEnvName, " +
-    s"$podNamespacePath, $podNamespace, $podDomain)"
+    s"$podNamespacePath, $podNamespace, $podDomain, $rawIp, $containerName, $gzipCompression)"
 }
 
 object Settings extends ExtensionId[Settings] with ExtensionIdProvider {
