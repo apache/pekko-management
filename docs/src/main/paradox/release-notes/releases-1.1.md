@@ -6,10 +6,10 @@ Release notes for Apache Pekko Management 1.1.0. See [GitHub Milestone for 1.1.0
 
 ### Additions
 
-* Support Kubernetes Native Leases ([PR217](https://github.com/apache/pekko-persistence-jdbc/pull/217))
-* Add pekko-management-bom (Bill of Materials) ([PR244](https://github.com/apache/pekko-persistence-jdbc/pull/244))
-* Add startup checks ([PR293](https://github.com/apache/pekko-persistence-jdbc/pull/293)) (not in v1.1.0-M1)
-* Support Kubernetes Service Discovery Custom Settings ([PR313](https://github.com/apache/pekko-persistence-jdbc/pull/313)) (not in v1.1.0-M1)
+* Support Kubernetes Native Leases ([PR217](https://github.com/apache/pekko-management/pull/217))
+* Add pekko-management-bom (Bill of Materials) ([PR244](https://github.com/apache/pekko-management/pull/244))
+* Add startup checks ([PR293](https://github.com/apache/pekko-management/pull/293)) (not in v1.1.0-M1)
+* Support Kubernetes Service Discovery Custom Settings ([PR313](https://github.com/apache/pekko-management/pull/313)) (not in v1.1.0-M1)
 
 ### Dependency Upgrades
 
