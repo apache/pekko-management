@@ -24,6 +24,8 @@ import scala.util.Try
 import scala.util.control.{ NoStackTrace, NonFatal }
 
 import org.apache.pekko
+import org.apache.pekko.http.javadsl.model.headers.AcceptEncoding
+import org.apache.pekko.http.scaladsl.coding.Coders
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
@@ -34,7 +36,7 @@ import pekko.event.{ LogSource, Logging }
 import pekko.http.scaladsl.HttpsConnectionContext
 import pekko.http.scaladsl._
 import pekko.http.scaladsl.model._
-import pekko.http.scaladsl.model.headers.{ Authorization, OAuth2BearerToken }
+import pekko.http.scaladsl.model.headers.{ Authorization, HttpEncodings, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pki.kubernetes.PemManagersProvider
 
@@ -141,7 +143,7 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         podRequest(apiToken, podNamespace, labelSelector),
         s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})")
 
-      response <- http.singleRequest(request, clientSslContext)
+      response <- http.singleRequest(request, clientSslContext).map(decodeResponse)
 
       entity <- response.entity.toStrict(resolveTimeout)
 
@@ -236,6 +238,21 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
       val query = Uri.Query("labelSelector" -> labelSelector)
       val uri = Uri.from(scheme = "https", host = host, port = port).withPath(path).withQuery(query)
 
-      HttpRequest(uri = uri, headers = Seq(Authorization(OAuth2BearerToken(token))))
+      val authHeaders = Seq(Authorization(OAuth2BearerToken(token)))
+      val acceptEncodingHeader = HttpEncodings.getForKey(settings.httpRequestAcceptEncoding)
+        .map(httpEncoding => AcceptEncoding.create(httpEncoding))
+      HttpRequest(uri = uri, headers = authHeaders ++ acceptEncodingHeader)
     }
+
+  private def decodeResponse(response: HttpResponse): HttpResponse = {
+    val decoder = response.encoding match {
+      case HttpEncodings.gzip =>
+        Coders.Gzip
+      case HttpEncodings.deflate =>
+        Coders.Deflate
+      case _ =>
+        Coders.NoCoding
+    }
+    decoder.decodeMessage(response)
+  }
 }
