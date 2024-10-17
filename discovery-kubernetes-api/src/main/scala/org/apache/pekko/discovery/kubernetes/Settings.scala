@@ -73,7 +73,7 @@ final class Settings(kubernetesApi: Config) extends Extension {
 
   override def toString =
     s"Settings($apiCaPath, $apiTokenPath, $apiServiceHostEnvName, $apiServicePortEnvName, " +
-    s"$podNamespacePath, $podNamespace, $podDomain, $httpRequestAcceptEncoding)"
+    s"$podNamespacePath, $podNamespace, $podDomain, httpRequestAcceptEncoding=$httpRequestAcceptEncoding)"
 }
 
 object Settings extends ExtensionId[Settings] with ExtensionIdProvider {
