@@ -16,10 +16,8 @@ object Dependencies {
   val scala3Version = "3.3.4"
   val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
 
-  val pekkoVersion = PekkoCoreDependency.version
-  val pekkoBinaryVersion = pekkoVersion.take(3)
-  val pekkoHttpVersion = PekkoHttpDependency.version
-  val pekkoHttpBinaryVersion = pekkoHttpVersion.take(3)
+  val pekkoBinaryVersion = PekkoCoreDependency.default.link
+  val pekkoHttpBinaryVersion = PekkoHttpDependency.default.link
 
   val scalaTestVersion = "3.2.19"
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"
@@ -66,131 +64,64 @@ object Dependencies {
     "com.jayway.jsonpath" % "json-path" % "2.9.0" % Test)
 
   val discoveryConsul = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
     "com.orbitz.consul" % "consul-client" % "1.5.3",
     "org.testcontainers" % "consul" % "1.20.2" % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion % Test,
     "ch.qos.logback" % "logback-classic" % logbackVersion % Test) ++ jacksonDatabind ++ jacksonDatatype // consul depends on insecure version of jackson
 
   val discoveryKubernetesApi = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 
   val discoveryMarathonApi = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 
   val discoveryAwsApi = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
     "com.amazonaws" % "aws-java-sdk-ec2" % awsSdkVersion,
     "com.amazonaws" % "aws-java-sdk-ecs" % awsSdkVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test) ++ jacksonDatabind // aws-java-sdk depends on insecure version of jackson
 
   val discoveryAwsApiAsync = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     ("software.amazon.awssdk" % "ecs" % "2.28.21").exclude("software.amazon.awssdk", "apache-client"),
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test) ++ jacksonDatabind // aws-java-sdk depends on insecure version of jackson
 
   val managementHttp = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-cluster" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % Test)
 
   val managementPki = Seq(
-    "org.apache.pekko" %% "pekko-pki" % pekkoVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % Test)
 
   val managementLoglevelsLogback = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test)
+    "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 
   val managementLoglevelsLog4j2 = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
     "org.slf4j" % "slf4j-api" % slf4jVersion,
     "org.apache.logging.log4j" % "log4j-core" % log4j2Version,
     "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
     "org.apache.logging.log4j" % "log4j-slf4j2-impl" % log4j2Version,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test)
+    "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 
   val managementClusterHttp = Seq(
-    "org.apache.pekko" %% "pekko-cluster" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-cluster-sharding" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http-core" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
     "org.mockito" % "mockito-core" % "4.11.0" % Test,
-    "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test,
-    "org.apache.pekko" %% "pekko-distributed-data" % pekkoVersion % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % Test)
 
   val managementClusterBootstrap = Seq(
-    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-cluster" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http-core" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test,
-    "org.apache.pekko" %% "pekko-distributed-data" % pekkoVersion % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % Test)
 
   val leaseKubernetes = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-coordination" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % "it,test",
-    "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % "it,test",
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % "it,test") ++
+    "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % "it,test") ++
     wireMockDependencies
 
   val leaseKubernetesTest = Seq(
     "org.scalatest" %% "scalatest" % scalaTestVersion)
 
   val bootstrapDemos = Seq(
-    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "ch.qos.logback" % "logback-classic" % logbackVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 

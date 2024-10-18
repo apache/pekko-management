@@ -7,11 +7,11 @@
  * This file is part of the Apache Pekko project, which was derived from Akka.
  */
 
+import com.github.pjfanning.pekkobuild._
 import com.typesafe.sbt.packager.docker.{ Cmd, ExecCmd }
 import net.bzzt.reproduciblebuilds.ReproducibleBuildsPlugin.reproducibleBuildsCheckResolver
 import sbt.Keys.parallelExecution
 
-ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / versionScheme := Some(VersionScheme.SemVerSpec)
 sourceDistName := "apache-pekko-management"
 sourceDistIncubating := false
@@ -27,8 +27,7 @@ ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 inThisBuild(Def.settings(
   Global / onLoad := {
     sLog.value.info(
-      s"Building Pekko Management ${version.value} against Pekko ${Dependencies
-          .pekkoVersion} and Pekko HTTP ${Dependencies.pekkoHttpVersion} on Scala ${(root / scalaVersion).value}")
+      s"Building Pekko Management ${version.value} against Pekko ${PekkoCoreDependency.version} and Pekko HTTP ${PekkoHttpDependency.version} on Scala ${(root / scalaVersion).value}")
     (Global / onLoad).value
   }))
 
@@ -71,6 +70,11 @@ lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set(
 
 lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-stream", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
   .settings(
     name := "pekko-discovery-kubernetes-api",
     libraryDependencies := Dependencies.discoveryKubernetesApi,
@@ -79,6 +83,11 @@ lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
 
 lazy val discoveryMarathonApi = pekkoModule("discovery-marathon-api")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-stream", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
   .settings(
     name := "pekko-discovery-marathon-api",
     libraryDependencies := Dependencies.discoveryMarathonApi,
@@ -86,6 +95,8 @@ lazy val discoveryMarathonApi = pekkoModule("discovery-marathon-api")
 
 lazy val discoveryAwsApi = pekkoModule("discovery-aws-api")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
   .settings(
     name := "pekko-discovery-aws-api",
     libraryDependencies := Dependencies.discoveryAwsApi,
@@ -93,6 +104,11 @@ lazy val discoveryAwsApi = pekkoModule("discovery-aws-api")
 
 lazy val discoveryAwsApiAsync = pekkoModule("discovery-aws-api-async")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-stream", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
   .settings(
     name := "pekko-discovery-aws-api-async",
     libraryDependencies := Dependencies.discoveryAwsApiAsync,
@@ -100,6 +116,10 @@ lazy val discoveryAwsApiAsync = pekkoModule("discovery-aws-api-async")
 
 lazy val discoveryConsul = pekkoModule("discovery-consul")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-slf4j", "test", PekkoCoreDependency.default)
   .settings(
     name := "pekko-discovery-consul",
     libraryDependencies := Dependencies.discoveryConsul,
@@ -108,6 +128,13 @@ lazy val discoveryConsul = pekkoModule("discovery-consul")
 // gathers all enabled routes and serves them (HTTP or otherwise)
 lazy val management = pekkoModule("management")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-stream", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-cluster", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http-testkit", "test", PekkoHttpDependency.default)
   .settings(
     name := "pekko-management",
     libraryDependencies := Dependencies.managementHttp,
@@ -115,6 +142,7 @@ lazy val management = pekkoModule("management")
 
 lazy val managementPki = pekkoModule("management-pki")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-pki", "", PekkoCoreDependency.default)
   .settings(
     name := "pekko-management-pki",
     libraryDependencies := Dependencies.managementPki,
@@ -122,6 +150,13 @@ lazy val managementPki = pekkoModule("management-pki")
 
 lazy val managementLoglevelsLogback = pekkoModule("management-loglevels-logback")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-slf4j", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-stream", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http-testkit", "test", PekkoHttpDependency.default)
   .settings(
     name := "pekko-management-loglevels-logback",
     libraryDependencies := Dependencies.managementLoglevelsLogback,
@@ -130,6 +165,13 @@ lazy val managementLoglevelsLogback = pekkoModule("management-loglevels-logback"
 
 lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-slf4j", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-stream", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http-testkit", "test", PekkoHttpDependency.default)
   .settings(
     name := "pekko-management-loglevels-log4j2",
     libraryDependencies := Dependencies.managementLoglevelsLog4j2,
@@ -138,6 +180,13 @@ lazy val managementLoglevelsLog4j2 = pekkoModule("management-loglevels-log4j2")
 
 lazy val managementClusterHttp = pekkoModule("management-cluster-http")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-cluster", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-cluster-sharding", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http-core", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http-testkit", "test", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-distributed-data", "test", PekkoCoreDependency.default)
   .settings(
     name := "pekko-management-cluster-http",
     libraryDependencies := Dependencies.managementClusterHttp,
@@ -146,6 +195,13 @@ lazy val managementClusterHttp = pekkoModule("management-cluster-http")
 
 lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-cluster", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http-core", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http-testkit", "test", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-distributed-data", "test", PekkoCoreDependency.default)
   .settings(
     name := "pekko-management-cluster-bootstrap",
     libraryDependencies := Dependencies.managementClusterBootstrap,
@@ -154,6 +210,13 @@ lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap"
 
 lazy val leaseKubernetes = pekkoModule("lease-kubernetes")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
+  .addPekkoModuleDependency("pekko-actor", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-coordination", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-stream", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-slf4j", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-http-spray-json", "", PekkoHttpDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "it,test", PekkoCoreDependency.default)
   .settings(
     name := "pekko-lease-kubernetes",
     libraryDependencies := Dependencies.leaseKubernetes,
@@ -197,6 +260,9 @@ lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
 lazy val integrationTestKubernetesApi = pekkoIntTestModule("kubernetes-api")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-slf4j", "", PekkoCoreDependency.default)
   .settings(
     libraryDependencies := Dependencies.bootstrapDemos)
   .dependsOn(management, managementClusterHttp, managementClusterBootstrap, discoveryKubernetesApi)
@@ -205,6 +271,9 @@ lazy val integrationTestKubernetesApi = pekkoIntTestModule("kubernetes-api")
 lazy val integrationTestKubernetesApiJava = pekkoIntTestModule("kubernetes-api-java")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin, NoPublish)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-slf4j", "", PekkoCoreDependency.default)
   .settings(
     libraryDependencies := Dependencies.bootstrapDemos)
   .dependsOn(
@@ -216,6 +285,9 @@ lazy val integrationTestKubernetesApiJava = pekkoIntTestModule("kubernetes-api-j
 lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin, NoPublish)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-slf4j", "", PekkoCoreDependency.default)
   .settings(
     libraryDependencies := Dependencies.bootstrapDemos)
   .dependsOn(
@@ -264,6 +336,9 @@ lazy val integrationTestAwsApiEcs = pekkoIntTestModule("aws-api-ecs")
 lazy val integrationTestLocal = pekkoIntTestModule("local")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
+  .addPekkoModuleDependency("pekko-discovery", "", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-testkit", "test", PekkoCoreDependency.default)
+  .addPekkoModuleDependency("pekko-slf4j", "", PekkoCoreDependency.default)
   .settings(
     name := "integration-test-local",
     libraryDependencies := Dependencies.bootstrapDemos)
