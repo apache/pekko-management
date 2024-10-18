@@ -373,7 +373,7 @@ lazy val docs = project
       "canonical.base_url" -> "https://pekko.apache.org/docs/pekko-management/1.0",
       "scaladoc.base_url" -> s"https://pekko.apache.org/api/pekko-management/1.0/",
       "scala.binary.version" -> scalaBinaryVersion.value,
-      "pekko.version" -> Dependencies.pekkoVersion,
+      "pekko.version" -> PekkoCoreDependency.version,
       "extref.pekko.base_url" -> s"https://pekko.apache.org/docs/pekko/${Dependencies.pekkoBinaryVersion}/%s",
       "scaladoc.pekko.base_url" -> s"https://pekko.apache.org/api/pekko/${Dependencies.pekkoBinaryVersion}/",
       "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/%s",
