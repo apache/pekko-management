@@ -11,7 +11,6 @@ import com.typesafe.sbt.packager.docker.{ Cmd, ExecCmd }
 import net.bzzt.reproduciblebuilds.ReproducibleBuildsPlugin.reproducibleBuildsCheckResolver
 import sbt.Keys.parallelExecution
 
-ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / versionScheme := Some(VersionScheme.SemVerSpec)
 sourceDistName := "apache-pekko-management"
 sourceDistIncubating := false
@@ -27,8 +26,8 @@ ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 inThisBuild(Def.settings(
   Global / onLoad := {
     sLog.value.info(
-      s"Building Pekko Management ${version.value} against Pekko ${Dependencies
-          .pekkoVersion} and Pekko HTTP ${Dependencies.pekkoHttpVersion} on Scala ${(root / scalaVersion).value}")
+      s"Building Pekko Management ${version.value} against Pekko ${PekkoCoreDependency
+          .version} and Pekko HTTP ${PekkoHttpDependency.version} on Scala ${(root / scalaVersion).value}")
     (Global / onLoad).value
   }))
 
@@ -298,7 +297,7 @@ lazy val docs = project
       "canonical.base_url" -> "https://pekko.apache.org/docs/pekko-management/1.0",
       "scaladoc.base_url" -> s"https://pekko.apache.org/api/pekko-management/1.0/",
       "scala.binary.version" -> scalaBinaryVersion.value,
-      "pekko.version" -> Dependencies.pekkoVersion,
+      "pekko.version" -> PekkoCoreDependency.version,
       "extref.pekko.base_url" -> s"https://pekko.apache.org/docs/pekko/${Dependencies.pekkoBinaryVersion}/%s",
       "scaladoc.pekko.base_url" -> s"https://pekko.apache.org/api/pekko/${Dependencies.pekkoBinaryVersion}/",
       "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/%s",
