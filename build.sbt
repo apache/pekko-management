@@ -21,6 +21,7 @@ commands := commands.value.filterNot { command =>
   }
 }
 
+ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 
 inThisBuild(Def.settings(
