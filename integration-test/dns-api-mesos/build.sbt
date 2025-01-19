@@ -10,7 +10,7 @@
 enablePlugins(JavaAppPackaging)
 name := "bootstrap-demo-dns-api"
 
-scalaVersion := "2.13.15"
+scalaVersion := "2.13.16"
 
 def pekkoManagementVersion(version: String) = version.split('+')(0)
 
