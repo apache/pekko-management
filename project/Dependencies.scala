@@ -24,7 +24,7 @@ object Dependencies {
   val scalaTestVersion = "3.2.19"
   val scalaTestPlusJUnitVersion = scalaTestVersion + ".0"
 
-  val awsSdkVersion = "1.12.781"
+  val awsSdkVersion = "1.12.782"
   val guavaVersion = "33.4.0-jre"
   val jacksonVersion = "2.17.3"
 
