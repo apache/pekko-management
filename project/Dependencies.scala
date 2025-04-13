@@ -61,7 +61,7 @@ object Dependencies {
     "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion % Test,
     "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVersion % Test,
     "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion % Test,
-    "commons-io" % "commons-io" % "2.18.0" % Test,
+    "commons-io" % "commons-io" % "2.19.0" % Test,
     "commons-fileupload" % "commons-fileupload" % "1.5" % Test,
     "com.jayway.jsonpath" % "json-path" % "2.9.0" % Test)
 
