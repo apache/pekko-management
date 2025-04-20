@@ -14,12 +14,12 @@
 package jdoc.org.apache.pekko.cluster.http.management;
 
 import org.apache.pekko.actor.ActorSystem;
-import org.apache.pekko.management.scaladsl.PekkoManagement;
 import org.apache.pekko.cluster.Cluster;
 // #imports
 import org.apache.pekko.http.javadsl.server.Route;
 import org.apache.pekko.management.cluster.javadsl.ClusterHttpManagementRoutes;
 // #imports
+import org.apache.pekko.management.scaladsl.PekkoManagement;
 
 public class CompileOnlyTest {
   public static void example() {
