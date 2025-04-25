@@ -77,8 +77,8 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
 
   private val routeProviders: immutable.Seq[ManagementRouteProvider] = loadRouteProviders()
 
-  private val bindingFuture = new AtomicReference[Future[Http.ServerBinding]]()
-  private val selfUriPromise = Promise[Uri]() // TODO has to keep config as well as the Uri, so we can reject 2nd calls with diff uri
+  private val bindingFuture = new AtomicReference[(ManagementRouteProviderSettings, Future[Http.ServerBinding])]()
+  private val selfUriPromise = Promise[Uri]()
 
   private def providerSettings: ManagementRouteProviderSettings = {
     // port is on purpose never inferred from protocol, because this HTTP endpoint is not the "main" one for the app
@@ -126,48 +126,59 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
    */
   def start(transformSettings: ManagementRouteProviderSettings => ManagementRouteProviderSettings): Future[Uri] = {
     val serverBindingPromise = Promise[Http.ServerBinding]()
-    if (bindingFuture.compareAndSet(null, serverBindingPromise.future)) {
+    val effectiveProviderSettings = transformSettings(providerSettings)
+    if (bindingFuture.compareAndSet(null, (effectiveProviderSettings, serverBindingPromise.future))) {
       try {
-        val effectiveBindHostname = settings.Http.EffectiveBindHostname
-        val effectiveBindPort = settings.Http.EffectiveBindPort
-        val effectiveProviderSettings = transformSettings(providerSettings)
-
-        // TODO instead of binding to hardcoded things here, discovery could also be used for this binding!
-        // Basically: "give me the SRV host/port for the port called `pekko-bootstrap`"
-        // discovery.lookup("_pekko-bootstrap" + ".effective-name.default").find(myaddress)
-        // ----
-        // FIXME -- think about the style of how we want to make these available
-
-        log.info("Binding Pekko Management (HTTP) endpoint to: {}:{}", effectiveBindHostname, effectiveBindPort)
-
-        val combinedRoutes = prepareCombinedRoutes(effectiveProviderSettings)
-
-        val baseBuilder = Http()
-          .newServerAt(effectiveBindHostname, effectiveBindPort)
-          .withSettings(ServerSettings(system).withRemoteAddressHeader(true))
-
-        val securedBuilder = effectiveProviderSettings.httpsConnectionContext match {
-          case Some(httpsContext) => baseBuilder.enableHttps(httpsContext)
-          case None               => baseBuilder
-        }
-        val serverFutureBinding = securedBuilder.bind(combinedRoutes)
-
-        serverBindingPromise.completeWith(serverFutureBinding).future.flatMap { binding =>
-          val boundPort = binding.localAddress.getPort
-          log.info(
-            ManagementLogMarker.boundHttp(s"$effectiveBindHostname:$boundPort"),
-            "Bound Pekko Management (HTTP) endpoint to: {}:{}",
-            effectiveBindHostname,
-            boundPort)
-          selfUriPromise.success(effectiveProviderSettings.selfBaseUri.withPort(boundPort)).future
-        }
-
+        start(effectiveProviderSettings, serverBindingPromise)
       } catch {
         case NonFatal(ex) =>
           log.warning(ex.getMessage)
           Future.failed(new IllegalArgumentException("Failed to start Pekko Management HTTP endpoint.", ex))
       }
-    } else selfUriPromise.future
+    } else {
+      val (configForExistingBinding, _) = bindingFuture.get()
+      if (configForExistingBinding == effectiveProviderSettings)
+        selfUriPromise.future
+      else
+        Future.failed(
+          new IllegalStateException("Management extension already started with different configuration parameters"))
+    }
+  }
+
+  private def start(effectiveProviderSettings: ManagementRouteProviderSettings,
+      serverBindingPromise: Promise[Http.ServerBinding]): Future[Uri] = {
+    val effectiveBindHostname = settings.Http.EffectiveBindHostname
+    val effectiveBindPort = settings.Http.EffectiveBindPort
+
+    // TODO instead of binding to hardcoded things here, discovery could also be used for this binding!
+    // Basically: "give me the SRV host/port for the port called `pekko-bootstrap`"
+    // discovery.lookup("_pekko-bootstrap" + ".effective-name.default").find(myaddress)
+    // ----
+    // FIXME -- think about the style of how we want to make these available
+
+    log.info("Binding Pekko Management (HTTP) endpoint to: {}:{}", effectiveBindHostname, effectiveBindPort)
+
+    val combinedRoutes = prepareCombinedRoutes(effectiveProviderSettings)
+
+    val baseBuilder = Http()
+      .newServerAt(effectiveBindHostname, effectiveBindPort)
+      .withSettings(ServerSettings(system).withRemoteAddressHeader(true))
+
+    val securedBuilder = effectiveProviderSettings.httpsConnectionContext match {
+      case Some(httpsContext) => baseBuilder.enableHttps(httpsContext)
+      case None               => baseBuilder
+    }
+    val serverFutureBinding = securedBuilder.bind(combinedRoutes)
+
+    serverBindingPromise.completeWith(serverFutureBinding).future.flatMap { binding =>
+      val boundPort = binding.localAddress.getPort
+      log.info(
+        ManagementLogMarker.boundHttp(s"$effectiveBindHostname:$boundPort"),
+        "Bound Pekko Management (HTTP) endpoint to: {}:{}",
+        effectiveBindHostname,
+        boundPort)
+      selfUriPromise.success(effectiveProviderSettings.selfBaseUri.withPort(boundPort)).future
+    }
   }
 
   private def prepareCombinedRoutes(providerSettings: ManagementRouteProviderSettings): Route = {
@@ -194,7 +205,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
             case provided: Credentials.Provided => Optional.of(ProvidedCredentials(provided))
             case _                              => Optional.empty()
           }
-          authenticateBasicAsync(realm = "secured", c => auth.apply(credsToJava(c)).asScala.map(_.toScala)).optional
+          authenticateBasicAsync(realm = "secured", c => auth.apply(credsToJava(c)).asScala.map(_.toScala))
             .apply(_ => inner)
 
         case (Some(_), Some(_)) =>
@@ -224,7 +235,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
     if (binding == null) {
       Future.successful(Done)
     } else if (bindingFuture.compareAndSet(binding, null)) {
-      binding.flatMap(_.unbind()).map((_: Any) => Done)
+      binding._2.flatMap(_.unbind()).map((_: Any) => Done)
     } else stop() // retry, CAS was not successful, someone else completed the stop()
   }
 
