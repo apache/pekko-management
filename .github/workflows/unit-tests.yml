@@ -12,7 +12,7 @@ on:
 jobs:
   test:
     name: Build and Test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: github.repository == 'apache/pekko-management'
     strategy:
       fail-fast: false
@@ -65,7 +65,7 @@ jobs:
 
   slf4j2-test:
     name: Test Logback with slf4J2
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: github.repository == 'apache/pekko-management'
     steps:
       - name: Checkout
@@ -92,7 +92,7 @@ jobs:
 
   docs:
     name: Docs compile
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
