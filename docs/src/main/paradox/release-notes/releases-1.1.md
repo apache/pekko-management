@@ -1,5 +1,24 @@
 # Release Notes (1.1.x)
 
+## 1.1.1
+
+Release notes for Apache Pekko Management 1.1.1
+
+### Additions
+
+* Configuration option to enable gzip compression on k8s pods api for service discovery ([PR336](https://github.com/apache/pekko-management/pull/336))
+* Improved error handling on conflicting 'start' invocations ([PR418](https://github.com/apache/pekko-management/pull/418))
+
+### Dependency Upgrades
+
+* Pekko 1.1.3 ([PR374](https://github.com/apache/pekko-management/pull/374))
+
+### Infrastructure
+
+* Exclude project report from link validator ([PR348](https://github.com/apache/pekko-management/pull/348))
+* Use PekkoCoreDependency ([PR341](https://github.com/apache/pekko-management/pull/341))
+* CI setup-sbt ([PR333](https://github.com/apache/pekko-management/pull/333))
+
 ## 1.1.0
 
 Release notes for Apache Pekko Management 1.1.0. See [GitHub Milestone for 1.1.0-M1](https://github.com/apache/pekko-management/milestone/1?closed=1) and [GitHub Milestone for 1.1.0](https://github.com/apache/pekko-management/milestone/2?closed=1) for a fuller list of changes.
