@@ -10,11 +10,16 @@ jobs:
     name: Publish artifacts to Apache Nexus
     runs-on: ubuntu-22.04
     if: github.repository == 'apache/pekko-management'
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: ['main', '1.0.x']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ matrix.branch }}
 
       - name: Enable jvm-opts
         run: cp .jvmopts-ci .jvmopts
