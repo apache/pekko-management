@@ -96,11 +96,6 @@ private[bootstrap] class HttpContactPointBootstrap(
   private implicit val sys: ActorSystem = context.system
 
   private lazy val sslContext = {
-    val certificates = if (settings.contactPoint.httpClient.caPath.nonEmpty)
-      Seq.empty
-    else
-      PemManagersProvider.loadCertificates(settings.contactPoint.httpClient.caPath)
-
     val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
     val keyStore = KeyStore.getInstance("PKCS12")
     keyStore.load(null)
