@@ -101,10 +101,11 @@ private[bootstrap] class HttpContactPointBootstrap(
     keyStore.load(null)
     factory.init(keyStore, Array.empty)
     val km: Array[KeyManager] = factory.getKeyManagers
-    val tm: Array[TrustManager] = if (settings.contactPoint.httpClient.caPath.nonEmpty) {
+    val caPath = settings.contactPoint.httpClient.caPath.trim
+    val tm: Array[TrustManager] = if (caPath.isEmpty) {
       Array.empty
     } else {
-      val certificates = PemManagersProvider.loadCertificates(settings.contactPoint.httpClient.caPath)
+      val certificates = PemManagersProvider.loadCertificates(caPath)
       PemManagersProvider.buildTrustManagers(certificates)
     }
     val random: SecureRandom = new SecureRandom
