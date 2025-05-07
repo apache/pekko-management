@@ -11,5 +11,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install sbt
-        uses: sbt/setup-sbt@v1
+        uses: sbt/setup-sbt@ 26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c
       - uses: scalacenter/sbt-dependency-submission@v2

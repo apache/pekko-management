@@ -43,7 +43,7 @@ jobs:
           java-version: ${{ matrix.javaVersion }}
 
       - name: Install sbt
-        uses: sbt/setup-sbt@v1
+        uses: sbt/setup-sbt@ 26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c
           
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6
@@ -87,7 +87,7 @@ jobs:
           java-version: 11
 
       - name: Install sbt
-        uses: sbt/setup-sbt@v1
+        uses: sbt/setup-sbt@ 26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c
           
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6
