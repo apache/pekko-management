@@ -37,13 +37,13 @@ jobs:
 
 
       - name: Install sbt
-        uses: sbt/setup-sbt@ 26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c
+        uses: sbt/setup-sbt@26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6
 
       - name: Setup Minikube
-        uses: manusa/actions-setup-minikube@ b589f2d61bf96695c546929c72b38563e856059d
+        uses: manusa/actions-setup-minikube@b589f2d61bf96695c546929c72b38563e856059d
         with:
           minikube version: 'v1.27.1' # based on k8s v1.25.2
           kubernetes version: 'v1.25.2'

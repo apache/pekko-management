@@ -29,7 +29,7 @@ jobs:
           java-version: 8
 
       - name: Install sbt
-        uses: sbt/setup-sbt@ 26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c
+        uses: sbt/setup-sbt@26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c
 
       - name: Cache Coursier cache
         uses: coursier/cache-action@v6
