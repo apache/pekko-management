@@ -12,7 +12,7 @@ jobs:
     if: github.repository == 'apache/pekko-management'
     steps:
       - name: Launch Scala Steward
-        uses: scala-steward-org/scala-steward-action@5021652c555c5724af574758b78ea5be49640007
+        uses: scala-steward-org/scala-steward-action@5021652c555c5724af574758b78ea5be49640007 # v2.75.0
         env:
           JAVA_OPTS: "-Xms1G -Xmx1G -Xss2M -XX:ReservedCodeCacheSize=128m"
         with:
