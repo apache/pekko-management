@@ -74,7 +74,7 @@ See [CONTRIBUTING.md](https://github.com/apache/pekko-management/blob/main/CONTR
 With the exception of the experimental modules listed below, version 1.0.0 or later of this library
 will be ready to be used in production and APIs are stable.
 
-The 1.0.0 release is expected soon. Snapshots are published to https://repository.apache.org/content/groups/snapshots/.
+Snapshots are published to https://repository.apache.org/content/groups/snapshots/.
 
 The following modules are considered experimental and require more work and testing to be considered production ready:
 
