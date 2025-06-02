@@ -44,9 +44,6 @@ jobs:
         run: |
           echo -e "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)\t$(hostname -f) $(hostname -s)" | sudo tee -a /etc/hosts
 
-      - name: Compile integration test
-        run: sbt -Dpekko.build.pekko.version=${{ matrix.pekkoVersion }} "++${{ matrix.scalaVersion }} IntegrationTest/compile"
-
       - name: Run tests with Scala ${{ matrix.scalaVersion }} and Java ${{ matrix.javaVersion }}
         run: sbt -Dpekko.build.pekko.version=${{ matrix.pekkoVersion }} "++${{ matrix.scalaVersion }} test"
 
