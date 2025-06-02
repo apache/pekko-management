@@ -179,13 +179,14 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % "it,test",
-    "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % "it,test",
-    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % "it,test") ++
+    "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
+    "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % Test,
+    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test) ++
     wireMockDependencies
 
   val leaseKubernetesTest = Seq(
-    "org.scalatest" %% "scalatest" % scalaTestVersion)
+    "org.scalatest" %% "scalatest" % scalaTestVersion,
+    "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test)
 
   val bootstrapDemos = Seq(
     "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,

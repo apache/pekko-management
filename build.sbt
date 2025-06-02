@@ -158,9 +158,6 @@ lazy val leaseKubernetes = pekkoModule("lease-kubernetes")
     name := "pekko-lease-kubernetes",
     libraryDependencies := Dependencies.leaseKubernetes,
     mimaPreviousArtifactsSet)
-  .settings(Defaults.itSettings)
-  .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(JavaFormatterPlugin.toBeScopedSettings))
   .dependsOn(managementPki)
 
 lazy val billOfMaterials = Project("bill-of-materials", file("bill-of-materials"))
