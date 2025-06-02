@@ -60,7 +60,7 @@ jobs:
           echo 'Adding proxy port'
           kubectl proxy --port=8080 &
           echo 'Running tests'
-          sbt ";lease-kubernetes-int-test:test"
+          sbt ";lease-kubernetes-int-test/test"
           ./lease-kubernetes-int-test/test.sh job.yml
           ./lease-kubernetes-int-test/test.sh job-native.yml
 
