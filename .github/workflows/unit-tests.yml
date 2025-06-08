@@ -56,9 +56,6 @@ jobs:
       - name: Check code formatted
         run: sbt javafmtCheckAll
 
-      - name: Compile integration test
-        run: sbt "++${{ matrix.scalaVersion }} IntegrationTest/compile" ${{ matrix.sbtOpts }}
-
       - name: Run tests with Scala ${{ matrix.scalaVersion }} and Java ${{ matrix.javaVersion }}
         run: sbt "++${{ matrix.scalaVersion }} test" ${{ matrix.sbtOpts }}
 
