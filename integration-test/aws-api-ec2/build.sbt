@@ -11,10 +11,10 @@ enablePlugins(JavaAppPackaging)
 
 Universal / packageName := "app" // should produce app.zip
 
-libraryDependencies += "com.amazonaws" % "aws-java-sdk-cloudformation" % "1.12.739" % IntegrationTest
+libraryDependencies += "com.amazonaws" % "aws-java-sdk-cloudformation" % "1.12.785" % Test
 
-libraryDependencies += "com.amazonaws" % "aws-java-sdk-autoscaling" % "1.12.739" % IntegrationTest
+libraryDependencies += "com.amazonaws" % "aws-java-sdk-autoscaling" % "1.12.785" % Test
 
-libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.12.7.2" // aws SDK depends on old version of jackson
+libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.14.3"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % Dependencies.scalaTestVersion % IntegrationTest
+libraryDependencies += "org.scalatest" %% "scalatest" % Dependencies.scalaTestVersion % Test

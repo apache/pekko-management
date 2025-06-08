@@ -221,12 +221,8 @@ lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
     managementClusterBootstrap)
 
 lazy val integrationTestAwsApiEc2TagBased = pekkoIntTestModule("aws-api-ec2")
-  .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(JavaFormatterPlugin.toBeScopedSettings))
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin, NoPublish)
-  .settings(
-    Defaults.itSettings)
   .dependsOn(
     management,
     managementClusterHttp,
