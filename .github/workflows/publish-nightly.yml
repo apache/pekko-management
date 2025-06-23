@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: ['main', '1.0.x']
+        branch: ['main', '1.0.x', '1.1.x']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
