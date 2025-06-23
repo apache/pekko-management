@@ -41,6 +41,12 @@ class KubernetesSettingsSpec extends AnyWordSpec with Matchers {
            api-server-request-timeout=4s
         """.stripMargin).apiServerRequestTimeout shouldEqual 4.seconds
     }
+    "default tls-version to v1.2" in {
+      conf("").tlsVersion shouldEqual "TLSv1.2"
+    }
+    "support tls-version override" in {
+      conf("tls-version=TLSv1.3").tlsVersion shouldEqual "TLSv1.3"
+    }
     "not allow server request timeout greater than operation timeout" in {
       intercept[IllegalArgumentException] {
         conf("""
