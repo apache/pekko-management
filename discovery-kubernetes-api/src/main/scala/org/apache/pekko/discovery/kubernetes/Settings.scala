@@ -49,6 +49,9 @@ final class Settings(kubernetesApi: Config) extends Extension {
   val apiServicePortEnvName: String =
     kubernetesApi.getString("api-service-port-env-name")
 
+  val tlsVersion: String =
+    kubernetesApi.getString("tls-version")
+
   val podNamespacePath: String =
     kubernetesApi.getString("pod-namespace-path")
 

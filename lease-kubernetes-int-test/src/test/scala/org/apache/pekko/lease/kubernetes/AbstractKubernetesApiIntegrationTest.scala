@@ -59,7 +59,7 @@ abstract class AbstractKubernetesApiIntegrationTest extends TestKit(ActorSystem(
     namespace = Some("lease"),
     "",
     apiServerRequestTimeout = 1.second,
-    false)
+    secure = false)
   val leaseName = "lease-1"
   val client1 = "client-1"
   val client2 = "client-2"

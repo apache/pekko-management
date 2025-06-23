@@ -59,7 +59,7 @@ import scala.util.control.NonFatal
     val tm: Array[TrustManager] =
       PemManagersProvider.buildTrustManagers(certificates)
     val random: SecureRandom = new SecureRandom
-    val sslContext = SSLContext.getInstance("TLSv1.2")
+    val sslContext = SSLContext.getInstance(settings.tlsVersion)
     sslContext.init(km, tm, random)
     sslContext
   }
