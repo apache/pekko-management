@@ -81,5 +81,5 @@ private[pekko] class KubernetesSettings(
     val namespacePath: String,
     val apiServerRequestTimeout: FiniteDuration,
     val secure: Boolean = true,
-    val tlsVersion: String = "TLSv1.3",
+    val tlsVersion: String = "TLSv1.2",
     val bodyReadTimeout: FiniteDuration = 1.second)
