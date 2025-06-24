@@ -145,7 +145,7 @@
                   <exec>
                     <args>/bin/sh</args>
                     <args>-c</args>
-                    <args>java -jar /maven/integration-test-kubernetes-api-java-allinone.jar</args>
+                    <args>java -Djavax.net.debug=all -jar /maven/integration-test-kubernetes-api-java-allinone.jar</args>
                   </exec>
                 </entryPoint>
                 <assembly>
