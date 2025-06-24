@@ -44,7 +44,7 @@ jobs:
         uses: manusa/actions-setup-minikube@b589f2d61bf96695c546929c72b38563e856059d # v2.14.0
         with:
           minikube version: 'v1.36.0'
-          kubernetes version: 'v1.28.15'
+          kubernetes version: 'v1.29.15'
           driver: docker
           github token: ${{ secrets.GITHUB_TOKEN }}
           start args: '--addons=ingress'
