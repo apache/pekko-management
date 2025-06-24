@@ -147,9 +147,9 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         val f = http.singleRequest(request, clientSslContext)
         f.onComplete {
           case scala.util.Failure(exception) =>
-            log.error(exception, "Lookup failed to communicate with Kubernetes API server.")
+            log.error(exception, s"Lookup failed to communicate with Kubernetes API server (${request.uri}).")
           case scala.util.Success(_) =>
-            log.info("Lookup successfully communicated with Kubernetes API server.")
+            log.info(s"Lookup successfully communicated with Kubernetes API server (${request.uri}).")
         }
         f.map(decodeResponse)
       }
