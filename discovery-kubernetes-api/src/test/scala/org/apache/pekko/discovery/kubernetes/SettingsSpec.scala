@@ -26,11 +26,11 @@ import org.scalatest.wordspec.AnyWordSpec
 class SettingsSpec extends AnyWordSpec with Matchers {
 
   "Settings" should {
-    "default tls-version to v1.2" in {
+    "default tls-version to v1.3" in {
       val system = ActorSystem("test")
       try {
         val settings = Settings(system)
-        settings.tlsVersion shouldBe "TLSv1.2"
+        settings.tlsVersion shouldBe "TLSv1.3"
       } finally {
         system.terminate()
       }
@@ -38,13 +38,13 @@ class SettingsSpec extends AnyWordSpec with Matchers {
     "support tls-version override" in {
       val config = ConfigFactory.parseString("""
         pekko.discovery.kubernetes-api {
-          tls-version = "TLSv1.3"
+          tls-version = "TLSv1.2"
         }
       """)
       val system = ActorSystem("test", config)
       try {
         val settings = Settings(system)
-        settings.tlsVersion shouldBe "TLSv1.3"
+        settings.tlsVersion shouldBe "TLSv1.2"
       } finally {
         system.terminate()
       }
