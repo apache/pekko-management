@@ -34,6 +34,7 @@ import org.scalatest.wordspec.AnyWordSpec
 class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll with Eventually {
   val serviceName = "bootstrap-coordinator-test-service"
   val selfUri = Uri("http://localhost:7626/")
+  val secureSelfUri = Uri("https://localhost:7626/")
   val system = ActorSystem(
     "test",
     ConfigFactory.parseString(s"""
@@ -78,6 +79,42 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
           }
         }))
       coordinator ! InitiateBootstrapping(selfUri)
+      eventually {
+        val targetsToCheck = targets.get
+        targetsToCheck.length should be >= 2
+        targetsToCheck.map(_.host) should contain("host1")
+        targetsToCheck.map(_.host) should contain("host2")
+        targetsToCheck.flatMap(_.port).toSet should be(Set(7626))
+      }
+    }
+
+    "probe only on the Pekko Management port (https)" in {
+
+      MockDiscovery.set(
+        Lookup(serviceName, portName = None, protocol = Some("tcp")),
+        () =>
+          Future.successful(
+            Resolved(
+              serviceName,
+              List(
+                ResolvedTarget("host1", Some(7355), None),
+                ResolvedTarget("host1", Some(7626), None),
+                ResolvedTarget("host2", Some(7355), None),
+                ResolvedTarget("host2", Some(7626), None)))))
+
+      val targets = new AtomicReference[List[ResolvedTarget]](Nil)
+      val coordinator = system.actorOf(
+        Props(new BootstrapCoordinator(discovery, joinDecider, settings) {
+          override def ensureProbing(
+              selfContactPointScheme: String,
+              contactPoint: ResolvedTarget): Option[ActorRef] = {
+            println(s"Resolving $contactPoint")
+            val targetsSoFar = targets.get
+            targets.compareAndSet(targetsSoFar, contactPoint +: targetsSoFar)
+            None
+          }
+        }))
+      coordinator ! InitiateBootstrapping(secureSelfUri)
       eventually {
         val targetsToCheck = targets.get
         targetsToCheck.length should be >= 2
