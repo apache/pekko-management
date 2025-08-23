@@ -89,8 +89,14 @@ version number off the current git commit hash, which is great especially for co
 need to be involved in selecting a unique version number. After building the image, you can take the version number generated in that step 
 and update the image referenced in the spec accordingly.
 
+## Rolling Updates and Scaling Down
 
+Older versions of Kubernetes used to scale down the youngest nodes first and Pekko Singletons are usually deployed
+on the oldest node (prior to Kubernetes 1.22).
+This meant less disruption as the Singletons would only be moved once during a Rolling Update.
+The Eclipse Ditto team have provided some documentation on how to adjust the Pod Deletion Cost to try to make the oldest node the
+last one to be scaled down.
+We hope to adjust Pekko Management to do this automatically in a future release.
 
-
-
+The GitHub Issue is [#414](https://github.com/apache/pekko-management/issues/414) and this [comment](https://github.com/apache/pekko-management/issues/414#issuecomment-3112361378) contains the workaround.
 
