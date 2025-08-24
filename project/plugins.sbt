@@ -7,7 +7,7 @@
  * This file is part of the Apache Pekko project, which was derived from Akka.
  */
 
-addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.11.1")
+addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.11.3")
 
 addSbtPlugin("de.heikoseeberger" % "sbt-header" % "5.10.0")
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.5")
