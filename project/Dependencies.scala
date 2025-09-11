@@ -26,7 +26,7 @@ object Dependencies {
 
   val awsSdkVersion = "1.12.791"
   val guavaVersion = "33.4.8-jre"
-  val jacksonVersion = "2.17.3"
+  val jacksonVersion = "2.20.0"
 
   val log4j2Version = "2.25.1"
   val logbackVersion = "1.3.15"
@@ -59,7 +59,6 @@ object Dependencies {
     "org.eclipse.jetty.http2" % "http2-server" % jettyVersion % Test,
     "com.google.guava" % "guava" % guavaVersion % Test,
     "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion % Test,
-    "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVersion % Test,
     "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion % Test,
     "commons-io" % "commons-io" % "2.20.0" % Test,
     "commons-fileupload" % "commons-fileupload" % "1.6.0" % Test,
