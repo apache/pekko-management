@@ -19,7 +19,7 @@ jobs:
       - name: Enable jvm-opts
         run: cp .jvmopts-ci .jvmopts
 
-      - name: Set up JDK 8
+      - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
