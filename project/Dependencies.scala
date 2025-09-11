@@ -59,7 +59,6 @@ object Dependencies {
     "org.eclipse.jetty.http2" % "http2-server" % jettyVersion % Test,
     "com.google.guava" % "guava" % guavaVersion % Test,
     "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion % Test,
-    "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVersion % Test,
     "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion % Test,
     "commons-io" % "commons-io" % "2.20.0" % Test,
     "commons-fileupload" % "commons-fileupload" % "1.6.0" % Test,
