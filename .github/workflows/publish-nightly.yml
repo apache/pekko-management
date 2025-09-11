@@ -10,25 +10,20 @@ jobs:
     name: Publish artifacts to Apache Nexus
     runs-on: ubuntu-22.04
     if: github.repository == 'apache/pekko-management'
-    strategy:
-      fail-fast: false
-      matrix:
-        branch: ['main', '1.0.x', '1.1.x']
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          ref: ${{ matrix.branch }}
 
       - name: Enable jvm-opts
         run: cp .jvmopts-ci .jvmopts
 
-      - name: Set up JDK 8
-        uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 8
+          java-version: 17
 
       - name: Install sbt
         uses: sbt/setup-sbt@26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c # v1.1.7

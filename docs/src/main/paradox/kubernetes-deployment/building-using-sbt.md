@@ -33,7 +33,7 @@ By default, sbt native packager uses the `openjdk` latest Docker image from Dock
 We recommend using the AdoptOpenJDK base image:
 
 ```scala
-dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
+dockerBaseImage := "eclipse-temurin:17-jre-alpine"
 ```
 
 ### Git hash based version numbers

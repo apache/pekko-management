@@ -178,7 +178,7 @@ lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
     name := "pekko-lease-kubernetes-int-test",
     libraryDependencies := Dependencies.leaseKubernetesTest,
     version ~= (_.replace('+', '-')),
-    dockerBaseImage := "eclipse-temurin:8-jre-alpine",
+    dockerBaseImage := "eclipse-temurin:17-jre-alpine",
     dockerUpdateLatest := true,
     dockerCommands := dockerCommands.value.flatMap {
       case ExecCmd("ENTRYPOINT", args @ _*) => Seq(Cmd("ENTRYPOINT", args.mkString(" ")))
@@ -250,7 +250,7 @@ lazy val integrationTestAwsApiEcs = pekkoIntTestModule("aws-api-ecs")
     discoveryAwsApiAsync)
   .enablePlugins(JavaAppPackaging, AshScriptPlugin, DockerPlugin, NoPublish)
   .settings(
-    dockerBaseImage := "eclipse-temurin:11-jre-alpine",
+    dockerBaseImage := "eclipse-temurin:17-jre-alpine",
     Docker / com.typesafe.sbt.SbtNativePackager.autoImport.packageName := "ecs-integration-test-app",
     Docker / version := "1.0")
 

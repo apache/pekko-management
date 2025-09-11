@@ -47,7 +47,7 @@ object Common extends AutoPlugin {
           "-feature",
           "-unchecked",
           "-deprecation",
-          "-release:8")
+          "-release:17")
         if (scalaVersion.value == Dependencies.scala213Version)
           scalacOptionsBase ++: Seq(
             "-Werror",
@@ -62,10 +62,7 @@ object Common extends AutoPlugin {
         "-Xlint:unchecked"),
       // Necessary otherwise javadoc fails with Unexpected javac output: javadoc: error - invalid flag: -Xlint:unchecked.
       Compile / doc / javacOptions -= "-Xlint:unchecked",
-      javacOptions ++= (
-        if (isJdk8) Seq.empty
-        else Seq("--release", "8")
-      ),
+      javacOptions ++= Seq("--release", "17"),
       Compile / doc / scalacOptions := scalacOptions.value ++ Seq(
         "-doc-title",
         "Apache Pekko Management",
@@ -95,7 +92,4 @@ object Common extends AutoPlugin {
 
   override lazy val buildSettings = Seq(
     dynverSonatypeSnapshots := true)
-
-  private def isJdk8 =
-    VersionNumber(sys.props("java.specification.version")).matchesSemVer(SemanticSelector(s"=1.8"))
 }

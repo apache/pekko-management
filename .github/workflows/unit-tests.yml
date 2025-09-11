@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - release-*
     tags-ignore: [ v.* ]
 
 jobs:
@@ -18,15 +17,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { javaVersion: 8,  scalaVersion: 2.12, sbtOpts: '' }
-          - { javaVersion: 11, scalaVersion: 2.12, sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
-          - { javaVersion: 8,  scalaVersion: 2.13, sbtOpts: '' }
-          - { javaVersion: 11, scalaVersion: 2.13, sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
-          - { javaVersion: 8,  scalaVersion: 3.3,   sbtOpts: '' }
-          - { javaVersion: 11, scalaVersion: 3.3,   sbtOpts: '-J-XX:+UnlockExperimentalVMOptions -J-XX:+UseJVMCICompiler' }
+          - { javaVersion: 17,  scalaVersion: 2.12, sbtOpts: '' }
+          - { javaVersion: 17,  scalaVersion: 2.13, sbtOpts: '' }
+          - { javaVersion: 17,  scalaVersion: 3.3,  sbtOpts: '' }
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -37,7 +33,7 @@ jobs:
           git checkout scratch
 
       - name: Setup Java ${{ matrix.javaVersion }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ matrix.javaVersion }}
@@ -68,7 +64,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -77,11 +73,11 @@ jobs:
         run: |-
           git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
           git checkout scratch
-      - name: Setup Java 11
-        uses: actions/setup-java@v4
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
 
       - name: Install sbt
         uses: sbt/setup-sbt@26ab4b0fa1c47fa62fc1f6e51823a658fb6c760c # v1.1.7
