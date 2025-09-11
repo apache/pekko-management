@@ -13,11 +13,11 @@ jobs:
       fail-fast: false
       matrix:
         scalaVersion: ['2.12', '2.13', '3.3']
-        javaVersion: [8, 11, 17, 21]
-        pekkoVersion: ['default', '1.0.x']
+        javaVersion: [17, 21]
+        pekkoVersion: ['default']
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -28,7 +28,7 @@ jobs:
           git checkout scratch
 
       - name: Setup Java ${{ matrix.javaVersion }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ matrix.javaVersion }}
