@@ -155,7 +155,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-http-core" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.mockito" % "mockito-core" % "4.11.0" % Test,
+    "org.mockito" % "mockito-core" % "5.19.0" % Test,
     "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test,
     "org.apache.pekko" %% "pekko-distributed-data" % pekkoVersion % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
