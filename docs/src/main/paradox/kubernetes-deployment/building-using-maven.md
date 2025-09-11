@@ -54,7 +54,7 @@ The version number will only change when you create a new git commit. If you are
             <image>
                 <name>%a</name>
                 <build>
-                    <from>adoptopenjdk:11-jre-hotspot</from>
+                    <from>eclipse-temurin:17-jre-alpine</from>
                     <tags>
                         <tag>latest</tag>
                         <tag>${version.number}</tag>
@@ -88,7 +88,7 @@ The version number will only change when you create a new git commit. If you are
 
 There are two things to pay careful attention to here. 
 
-* The base image we're using is `adoptopenjdk:11-jre-hotspot`. You can use any Docker image that provides a JRE, this is the one we recommend for open source users of Kubernetes.
+* The base image we're using is `eclipse-temurin:17-jre-alpine`. You can use any Docker image that provides a JRE, this is the one we recommend for open source users of Kubernetes.
 * `docker:build` is added to the `package` phase do that the Docker image is built when running `mvn package`
 * Versions `latest` and `${version.number}` are tagged
 * Artifact with dependencies is set for the assembly. Meaning your application and its dependencies are added to `/maven` in the Docker image
