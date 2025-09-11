@@ -43,7 +43,7 @@ object Dependencies {
     "com.google.guava" % "guava" % guavaVersion)
 
   private val wireMockDependencies = Seq(
-    "com.github.tomakehurst" % "wiremock" % "3.13.1" % Test)
+    "org.wiremock" % "wiremock" % "3.13.1" % Test)
 
   val discoveryConsul = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
