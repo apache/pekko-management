@@ -13,6 +13,8 @@
 
 package org.apache.pekko.management.loglevels.logback
 
+import scala.annotation.nowarn
+
 import ch.qos.logback.classic.{ Level, LoggerContext }
 import org.apache.pekko
 import pekko.actor.{ ExtendedActorSystem, Extension, ExtensionId }
@@ -114,6 +116,7 @@ final class LogLevelRoutes private (system: ExtendedActorSystem) extends Extensi
  */
 @InternalApi
 private[pekko] object LoggingUnmarshallers {
+  @nowarn("msg=deprecated") // Level.ALL is deprecated
   private val validLevels =
     Set(Level.ALL, Level.DEBUG, Level.ERROR, Level.INFO, Level.OFF, Level.TRACE, Level.WARN).map(_.toString)
 
