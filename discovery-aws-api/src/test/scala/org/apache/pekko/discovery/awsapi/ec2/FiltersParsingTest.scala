@@ -16,9 +16,10 @@ package org.apache.pekko.discovery.awsapi.ec2
 import com.amazonaws.services.ec2.model.Filter
 import org.apache.pekko
 import pekko.discovery.awsapi.ec2.Ec2TagBasedServiceDiscovery.parseFiltersString
-import pekko.util.ccompat.JavaConverters._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
+
+import scala.jdk.CollectionConverters._
 
 class FiltersParsingTest extends AnyFunSuite with Matchers {
 

@@ -18,7 +18,7 @@ import java.util.Optional
 import org.apache.pekko.actor._
 import com.typesafe.config.Config
 
-import org.apache.pekko.util.OptionConverters._
+import scala.jdk.OptionConverters._
 
 final class Settings(kubernetesApi: Config) extends Extension {
 

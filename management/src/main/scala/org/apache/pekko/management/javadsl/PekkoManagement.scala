@@ -15,6 +15,7 @@ package org.apache.pekko.management.javadsl
 
 import java.util.concurrent.CompletionStage
 import java.util.function.{ Function => JFunction }
+
 import org.apache.pekko
 import pekko.Done
 import pekko.actor.{ ActorSystem, ClassicActorSystemProvider }
@@ -22,7 +23,8 @@ import pekko.http.javadsl.model.Uri
 import pekko.http.javadsl.server.directives.RouteAdapter
 import pekko.management.PekkoManagementSettings
 import pekko.management.scaladsl
-import pekko.util.FutureConverters._
+
+import scala.jdk.FutureConverters._
 
 object PekkoManagement {
   def get(system: ActorSystem): PekkoManagement =

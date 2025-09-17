@@ -14,12 +14,11 @@
 package org.apache.pekko.management
 
 import com.typesafe.config.Config
-import org.apache.pekko
-import pekko.util.JavaDurationConverters._
-import pekko.util.ccompat.JavaConverters._
 
 import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
+import scala.jdk.CollectionConverters._
+import scala.jdk.DurationConverters._
 
 final case class NamedHealthCheck(name: String, fullyQualifiedClassName: String)
 
@@ -62,7 +61,7 @@ object HealthCheckSettings {
       config.getString("startup-path"),
       config.getString("readiness-path"),
       config.getString("liveness-path"),
-      config.getDuration("check-timeout").asScala)
+      config.getDuration("check-timeout").toScala)
   }
 
   /**
@@ -88,7 +87,7 @@ object HealthCheckSettings {
       startupPath,
       readinessPath,
       livenessPath,
-      checkDuration.asScala)
+      checkDuration.toScala)
 
   /**
    * Java API
@@ -107,7 +106,7 @@ object HealthCheckSettings {
       "",
       readinessPath,
       livenessPath,
-      checkDuration.asScala)
+      checkDuration.toScala)
 }
 
 /**
@@ -165,5 +164,5 @@ final class HealthCheckSettings(
   /**
    * Java API
    */
-  def getCheckTimeout(): java.time.Duration = checkTimeout.asJava
+  def getCheckTimeout(): java.time.Duration = checkTimeout.toJava
 }

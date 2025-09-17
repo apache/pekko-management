@@ -14,11 +14,13 @@
 package org.apache.pekko.management.cluster.bootstrap
 
 import java.time.LocalDateTime
+
 import scala.concurrent.Future
+import scala.jdk.CollectionConverters._
+
 import org.apache.pekko
 import pekko.actor.Address
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
-import pekko.util.ccompat.JavaConverters._
 
 /**
  * The decisions of joining existing seed-nodes or join self to form new

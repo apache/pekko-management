@@ -33,14 +33,15 @@ import pekko.http.scaladsl.server.directives.Credentials
 import pekko.http.scaladsl.settings.ServerSettings
 import pekko.management.{ javadsl, ManagementLogMarker, NamedRouteProvider, PekkoManagementSettings }
 import pekko.util.ManifestInfo
-import pekko.util.FutureConverters._
-import pekko.util.OptionConverters._
 
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicReference
+
 import scala.annotation.tailrec
 import scala.collection.immutable
 import scala.concurrent.{ Future, Promise }
+import scala.jdk.FutureConverters._
+import scala.jdk.OptionConverters._
 import scala.util.{ Failure, Success }
 import scala.util.control.NonFatal
 

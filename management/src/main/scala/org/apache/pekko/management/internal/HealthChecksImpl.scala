@@ -17,6 +17,7 @@ import java.util.concurrent.CompletionStage
 import java.util.function.Supplier
 import java.util.{ List => JList }
 import java.lang.{ Boolean => JBoolean }
+
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, ExtendedActorSystem }
 import pekko.annotation.InternalApi
@@ -26,11 +27,11 @@ import pekko.management.javadsl.{ LivenessCheckSetup => JLivenessCheckSetup }
 import pekko.management.javadsl.{ ReadinessCheckSetup => JReadinessCheckSetup }
 import pekko.management.javadsl.{ StartupCheckSetup => JStartupCheckSetup }
 import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup, StartupCheckSetup }
-import pekko.util.FutureConverters._
-import pekko.util.ccompat.JavaConverters._
 
 import scala.collection.immutable
 import scala.concurrent.Future
+import scala.jdk.CollectionConverters._
+import scala.jdk.FutureConverters._
 import scala.util.{ Failure, Success, Try }
 
 final case class CheckFailedException(msg: String, cause: Throwable) extends RuntimeException(msg, cause)

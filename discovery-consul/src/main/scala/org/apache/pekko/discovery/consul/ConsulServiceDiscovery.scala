@@ -26,7 +26,6 @@ import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.consul.ConsulServiceDiscovery._
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.pattern.after
-import pekko.util.ccompat.JavaConverters._
 
 import java.net.InetAddress
 import java.util
@@ -34,6 +33,7 @@ import java.util.concurrent.TimeoutException
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 @ApiMayChange
