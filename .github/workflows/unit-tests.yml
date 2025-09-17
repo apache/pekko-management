@@ -17,7 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { javaVersion: 17,  scalaVersion: 2.12, sbtOpts: '' }
           - { javaVersion: 17,  scalaVersion: 2.13, sbtOpts: '' }
           - { javaVersion: 17,  scalaVersion: 3.3,  sbtOpts: '' }
     steps:

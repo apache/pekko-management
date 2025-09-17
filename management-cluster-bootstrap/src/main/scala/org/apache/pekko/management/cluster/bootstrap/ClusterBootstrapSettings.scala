@@ -21,9 +21,10 @@ import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.event.LoggingAdapter
 import com.typesafe.config.Config
+
 import scala.concurrent.duration.{ FiniteDuration, _ }
-import pekko.util.JavaDurationConverters._
-import pekko.util.OptionConverters._
+import scala.jdk.DurationConverters._
+import scala.jdk.OptionConverters._
 
 final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
   import pekko.management.PekkoManagementSettings._
@@ -112,10 +113,10 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
   def getContactPointDiscoveryMethod: String = contactPointDiscovery.discoveryMethod
 
   /** Java API */
-  def getContactPointDiscoveryStableMargin: java.time.Duration = contactPointDiscovery.stableMargin.asJava
+  def getContactPointDiscoveryStableMargin: java.time.Duration = contactPointDiscovery.stableMargin.toJava
 
   /** Java API */
-  def getContactPointDiscoveryInterval: java.time.Duration = contactPointDiscovery.interval.asJava
+  def getContactPointDiscoveryInterval: java.time.Duration = contactPointDiscovery.interval.toJava
 
   /** Java API */
   def getContactPointDiscoveryExponentialBackoffRandomFactor: Double =
@@ -123,13 +124,13 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
 
   /** Java API */
   def getContactPointDiscoveryExponentialBackoffMax: java.time.Duration =
-    contactPointDiscovery.exponentialBackoffMax.asJava
+    contactPointDiscovery.exponentialBackoffMax.toJava
 
   /** Java API */
   def getContactPointDiscoveryRequiredContactPointsNr: Int = contactPointDiscovery.requiredContactPointsNr
 
   /** Java API */
-  def getContactPointDiscoveryResolveTimeout: java.time.Duration = contactPointDiscovery.resolveTimeout.asJava
+  def getContactPointDiscoveryResolveTimeout: java.time.Duration = contactPointDiscovery.resolveTimeout.toJava
 
   object contactPoint {
     private val contactPointConfig = bootConfig.getConfig("contact-point")
@@ -159,7 +160,7 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
   def getContactPointFallbackPort: Int = contactPoint.fallbackPort
 
   /** Java API */
-  def getContactPointProbingFailureTimeout: java.time.Duration = contactPoint.probingFailureTimeout.asJava
+  def getContactPointProbingFailureTimeout: java.time.Duration = contactPoint.probingFailureTimeout.toJava
 
   object joinDecider {
     val implClass: String = bootConfig.getString("join-decider.class")

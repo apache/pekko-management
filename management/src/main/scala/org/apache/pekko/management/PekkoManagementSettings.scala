@@ -17,11 +17,12 @@ import java.net.InetAddress
 import java.util.Optional
 
 import scala.collection.immutable
+import scala.jdk.CollectionConverters._
+import scala.jdk.OptionConverters._
 
 import org.apache.pekko
 import pekko.annotation.InternalApi
-import pekko.util.OptionConverters._
-import pekko.util.ccompat.JavaConverters._
+
 import com.typesafe.config.Config
 
 final class PekkoManagementSettings(val config: Config) {

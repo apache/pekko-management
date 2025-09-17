@@ -16,8 +16,9 @@ package org.apache.pekko.discovery.awsapi.ecs
 import java.net.{ InetAddress, NetworkInterface }
 
 import org.apache.pekko
-import pekko.util.ccompat.JavaConverters._
 import pekko.annotation.ApiMayChange
+
+import scala.jdk.CollectionConverters._
 
 @ApiMayChange
 object AsyncEcsDiscovery {

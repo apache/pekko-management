@@ -18,13 +18,14 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.security.{ KeyStore, PrivateKey }
 import java.security.cert.{ Certificate, CertificateFactory }
+
 import scala.concurrent.blocking
+import scala.jdk.CollectionConverters._
 import scala.util.Random
 
 import org.apache.pekko
 import pekko.annotation.InternalApi
 import pekko.pki.pem.{ DERPrivateKeyLoader, PEMDecoder }
-import pekko.util.ccompat.JavaConverters._
 
 import javax.net.ssl.{ TrustManager, TrustManagerFactory }
 

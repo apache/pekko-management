@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scalaVersion: ['2.12', '2.13', '3.3']
+        scalaVersion: ['2.13', '3.3']
         javaVersion: [17, 21]
         pekkoVersion: ['default']
     steps:

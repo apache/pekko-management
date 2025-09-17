@@ -17,10 +17,10 @@ import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
 import pekko.coordination.lease.TimeoutSettings
-import pekko.util.JavaDurationConverters._
 import com.typesafe.config.Config
 
 import scala.concurrent.duration.{ FiniteDuration, _ }
+import scala.jdk.DurationConverters._
 
 /**
  * INTERNAL API
@@ -45,7 +45,7 @@ private[pekko] object KubernetesSettings {
 
     val apiServerRequestTimeout =
       if (config.hasDefined("api-server-request-timeout"))
-        config.getDuration("api-server-request-timeout").asScala
+        config.getDuration("api-server-request-timeout").toScala
       else
         leaseTimeoutSettings.operationTimeout * 2 / 5 // 2/5 gives two API operations + a buffer
 

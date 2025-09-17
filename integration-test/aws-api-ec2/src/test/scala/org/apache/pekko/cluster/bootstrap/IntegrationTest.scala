@@ -23,7 +23,6 @@ import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.model.HttpRequest
 import pekko.management.cluster.{ ClusterHttpManagementJsonProtocol, ClusterMembers }
 import pekko.util.ByteString
-import pekko.util.ccompat.JavaConverters._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.PatienceConfiguration.{ Interval, Timeout }
 import org.scalatest.concurrent.{ Eventually, ScalaFutures }
@@ -33,6 +32,7 @@ import org.scalatest.time.{ Seconds, Span, SpanSugar }
 import spray.json._
 
 import scala.concurrent.{ Await, Future }
+import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
 
 trait HttpClient {

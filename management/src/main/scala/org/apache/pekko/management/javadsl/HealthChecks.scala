@@ -17,16 +17,16 @@ import java.util.concurrent.CompletionStage
 import java.util.function.Supplier
 import java.util.function.{ Function => JFunction }
 import java.util.{ List => JList, Optional }
+
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.actor.ExtendedActorSystem
 import pekko.actor.setup.Setup
 import pekko.management.HealthCheckSettings
 import pekko.management.internal.HealthChecksImpl
-import pekko.util.FunctionConverters._
-import pekko.util.FutureConverters._
 
-import scala.annotation.nowarn
+import scala.jdk.FunctionConverters._
+import scala.jdk.FutureConverters._
 
 /**
  * Can be used to instantiate health checks directly rather than rely on the
@@ -140,7 +140,6 @@ final class CheckResult private[javadsl] (private val result: Either[String, Uni
 
   def isSuccess: java.lang.Boolean = result.isRight
 
-  @nowarn // remove annotation and ".right" with Scala 2.12 support
   def success: Optional[Unit] =
-    Optional.ofNullable(result.right.toOption.orNull)
+    Optional.ofNullable(result.toOption.orNull)
 }

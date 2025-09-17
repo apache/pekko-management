@@ -15,13 +15,13 @@ package org.apache.pekko.discovery.awsapi.ecs
 
 import java.net.{ InetAddress, NetworkInterface }
 import java.util.concurrent.TimeoutException
+
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.EcsServiceDiscovery.resolveTasks
 import pekko.pattern.after
-import pekko.util.ccompat.JavaConverters._
 
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
@@ -33,6 +33,7 @@ import scala.annotation.tailrec
 import scala.collection.immutable.Seq
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
