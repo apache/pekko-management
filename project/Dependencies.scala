@@ -13,7 +13,7 @@ object Dependencies {
   // keep in sync with .github/workflows/unit-tests.yml
   val scala213Version = "2.13.16"
   val scala3Version = "3.3.6"
-  val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
+  val crossScalaVersions = Seq(scala213Version, scala3Version)
 
   val pekkoVersion = PekkoCoreDependency.version
   val pekkoBinaryVersion = PekkoCoreDependency.default.link
