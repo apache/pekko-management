@@ -118,6 +118,6 @@ abstract class AbstractKubernetesLease(system: ExtendedActorSystem, leaseTaken: 
         case Failure(_: AskTimeoutException) => Failure(new LeaseTimeoutException(
             s"Timed out trying to acquire lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
         case Failure(exception) => Failure(exception)
-      }(ExecutionContexts.parasitic)
+      }(ExecutionContext.parasitic)
   }
 }
