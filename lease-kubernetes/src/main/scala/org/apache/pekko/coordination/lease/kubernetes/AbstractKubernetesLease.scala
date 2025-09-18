@@ -16,9 +16,10 @@ package org.apache.pekko.coordination.lease.kubernetes
 import java.text.Normalizer
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 import scala.annotation.nowarn
+
 import org.apache.pekko
 import pekko.coordination.lease.kubernetes.AbstractKubernetesLease.makeDNS1039Compatible
 import pekko.actor.ExtendedActorSystem
@@ -27,7 +28,6 @@ import pekko.coordination.lease.scaladsl.Lease
 import pekko.coordination.lease.LeaseException
 import pekko.coordination.lease.LeaseSettings
 import pekko.coordination.lease.LeaseTimeoutException
-import pekko.dispatch.ExecutionContexts
 import pekko.pattern.AskTimeoutException
 import pekko.util.ConstantFun
 import pekko.util.Timeout
@@ -101,7 +101,7 @@ abstract class AbstractKubernetesLease(system: ExtendedActorSystem, leaseTaken: 
             new LeaseTimeoutException(
               s"Timed out trying to release lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
         case Failure(exception) => Failure(exception)
-      }(ExecutionContexts.parasitic)
+      }(ExecutionContext.parasitic)
   }
 
   override def acquire(): Future[Boolean] = {
@@ -118,6 +118,6 @@ abstract class AbstractKubernetesLease(system: ExtendedActorSystem, leaseTaken: 
         case Failure(_: AskTimeoutException) => Failure(new LeaseTimeoutException(
             s"Timed out trying to acquire lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
         case Failure(exception) => Failure(exception)
-      }(ExecutionContexts.parasitic)
+      }(ExecutionContext.parasitic)
   }
 }
