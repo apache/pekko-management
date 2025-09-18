@@ -17,9 +17,9 @@ import java.util.concurrent.CompletionStage
 
 import org.apache.pekko
 import pekko.actor.ActorSystem
-import pekko.dispatch.ExecutionContexts
 import pekko.management.cluster.scaladsl.{ ClusterMembershipCheck => ScalaClusterReadinessCheck }
 
+import scala.concurrent.ExecutionContext
 import scala.jdk.FutureConverters._
 
 class ClusterMembershipCheck(system: ActorSystem)
@@ -28,6 +28,6 @@ class ClusterMembershipCheck(system: ActorSystem)
   private val delegate = new ScalaClusterReadinessCheck(system)
 
   override def get(): CompletionStage[java.lang.Boolean] = {
-    delegate.apply().map(Boolean.box)(ExecutionContexts.parasitic).asJava
+    delegate.apply().map(Boolean.box)(ExecutionContext.parasitic).asJava
   }
 }
