@@ -13,7 +13,7 @@ name := "bootstrap-demo-marathon-api"
 
 version := "1.1.5"
 
-scalaVersion := "2.13.16"
+scalaVersion := "2.13.17"
 
 val pekkoManagementVersion = "1.0.0"
 
