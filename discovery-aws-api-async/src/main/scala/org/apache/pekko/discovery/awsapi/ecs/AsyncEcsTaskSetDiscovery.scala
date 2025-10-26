@@ -118,7 +118,7 @@ object AsyncEcsTaskSetDiscovery {
       mat: Materializer): Future[Option[TaskMetadata]] = {
     val ecsContainerMetadataUri = sys.env.get(ECS_CONTAINER_METADATA_URI_PATH) match {
       case Some(uri) => uri
-      case None =>
+      case None      =>
         throw new IllegalStateException("The environment variable ECS_CONTAINER_METADATA_URI cannot be found")
     }
 

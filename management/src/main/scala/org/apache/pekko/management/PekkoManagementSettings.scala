@@ -50,7 +50,7 @@ final class PekkoManagementSettings(val config: Config) {
     }
 
     val EffectiveBindPort: Int = cc.getString("bind-port") match {
-      case "" => Port
+      case ""    => Port
       case value =>
         val p = value.toInt
         require(0 to 65535 contains p, s"pekko.management.http.bind-port must be 0 through 65535 (was $p)")

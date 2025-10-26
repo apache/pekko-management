@@ -279,7 +279,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
             system.registerExtension(p.lookup) match {
               case provider: ManagementRouteProvider         => provider
               case provider: javadsl.ManagementRouteProvider => new ManagementRouteProviderAdapter(provider)
-              case other =>
+              case other                                     =>
                 throw new RuntimeException(
                   s"Extension [$fqcn] should create a 'ManagementRouteProvider' but was " +
                   s"[${other.getClass.getName}]")
