@@ -97,7 +97,7 @@ import scala.util.control.NonFatal
             log.info("lease {} does not exist, creating", name)
             createLeaseResource(name).flatMap {
               case Some(created) => Future.successful(created)
-              case None =>
+              case None          =>
                 if (tries < maxTries) loop(tries + 1)
                 else Future.failed(new LeaseException(s"Unable to create or read lease after $maxTries tries"))
             }

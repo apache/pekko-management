@@ -39,7 +39,7 @@ private[pekko] class HealthCheckRoutes(system: ExtendedActorSystem) extends Mana
   protected val healthChecks = HealthChecks(system, settings)
 
   private val healthCheckResponse: Try[Either[String, Unit]] => Route = {
-    case Success(Right(())) => complete(StatusCodes.OK)
+    case Success(Right(()))           => complete(StatusCodes.OK)
     case Success(Left(failingChecks)) =>
       complete(StatusCodes.InternalServerError -> s"Not Healthy: $failingChecks")
     case Failure(t) =>

@@ -38,7 +38,7 @@ private[pekko] object ClusterMembershipCheckSettings {
       case "joining"  => MemberStatus.Joining
       case "leaving"  => MemberStatus.Leaving
       case "removed"  => MemberStatus.Removed
-      case invalid =>
+      case invalid    =>
         throw new IllegalArgumentException(
           s"'$invalid' is not a valid MemberStatus. See reference.conf for valid values")
     }

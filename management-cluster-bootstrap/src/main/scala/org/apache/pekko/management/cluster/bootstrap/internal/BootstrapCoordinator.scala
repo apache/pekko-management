@@ -266,7 +266,7 @@ private[pekko] class BootstrapCoordinator(
     case d: JoinDecision =>
       decisionInProgress = false
       d match {
-        case KeepProbing => // continue scheduled lookups and probing of discovered contact points
+        case KeepProbing                   => // continue scheduled lookups and probing of discovered contact points
         case JoinOtherSeedNodes(seedNodes) =>
           if (seedNodes.nonEmpty) {
             log.info(

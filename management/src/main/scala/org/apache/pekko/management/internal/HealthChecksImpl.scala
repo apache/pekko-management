@@ -139,7 +139,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
             tryLoadJavaHealthCheck(namedHealthCheck.fullyQualifiedClassName)
         })
       .map {
-        case Success(c) => c
+        case Success(c)                        => c
         case Failure(_: NoSuchMethodException) =>
           throw new InvalidHealthCheckException(
             s"Health checks: [${checks.mkString(",")}] must have a no args constructor or a single argument constructor that takes an ActorSystem")
@@ -159,7 +159,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
   def startupResult(): Future[Either[String, Unit]] = {
     val result = check(startupChecks)
     result.onComplete {
-      case Success(Right(())) =>
+      case Success(Right(()))    =>
       case Success(Left(reason)) =>
         log.info(ManagementLogMarker.startupCheckFailed, reason)
       case Failure(e) =>
@@ -173,7 +173,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
   def readyResult(): Future[Either[String, Unit]] = {
     val result = check(readiness)
     result.onComplete {
-      case Success(Right(())) =>
+      case Success(Right(()))    =>
       case Success(Left(reason)) =>
         log.info(ManagementLogMarker.readinessCheckFailed, reason)
       case Failure(e) =>
@@ -187,7 +187,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
   def aliveResult(): Future[Either[String, Unit]] = {
     val result = check(liveness)
     result.onComplete {
-      case Success(Right(())) =>
+      case Success(Right(()))    =>
       case Success(Left(reason)) =>
         log.info(ManagementLogMarker.livenessCheckFailed, reason)
       case Failure(e) =>

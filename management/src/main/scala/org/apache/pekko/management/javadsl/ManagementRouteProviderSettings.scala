@@ -96,7 +96,7 @@ sealed abstract class ManagementRouteProviderSettings {
     if (httpsConnectionContext.isPresent) {
       httpsConnectionContext.get match {
         case ctx: pekko.http.scaladsl.HttpsConnectionContext => Option(ctx)
-        case other =>
+        case other                                           =>
           throw new IllegalStateException(
             "org.apache.pekko.http.javadsl.HttpsConnectionContext should be a " +
             s"org.apache.pekko.http.scaladsl.HttpsConnectionContext, but was [${other.getClass.getName}]")

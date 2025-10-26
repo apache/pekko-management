@@ -95,8 +95,8 @@ abstract class AbstractKubernetesLease(system: ExtendedActorSystem, leaseTaken: 
   override def release(): Future[Boolean] = {
     (leaseActor ? Release())
       .transform {
-        case Success(LeaseReleased)       => Success(true)
-        case Success(InvalidRequest(msg)) => Failure(new LeaseException(msg))
+        case Success(LeaseReleased)          => Success(true)
+        case Success(InvalidRequest(msg))    => Failure(new LeaseException(msg))
         case Failure(_: AskTimeoutException) => Failure(
             new LeaseTimeoutException(
               s"Timed out trying to release lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
@@ -112,9 +112,9 @@ abstract class AbstractKubernetesLease(system: ExtendedActorSystem, leaseTaken: 
   override def acquire(leaseLostCallback: Option[Throwable] => Unit): Future[Boolean] = {
     (leaseActor ? Acquire(leaseLostCallback))
       .transform {
-        case Success(LeaseAcquired)       => Success(true)
-        case Success(LeaseTaken)          => Success(false)
-        case Success(InvalidRequest(msg)) => Failure(new LeaseException(msg))
+        case Success(LeaseAcquired)          => Success(true)
+        case Success(LeaseTaken)             => Success(false)
+        case Success(InvalidRequest(msg))    => Failure(new LeaseException(msg))
         case Failure(_: AskTimeoutException) => Failure(new LeaseTimeoutException(
             s"Timed out trying to acquire lease [$leaseName, ${settings.ownerName}]. It may still be taken."))
         case Failure(exception) => Failure(exception)
