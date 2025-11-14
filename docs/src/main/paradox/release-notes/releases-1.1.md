@@ -2,12 +2,17 @@
 
 ## 1.1.1
 
-Release notes for Apache Pekko Management 1.1.1
+Release notes for Apache Pekko Management 1.1.1. This release includes a security fix.
+
+### Security fix
+
+* CVE-2025-46548: If you enable Basic Authentication in Pekko Management using the Java DSL, the authenticator may not be properly applied ([PR418](https://github.com/apache/pekko-management/pull/418))
+
+If you have configured Pekko Management to use Basic Authentication then you should consider upgrading to this version or a newer one.
 
 ### Additions
 
 * Configuration option to enable gzip compression on k8s pods api for service discovery ([PR336](https://github.com/apache/pekko-management/pull/336))
-* Improved error handling on conflicting 'start' invocations ([PR418](https://github.com/apache/pekko-management/pull/418))
 
 ### Dependency Upgrades
 
