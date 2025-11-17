@@ -15,25 +15,27 @@ package org.apache.pekko.coordination.lease.kubernetes.internal
 
 import org.apache.pekko
 import pekko.Done
-import pekko.actor.ActorSystem
+import pekko.actor.{ ActorSystem, Scheduler }
 import pekko.annotation.InternalApi
 import pekko.coordination.lease.kubernetes.{ KubernetesApi, KubernetesSettings, LeaseResource }
 import pekko.coordination.lease.{ LeaseException, LeaseTimeoutException }
+import pekko.dispatch.ExecutionContexts
 import pekko.event.{ LogSource, Logging, LoggingAdapter }
 import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.model.headers.{ Authorization, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.http.scaladsl.{ ConnectionContext, Http, HttpExt, HttpsConnectionContext }
-import pekko.pattern.after
+import pekko.pattern.{ after, RetrySupport }
 import pekko.pki.kubernetes.PemManagersProvider
+import pekko.stream.scaladsl.{ FileIO, Keep, Sink }
+import pekko.util.ByteString
 
-import java.nio.charset.StandardCharsets
 import java.nio.file.{ Files, Paths }
 import java.security.{ KeyStore, SecureRandom }
 import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 import scala.collection.immutable
 import scala.concurrent.Future
-import scala.util.control.NonFatal
+import scala.util.control.{ NoStackTrace, NonFatal }
 
 /**
  * Could be shared between leases: https://github.com/akka/akka-management/issues/680
@@ -66,12 +68,24 @@ import scala.util.control.NonFatal
 
   private lazy val clientSslContext: HttpsConnectionContext = ConnectionContext.httpsClient(sslContext)
 
-  protected val namespace: String =
-    settings.namespace.orElse(readConfigVarFromFilesystem(settings.namespacePath, "namespace")).getOrElse("default")
+  protected val namespace: Future[String] = {
+    settings.namespace match {
+      case Some(nSpace) => Future.successful(nSpace)
+      case _ =>
+        readConfigVarFromFilesystem(settings.namespacePath, "namespace").map(_.getOrElse("default"))(
+          ExecutionContexts.parasitic)
+    }
+  }
 
   protected val scheme: String = if (settings.secure) "https" else "http"
-  private lazy val apiToken = readConfigVarFromFilesystem(settings.apiTokenPath, "api-token").getOrElse("")
-  private lazy val headers = if (settings.secure) immutable.Seq(Authorization(OAuth2BearerToken(apiToken))) else Nil
+  private[pekko] def apiToken() = readConfigVarFromFilesystem(settings.apiTokenPath, "api-token").map(
+    _.getOrElse(""))(ExecutionContexts.parasitic)
+  private def headers() = if (settings.secure) {
+    apiToken().map { token =>
+      immutable.Seq(Authorization(OAuth2BearerToken(token)))
+    }(ExecutionContexts.parasitic)
+  } else
+    Future.successful(Nil)
 
   log.debug("kubernetes access namespace: {}. Secure: {}", namespace, settings.secure)
 
@@ -79,7 +93,7 @@ import scala.util.control.NonFatal
 
   protected def getLeaseResource(name: String): Future[Option[LeaseResource]]
 
-  protected def pathForLease(name: String): Uri.Path
+  protected def pathForLease(name: String): Future[Uri.Path]
 
   override def readOrCreateLeaseResource(name: String): Future[LeaseResource] = {
     // TODO backoff retry
@@ -110,10 +124,9 @@ import scala.util.control.NonFatal
 
   private[pekko] def removeLease(name: String): Future[Done] = {
     for {
-      response <- makeRequest(
-        requestForPath(pathForLease(name), HttpMethods.DELETE),
-        s"Timed out removing lease [$name]. It is not known if the remove happened")
-
+      leasePath <- pathForLease(name)
+      request <- requestForPath(leasePath, HttpMethods.DELETE)
+      response <- makeRequest(request, s"Timed out removing lease [$name]. It is not known if the remove happened")
       result <- response.status match {
         case StatusCodes.OK =>
           log.debug("Lease deleted {}", name)
@@ -148,17 +161,43 @@ import scala.util.control.NonFatal
   protected def requestForPath(
       path: Uri.Path,
       method: HttpMethod = HttpMethods.GET,
-      entity: RequestEntity = HttpEntity.Empty): HttpRequest = {
+      entity: RequestEntity = HttpEntity.Empty): Future[HttpRequest] = {
     val uri = Uri.from(scheme = scheme, host = settings.apiServerHost, port = settings.apiServerPort).withPath(path)
-    HttpRequest(uri = uri, headers = headers, method = method, entity = entity)
+    headers().map { headers =>
+      HttpRequest(uri = uri, headers = headers, method = method, entity = entity)
+    }(ExecutionContexts.parasitic)
   }
 
+  private[pekko] def makeRawRequest(request: HttpRequest): Future[HttpResponse] = {
+    if (settings.secure)
+      http.singleRequest(request, clientSslContext)
+    else
+      http.singleRequest(request)
+  }
+
+  // This exception is being thrown/caught because we are forced to use Pekko 1.0.x's
+  // version of RetrySupport.retry which only works on the attempt functions throwing
+  // exceptions
+  private case class UnauthorizedException(httpResponse: HttpResponse) extends Throwable with NoStackTrace
+
   protected def makeRequest(request: HttpRequest, timeoutMsg: String): Future[HttpResponse] = {
-    val response =
-      if (settings.secure)
-        http.singleRequest(request, clientSslContext)
-      else
-        http.singleRequest(request)
+    // It's possible to legitimately get a 401 response due to kubernetes doing a token rotation
+    implicit val scheduler: Scheduler = system.scheduler
+    val response = RetrySupport.retry(
+      () =>
+        makeRawRequest(request: HttpRequest).flatMap { response =>
+          if (response.status == StatusCodes.Unauthorized) {
+            log.warning("Received status code 401 as response, retrying due to possible token rotation")
+            Future.failed(UnauthorizedException(response))
+          } else Future.successful(response)
+        },
+      settings.tokenRetrySettings.maxAttempts,
+      settings.tokenRetrySettings.minBackoff,
+      settings.tokenRetrySettings.maxBackoff,
+      settings.tokenRetrySettings.randomFactor
+    ).recover {
+      case unauthorized: UnauthorizedException => unauthorized.httpResponse
+    }
 
     // make sure we always consume response body (in case of timeout)
     val strictResponse = response.flatMap(_.toStrict(settings.bodyReadTimeout))
@@ -169,22 +208,22 @@ import scala.util.control.NonFatal
     Future.firstCompletedOf(Seq(strictResponse, timeout))
   }
 
-  /**
-   * This uses blocking IO, and so should only be used to read configuration at startup.
-   */
-  protected def readConfigVarFromFilesystem(path: String, name: String): Option[String] = {
+  protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] = {
     val file = Paths.get(path)
     if (Files.exists(file)) {
       try {
-        Some(new String(Files.readAllBytes(file), StandardCharsets.UTF_8))
+        FileIO.fromPath(file)
+          .toMat(Sink.fold(ByteString.empty)(_ ++ _))(Keep.right)
+          .run()
+          .map(bs => Some(bs.utf8String))(ExecutionContexts.parasitic)
       } catch {
         case NonFatal(e) =>
           log.error(e, "Error reading {} from {}", name, path)
-          None
+          Future.successful(None)
       }
     } else {
       log.warning("Unable to read {} from {} because it doesn't exist.", name, path)
-      None
+      Future.successful(None)
     }
   }
 

@@ -36,6 +36,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class NativeKubernetesApiSpec
@@ -71,7 +72,8 @@ class NativeKubernetesApiSpec
 
   val underTest = new NativeKubernetesApiImpl(system, settings) {
     // avoid touching slow CI filesystem
-    override protected def readConfigVarFromFilesystem(path: String, name: String): Option[String] = None
+    override protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] =
+      Future.successful(None)
   }
   val leaseName = "lease-1"
   val client1 = "client-1"
