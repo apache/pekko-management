@@ -53,6 +53,15 @@ private[pekko] object KubernetesSettings {
       apiServerRequestTimeout < leaseTimeoutSettings.operationTimeout,
       "'api-server-request-timeout can not be less than 'lease-operation-timeout'")
 
+    val retryConfPath = "token-rotation-retry"
+
+    val tokenRetrySettings = new TokenRetrySettings(
+      config.getInt(s"$retryConfPath.max-attempts"),
+      config.getDuration(s"$retryConfPath.min-backoff").toScala,
+      config.getDuration(s"$retryConfPath.max-backoff").toScala,
+      config.getDouble(s"$retryConfPath.random-factor")
+    )
+
     new KubernetesSettings(
       config.getString("api-ca-path"),
       config.getString("api-token-path"),
@@ -63,10 +72,20 @@ private[pekko] object KubernetesSettings {
       apiServerRequestTimeout,
       secure = config.getBoolean("secure-api-server"),
       tlsVersion = config.getString("tls-version"),
-      bodyReadTimeout = apiServerRequestTimeout / 2)
-
+      bodyReadTimeout = apiServerRequestTimeout / 2,
+      tokenRetrySettings = tokenRetrySettings)
   }
 }
+
+/**
+ * INTERNAL API
+ */
+@InternalApi
+private[pekko] class TokenRetrySettings(
+    val maxAttempts: Int,
+    val minBackoff: FiniteDuration,
+    val maxBackoff: FiniteDuration,
+    val randomFactor: Double)
 
 /**
  * INTERNAL API
@@ -82,4 +101,10 @@ private[pekko] class KubernetesSettings(
     val apiServerRequestTimeout: FiniteDuration,
     val secure: Boolean = true,
     val tlsVersion: String = "TLSv1.2",
-    val bodyReadTimeout: FiniteDuration = 1.second)
+    val bodyReadTimeout: FiniteDuration = 1.second,
+    val tokenRetrySettings: TokenRetrySettings = new TokenRetrySettings(
+      5,
+      10.millis,
+      1.minute,
+      0.3
+    ))

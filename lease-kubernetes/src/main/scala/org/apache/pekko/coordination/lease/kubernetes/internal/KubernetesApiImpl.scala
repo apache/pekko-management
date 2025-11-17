@@ -13,7 +13,7 @@
 
 package org.apache.pekko.coordination.lease.kubernetes.internal
 
-import scala.concurrent.Future
+import scala.concurrent.{ ExecutionContext, Future }
 
 import org.apache.pekko
 import pekko.actor.ActorSystem
@@ -59,10 +59,12 @@ PUTs must contain resourceVersions. Response:
     val lcr = LeaseCustomResource(Metadata(leaseName, Some(version)), Spec(ownerName, System.currentTimeMillis()))
     for {
       entity <- Marshal(lcr).to[RequestEntity]
+      leasePath <- pathForLease(leaseName)
+      request <- requestForPath(leasePath, method = HttpMethods.PUT, entity)
       response <- {
         log.debug("updating {} to {}", leaseName, lcr)
         makeRequest(
-          requestForPath(pathForLease(leaseName), method = HttpMethods.PUT, entity),
+          request,
           s"Timed out updating lease [$leaseName] to owner [$ownerName]. It is not known if the update happened")
       }
       result <- response.status match {
@@ -97,9 +99,10 @@ PUTs must contain resourceVersions. Response:
   }
 
   override def getLeaseResource(name: String): Future[Option[LeaseResource]] = {
-    val fResponse = makeRequest(requestForPath(pathForLease(name)), s"Timed out reading lease $name")
     for {
-      response <- fResponse
+      leasePath <- pathForLease(name)
+      request <- requestForPath(leasePath)
+      response <- makeRequest(request, s"Timed out reading lease $name")
       entity <- response.entity.toStrict(settings.bodyReadTimeout)
       lr <- response.status match {
         case StatusCodes.OK =>
@@ -127,18 +130,21 @@ PUTs must contain resourceVersions. Response:
     } yield lr
   }
 
-  override def pathForLease(name: String): Uri.Path =
-    Uri.Path.Empty / "apis" / "pekko.apache.org" / "v1" / "namespaces" / namespace / "leases" / name
-      .replaceAll("[^\\d\\w\\-\\.]", "")
-      .toLowerCase
+  override def pathForLease(name: String): Future[Uri.Path] = {
+    namespace.map { ns =>
+      Uri.Path.Empty / "apis" / "pekko.apache.org" / "v1" / "namespaces" / ns / "leases" / name
+        .replaceAll("[^\\d\\w\\-\\.]", "")
+        .toLowerCase
+    }(ExecutionContext.parasitic)
+  }
 
   override def createLeaseResource(name: String): Future[Option[LeaseResource]] = {
     val lcr = LeaseCustomResource(Metadata(name, None), Spec("", System.currentTimeMillis()))
     for {
       entity <- Marshal(lcr).to[RequestEntity]
-      response <- makeRequest(
-        requestForPath(pathForLease(name), HttpMethods.POST, entity = entity),
-        s"Timed out creating lease $name")
+      leasePath <- pathForLease(name)
+      request <- requestForPath(leasePath, HttpMethods.POST, entity = entity)
+      response <- makeRequest(request, s"Timed out creating lease $name")
       responseEntity <- response.entity.toStrict(settings.bodyReadTimeout)
       lr <- response.status match {
         case StatusCodes.Created =>
