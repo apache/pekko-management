@@ -13,12 +13,17 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
+import java.io.File
+import java.nio.file.Files
+import java.util.concurrent.atomic.AtomicBoolean
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import org.apache.pekko
 import pekko.Done
 import pekko.actor.ActorSystem
 import pekko.coordination.lease.kubernetes.internal.KubernetesApiImpl
-import pekko.http.scaladsl.model.StatusCodes
+import pekko.coordination.lease.LeaseException
+import pekko.http.scaladsl.model.{ HttpRequest, HttpResponse, StatusCodes }
 import pekko.testkit.TestKit
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
@@ -65,7 +70,8 @@ class KubernetesApiSpec
 
   val underTest = new KubernetesApiImpl(system, settings) {
     // avoid touching slow CI filesystem
-    override protected def readConfigVarFromFilesystem(path: String, name: String): Option[String] = None
+    override protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] =
+      Future.successful(None)
   }
   val leaseName = "lease-1"
   val client1 = "client-1"
@@ -269,6 +275,87 @@ class KubernetesApiSpec
       underTest.removeLease(lease).failed.futureValue.getMessage shouldEqual
       s"Timed out removing lease [$lease]. It is not known if the remove happened. Is the API server up?"
     }
-  }
 
+    "not cache token so it can be rotated" in {
+      val path = File.createTempFile("kubernetes-api-spec", null)
+      path.deleteOnExit()
+
+      val newSettings = new KubernetesSettings(
+        "",
+        path.getAbsolutePath,
+        "localhost",
+        wireMockServer.port(),
+        namespace = Some("lease"),
+        "",
+        apiServerRequestTimeout = 1.second,
+        secure = false)
+
+      val tokenTest = new KubernetesApiImpl(system, newSettings)
+
+      val firstTokenValue = "first"
+      val secondTokenValue = "second"
+
+      Files.write(path.toPath, firstTokenValue.getBytes)
+      tokenTest.apiToken().futureValue shouldEqual firstTokenValue
+      Files.write(path.toPath, secondTokenValue.getBytes)
+      tokenTest.apiToken().futureValue shouldEqual secondTokenValue
+    }
+
+    "retry on 401 to handle token timeout" in {
+      val newSettings = new KubernetesSettings(
+        "",
+        "",
+        "localhost",
+        wireMockServer.port(),
+        namespace = Some("lease"),
+        "",
+        apiServerRequestTimeout = 1.second,
+        secure = false)
+
+      val toFail = new AtomicBoolean(true)
+      val retryUnauthorized = new KubernetesApiImpl(system, newSettings) {
+        // avoid touching slow CI filesystem
+        override protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] =
+          Future.successful(None)
+
+        override def makeRawRequest(request: HttpRequest): Future[HttpResponse] =
+          if (toFail.getAndSet(false))
+            Future.successful(HttpResponse(
+              StatusCodes.Unauthorized
+            ))
+          else
+            Future.successful(HttpResponse(
+              StatusCodes.NotFound
+            ))
+      }
+
+      retryUnauthorized.getLeaseResource("").futureValue shouldEqual None
+    }
+
+    "eventually return unauthorized LeaseException when token rotation is not happening" in {
+      val newSettings = new KubernetesSettings(
+        "",
+        "",
+        "localhost",
+        wireMockServer.port(),
+        namespace = Some("lease"),
+        "",
+        apiServerRequestTimeout = 1.second,
+        secure = false)
+
+      val retryUnauthorized = new KubernetesApiImpl(system, newSettings) {
+        // avoid touching slow CI filesystem
+        override protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] =
+          Future.successful(None)
+
+        override def makeRawRequest(request: HttpRequest): Future[HttpResponse] =
+          Future.successful(HttpResponse(
+            StatusCodes.Unauthorized
+          ))
+      }
+
+      retryUnauthorized.getLeaseResource("").failed.futureValue shouldBe an[LeaseException]
+    }
+
+  }
 }

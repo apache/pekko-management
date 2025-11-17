@@ -23,6 +23,7 @@ import pekko.annotation.InternalApi
 import pekko.coordination.lease.kubernetes.internal.NativeKubernetesApiImpl.RFC3339MICRO_FORMATTER
 import pekko.coordination.lease.kubernetes.{ KubernetesSettings, LeaseResource }
 import pekko.coordination.lease.LeaseException
+import pekko.dispatch.ExecutionContexts
 import pekko.http.scaladsl.marshalling.Marshal
 import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.unmarshalling.Unmarshal
@@ -68,10 +69,11 @@ object NativeKubernetesApiImpl {
     val lcr = NativeLeaseResource(Metadata(leaseName, Some(version)), NativeSpec(ownerName, currentTimeRFC3339))
     for {
       entity <- Marshal(lcr).to[RequestEntity]
+      leasePath <- pathForLease(leaseName)
+      request <- requestForPath(leasePath, method = HttpMethods.PUT, entity)
       response <- {
         log.debug("updating {} to {}", leaseName, lcr)
-        makeRequest(
-          requestForPath(pathForLease(leaseName), method = HttpMethods.PUT, entity),
+        makeRequest(request,
           s"Timed out updating lease [$leaseName] to owner [$ownerName]. It is not known if the update happened")
       }
       result <- response.status match {
@@ -106,9 +108,10 @@ object NativeKubernetesApiImpl {
   }
 
   override def getLeaseResource(name: String): Future[Option[LeaseResource]] = {
-    val fResponse = makeRequest(requestForPath(pathForLease(name)), s"Timed out reading lease $name")
     for {
-      response <- fResponse
+      leasePath <- pathForLease(name)
+      request <- requestForPath(leasePath)
+      response <- makeRequest(request, s"Timed out reading lease $name")
       entity <- response.entity.toStrict(settings.bodyReadTimeout)
       lr <- response.status match {
         case StatusCodes.OK =>
@@ -136,18 +139,21 @@ object NativeKubernetesApiImpl {
     } yield lr
   }
 
-  override def pathForLease(name: String): Uri.Path =
-    Uri.Path.Empty / "apis" / "coordination.k8s.io" / "v1" / "namespaces" / namespace / "leases" / name
-      .replaceAll("[^\\d\\w\\-\\.]", "")
-      .toLowerCase
+  override def pathForLease(name: String): Future[Uri.Path] = {
+    namespace.map { ns =>
+      Uri.Path.Empty / "apis" / "coordination.k8s.io" / "v1" / "namespaces" / ns / "leases" / name
+        .replaceAll("[^\\d\\w\\-\\.]", "")
+        .toLowerCase
+    }(ExecutionContexts.parasitic)
+  }
 
   override def createLeaseResource(name: String): Future[Option[LeaseResource]] = {
     val lcr = NativeLeaseResource(Metadata(name, None), NativeSpec("", currentTimeRFC3339))
     for {
       entity <- Marshal(lcr).to[RequestEntity]
-      response <- makeRequest(
-        requestForPath(pathForLease(""), HttpMethods.POST, entity = entity),
-        s"Timed out creating lease $name")
+      leasePath <- pathForLease("")
+      request <- requestForPath(leasePath, HttpMethods.POST, entity = entity)
+      response <- makeRequest(request, s"Timed out creating lease $name")
       responseEntity <- response.entity.toStrict(settings.bodyReadTimeout)
       lr <- response.status match {
         case StatusCodes.Created =>
