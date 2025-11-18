@@ -143,7 +143,16 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         podRequest(apiToken, podNamespace, labelSelector),
         s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})")
 
-      response <- http.singleRequest(request, clientSslContext).map(decodeResponse)
+      response <- {
+        val f = http.singleRequest(request, clientSslContext)
+        f.onComplete {
+          case scala.util.Failure(exception) =>
+            log.error(exception, s"Lookup failed to communicate with Kubernetes API server (${request.uri}).")
+          case scala.util.Success(_) =>
+            log.info(s"Lookup successfully communicated with Kubernetes API server (${request.uri}).")
+        }
+        f.map(decodeResponse)
+      }
 
       entity <- response.entity.toStrict(resolveTimeout)
 
