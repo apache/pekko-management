@@ -14,15 +14,15 @@
 package org.apache.pekko.cluster.bootstrap.discovery
 
 import com.google.common.net.HostAndPort
-import com.orbitz.consul.Consul
-import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration
-import com.orbitz.consul.model.health.ImmutableService
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
 import pekko.discovery.consul.ConsulServiceDiscovery
 import pekko.testkit.TestKitBase
+import org.kiwiproject.consul.Consul
+import org.kiwiproject.consul.model.catalog.ImmutableCatalogRegistration
+import org.kiwiproject.consul.model.health.ImmutableService
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
@@ -40,7 +40,7 @@ class ConsulDiscoverySpec
     with TestKitBase
     with ScalaFutures {
 
-  private val consul = new ConsulContainer("hashicorp/consul:1.15")
+  private val consul = new ConsulContainer("hashicorp/consul:1.22")
   consul.start()
 
   "Consul Discovery" should {
