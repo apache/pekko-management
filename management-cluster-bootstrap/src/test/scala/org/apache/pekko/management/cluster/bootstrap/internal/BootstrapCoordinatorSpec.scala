@@ -14,22 +14,23 @@
 package org.apache.pekko.management.cluster.bootstrap.internal
 
 import java.util.concurrent.atomic.AtomicReference
+
 import org.apache.pekko
 import pekko.actor.{ ActorRef, ActorSystem, Props }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.{ Lookup, MockDiscovery }
 import pekko.http.scaladsl.model.Uri
-import com.typesafe.config.ConfigFactory
 import pekko.management.cluster.bootstrap.internal.BootstrapCoordinator.Protocol.InitiateBootstrapping
 import pekko.management.cluster.bootstrap.{ ClusterBootstrapSettings, LowestAddressJoinDecider }
-import org.scalatest.concurrent.Eventually
+import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.Eventually
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
+import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
 class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndAfterAll with Eventually {
   val serviceName = "bootstrap-coordinator-test-service"
