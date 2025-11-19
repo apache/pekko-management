@@ -14,10 +14,13 @@
 package org.apache.pekko.management.cluster.bootstrap.internal
 
 import java.time.LocalDateTime
+import java.security.{ KeyStore, SecureRandom }
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeoutException
+import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 import scala.concurrent.Future
 import scala.concurrent.duration._
+
 import org.apache.pekko
 import pekko.actor.Actor
 import pekko.actor.ActorLogging
@@ -29,7 +32,9 @@ import pekko.actor.Timers
 import pekko.annotation.InternalApi
 import pekko.cluster.Cluster
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
+import pekko.http.scaladsl.ConnectionContext
 import pekko.http.scaladsl.Http
+import pekko.http.scaladsl.HttpsConnectionContext
 import pekko.http.scaladsl.model.HttpResponse
 import pekko.http.scaladsl.model.StatusCodes
 import pekko.http.scaladsl.model.Uri
@@ -41,6 +46,7 @@ import pekko.management.cluster.bootstrap.contactpoint.HttpBootstrapJsonProtocol
 import pekko.management.cluster.bootstrap.contactpoint.{ ClusterBootstrapRequests, HttpBootstrapJsonProtocol }
 import pekko.pattern.after
 import pekko.pattern.pipe
+import pekko.pki.kubernetes.PemManagersProvider
 
 @InternalApi
 private[bootstrap] object HttpContactPointBootstrap {
@@ -56,6 +62,26 @@ private[bootstrap] object HttpContactPointBootstrap {
 
   private case object ProbeTick extends DeadLetterSuppression
   private val ProbingTimerKey = "probing-key"
+
+  def generateSSLContext(settings: ClusterBootstrapSettings): SSLContext = {
+    val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
+    val keyStore = KeyStore.getInstance("PKCS12")
+    keyStore.load(null)
+    factory.init(keyStore, Array.empty)
+    val km: Array[KeyManager] = factory.getKeyManagers
+    val caPath = settings.contactPoint.httpClient.caPath.trim
+    val tm: Array[TrustManager] = if (caPath.isEmpty) {
+      Array.empty
+    } else {
+      val certificates = PemManagersProvider.loadCertificates(caPath)
+      PemManagersProvider.buildTrustManagers(certificates)
+    }
+    val tlsVersion = settings.contactPoint.httpClient.tlsVersion.trim
+    val random: SecureRandom = new SecureRandom
+    val sslContext = SSLContext.getInstance(tlsVersion)
+    sslContext.init(km, tm, random)
+    sslContext
+  }
 }
 
 /**
@@ -88,7 +114,12 @@ private[bootstrap] class HttpContactPointBootstrap(
   }
 
   private implicit val sys: ActorSystem = context.system
+
+  private lazy val clientSslContext: HttpsConnectionContext =
+    ConnectionContext.httpsClient(HttpContactPointBootstrap.generateSSLContext(settings))
+
   private val http = Http()
+
   private val connectionPoolWithoutRetries = ConnectionPoolSettings(context.system).withMaxRetries(0)
   import context.dispatcher
 
@@ -111,7 +142,13 @@ private[bootstrap] class HttpContactPointBootstrap(
   override def receive = {
     case ProbeTick =>
       log.debug("Probing [{}] for seed nodes...", probeRequest.uri)
-      val reply = http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries).flatMap(handleResponse)
+      val reply = if (probeRequest.uri.scheme == "https") {
+        http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
+          connectionContext = clientSslContext)
+      } else {
+        http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries)
+      }.flatMap(handleResponse)
+
       val afterTimeout = after(settings.contactPoint.probingFailureTimeout, context.system.scheduler)(replyTimeout)
       Future.firstCompletedOf(List(reply, afterTimeout)).pipeTo(self)
 

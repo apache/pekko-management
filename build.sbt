@@ -151,6 +151,7 @@ lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap"
     libraryDependencies := Dependencies.managementClusterBootstrap,
     mimaPreviousArtifactsSet)
   .dependsOn(management)
+  .dependsOn(managementPki)
 
 lazy val leaseKubernetes = pekkoModule("lease-kubernetes")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
