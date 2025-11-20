@@ -164,7 +164,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
 
     val baseBuilder = Http()
       .newServerAt(effectiveBindHostname, effectiveBindPort)
-      .withSettings(ServerSettings(system).withRemoteAddressHeader(true))
+      .withSettings(ServerSettings(system).withRemoteAddressAttribute(true))
 
     val securedBuilder = effectiveProviderSettings.httpsConnectionContext match {
       case Some(httpsContext) => baseBuilder.enableHttps(httpsContext)
