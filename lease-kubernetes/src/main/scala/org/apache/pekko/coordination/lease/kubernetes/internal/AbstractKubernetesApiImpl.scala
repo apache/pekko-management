@@ -201,16 +201,15 @@ import scala.util.control.NonFatal
   protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] = {
     val file = Paths.get(path)
     if (Files.exists(file)) {
-      try {
-        FileIO.fromPath(file)
-          .toMat(Sink.fold(ByteString.empty)(_ ++ _))(Keep.right)
-          .run()
-          .map(bs => Some(bs.utf8String))(ExecutionContext.parasitic)
-      } catch {
-        case NonFatal(e) =>
-          log.error(e, "Error reading {} from {}", name, path)
-          Future.successful(None)
-      }
+      FileIO.fromPath(file)
+        .toMat(Sink.fold(ByteString.empty)(_ ++ _))(Keep.right)
+        .run()
+        .map(bs => Some(bs.utf8String))(ExecutionContext.parasitic)
+        .recover {
+          case NonFatal(e) =>
+            log.error(e, "Error reading {} from {}", name, path)
+            None
+        }(ExecutionContext.parasitic)
     } else {
       log.warning("Unable to read {} from {} because it doesn't exist.", name, path)
       Future.successful(None)
