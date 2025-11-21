@@ -44,6 +44,7 @@ import scala.util.control.{ NoStackTrace, NonFatal }
 @InternalApi private[pekko] abstract class AbstractKubernetesApiImpl(system: ActorSystem, settings: KubernetesSettings)
     extends KubernetesApi
     with KubernetesJsonSupport {
+  import AbstractKubernetesApiImpl._
 
   import system.dispatcher
 
@@ -175,11 +176,6 @@ import scala.util.control.{ NoStackTrace, NonFatal }
       http.singleRequest(request)
   }
 
-  // This exception is being thrown/caught because we are forced to use Pekko 1.0.x's
-  // version of RetrySupport.retry which only works on the attempt functions throwing
-  // exceptions
-  private case class UnauthorizedException(httpResponse: HttpResponse) extends Throwable with NoStackTrace
-
   protected def makeRequest(request: HttpRequest, timeoutMsg: String): Future[HttpResponse] = {
     // It's possible to legitimately get a 401 response due to kubernetes doing a token rotation
     implicit val scheduler: Scheduler = system.scheduler
@@ -188,7 +184,7 @@ import scala.util.control.{ NoStackTrace, NonFatal }
         makeRawRequest(request: HttpRequest).flatMap { response =>
           if (response.status == StatusCodes.Unauthorized) {
             log.warning("Received status code 401 as response, retrying due to possible token rotation")
-            Future.failed(UnauthorizedException(response))
+            Future.failed(new UnauthorizedException(response))
           } else Future.successful(response)
         },
       settings.tokenRetrySettings.maxAttempts,
@@ -197,7 +193,7 @@ import scala.util.control.{ NoStackTrace, NonFatal }
       settings.tokenRetrySettings.randomFactor
     ).recover {
       case unauthorized: UnauthorizedException => unauthorized.httpResponse
-    }
+    }(ExecutionContexts.parasitic)
 
     // make sure we always consume response body (in case of timeout)
     val strictResponse = response.flatMap(_.toStrict(settings.bodyReadTimeout))
@@ -227,4 +223,11 @@ import scala.util.control.{ NoStackTrace, NonFatal }
     }
   }
 
+}
+
+@InternalApi object AbstractKubernetesApiImpl {
+  // This exception is being thrown/caught because we are forced to use Pekko 1.0.x's
+  // version of RetrySupport.retry which only works on the attempt functions throwing
+  // exceptions
+  private final class UnauthorizedException(val httpResponse: HttpResponse) extends Throwable with NoStackTrace
 }
