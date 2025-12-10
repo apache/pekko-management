@@ -16,11 +16,12 @@ package org.apache.pekko.management.cluster.bootstrap
 import java.time.Duration
 
 import scala.concurrent.Future
+import scala.annotation.nowarn
+
 import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.actor.Address
 import pekko.discovery.ServiceDiscovery.ResolvedTarget
-import pekko.util.unused
 
 /**
  * The decision of joining "self" is made by deterministically sorting the discovered services
@@ -145,7 +146,8 @@ class LowestAddressJoinDecider(system: ActorSystem, settings: ClusterBootstrapSe
    * contact points have not been confirmed (unreachable or not running).
    * `hasEnoughContactPoints` and `isPastStableMargin` must still be fulfilled.
    */
-  protected def isConfirmedCommunicationWithAllContactPointsRequired(@unused info: SeedNodesInformation): Boolean =
+  @nowarn("msg=unused")
+  protected def isConfirmedCommunicationWithAllContactPointsRequired(info: SeedNodesInformation): Boolean =
     settings.contactPointDiscovery.contactWithAllContactPoints
 
   /**
