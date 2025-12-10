@@ -179,6 +179,9 @@ lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
     name := "pekko-lease-kubernetes-int-test",
     libraryDependencies := Dependencies.leaseKubernetesTest,
     version ~= (_.replace('+', '-')),
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Runtime / jvmOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     dockerBaseImage := "eclipse-temurin:17-jre-alpine",
     dockerUpdateLatest := true,
     dockerCommands := dockerCommands.value.flatMap {
@@ -196,7 +199,10 @@ lazy val integrationTestKubernetesApi = pekkoIntTestModule("kubernetes-api")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
-    libraryDependencies := Dependencies.bootstrapDemos)
+    libraryDependencies := Dependencies.bootstrapDemos,
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Runtime / jvmOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED")
   .dependsOn(management, managementClusterHttp, managementClusterBootstrap, discoveryKubernetesApi)
   .enablePlugins(NoPublish)
 
@@ -215,7 +221,10 @@ lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin, NoPublish)
   .settings(
-    libraryDependencies := Dependencies.bootstrapDemos)
+    libraryDependencies := Dependencies.bootstrapDemos,
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Runtime / jvmOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED")
   .dependsOn(
     management,
     managementClusterHttp,
