@@ -1,11 +1,11 @@
-name: Publish 1.0 docs
+name: Publish 1.2 docs
 
 on:
   workflow_dispatch:
 
 jobs:
   publish-docs:
-    name: Publish 1.0 documentation to nightlies.apache.org
+    name: Publish 1.2 documentation to nightlies.apache.org
     runs-on: ubuntu-latest
     if: github.repository == 'apache/pekko-management'
     steps:
@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: 1.0.x
+          ref: 1.2.x
 
       - name: Set up JDK 8
         uses: actions/setup-java@v5
@@ -29,40 +29,40 @@ jobs:
 
       - name: Build Documentation
         run: |-
-          sbt "set ThisBuild / version := \"1.0.0\"; docs/paradox; unidoc"
+          sbt "set ThisBuild / version := \"1.2.0\"; docs/paradox; unidoc"
         env:
           JAVA_OPTS: "-verbose:gc -Xmx4g"
 
       # Create directory structure upfront since rsync does not create intermediate directories otherwise
       - name: Create directory structure
         run: |-
-          mkdir -p target/nightly-docs/docs/pekko-management/1.0.0/
-          mkdir -p target/nightly-docs/docs/pekko-management/1.0/
-          cp -r docs/target/paradox/site/main/ target/nightly-docs/docs/pekko-management/1.0.0/docs
-          cp -r docs/target/paradox/site/main/ target/nightly-docs/docs/pekko-management/1.0/docs
+          mkdir -p target/nightly-docs/docs/pekko-management/1.2.0/
+          mkdir -p target/nightly-docs/docs/pekko-management/1.2/
+          cp -r docs/target/paradox/site/main/ target/nightly-docs/docs/pekko-management/1.2.0/docs
+          cp -r docs/target/paradox/site/main/ target/nightly-docs/docs/pekko-management/1.2/docs
           rm -r docs/target/paradox/site/main/
-          cp -r target/scala-2.13/unidoc target/nightly-docs/docs/pekko-management/1.0.0/api
-          cp -r target/scala-2.13/unidoc target/nightly-docs/docs/pekko-management/1.0/api
+          cp -r target/scala-2.13/unidoc target/nightly-docs/docs/pekko-management/1.2.0/api
+          cp -r target/scala-2.13/unidoc target/nightly-docs/docs/pekko-management/1.2/api
           rm -r target/scala-2.13/unidoc
 
-      - name: Upload 1.0.x nightly docs
+      - name: Upload 1.2.0 nightly docs
         uses: ./.github/actions/sync-nightlies
         with:
           upload: true
           switches: --archive --compress --update --delete --progress --relative
-          local_path: target/nightly-docs/./docs/pekko-management/1.0.0 # The intermediate dot is to show `--relative` which paths to operate on
+          local_path: target/nightly-docs/./docs/pekko-management/1.2.0 # The intermediate dot is to show `--relative` which paths to operate on
           remote_path: ${{ secrets.NIGHTLIES_RSYNC_PATH }}/pekko/
           remote_host: ${{ secrets.NIGHTLIES_RSYNC_HOST }}
           remote_port: ${{ secrets.NIGHTLIES_RSYNC_PORT }}
           remote_user: ${{ secrets.NIGHTLIES_RSYNC_USER }}
           remote_key: ${{ secrets.NIGHTLIES_RSYNC_KEY }}
 
-      - name: Upload 1.0 nightly docs
+      - name: Upload 1.2 nightly docs
         uses: ./.github/actions/sync-nightlies
         with:
           upload: true
           switches: --archive --compress --update --delete --progress --relative
-          local_path: target/nightly-docs/./docs/pekko-management/1.0 # The intermediate dot is to show `--relative` which paths to operate on
+          local_path: target/nightly-docs/./docs/pekko-management/1.2 # The intermediate dot is to show `--relative` which paths to operate on
           remote_path: ${{ secrets.NIGHTLIES_RSYNC_PATH }}/pekko/
           remote_host: ${{ secrets.NIGHTLIES_RSYNC_HOST }}
           remote_port: ${{ secrets.NIGHTLIES_RSYNC_PORT }}
