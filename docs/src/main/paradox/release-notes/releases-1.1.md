@@ -2,7 +2,9 @@
 
 ## 1.1.1
 
-Release notes for Apache Pekko Management 1.1.1. This release includes a security fix.
+Release notes for Apache Pekko Management 1.1.1. See [GitHub Milestone for 1.1.1](https://github.com/apache/pekko-management/milestone/4?closed=1) for a fuller list of changes.
+
+This release includes a security fix.
 
 ### Security fix
 
