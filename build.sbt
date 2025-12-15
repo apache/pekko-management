@@ -141,6 +141,10 @@ lazy val managementClusterHttp = pekkoModule("management-cluster-http")
   .settings(
     name := "pekko-management-cluster-http",
     libraryDependencies := Dependencies.managementClusterHttp,
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Test / fork := true,
+    Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     mimaPreviousArtifactsSet)
   .dependsOn(management)
 
@@ -149,9 +153,9 @@ lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap"
   .settings(
     name := "pekko-management-cluster-bootstrap",
     libraryDependencies := Dependencies.managementClusterBootstrap,
-    Test / fork := true,
     // following is needed by Agrona lib
     // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Test / fork := true,
     Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     mimaPreviousArtifactsSet)
   .dependsOn(management)
