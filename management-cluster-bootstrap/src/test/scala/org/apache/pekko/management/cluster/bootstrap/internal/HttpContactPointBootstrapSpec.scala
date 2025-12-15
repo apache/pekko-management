@@ -47,9 +47,9 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
       val sys = ActorSystem("HttpContactPointBootstrapSpec")
       val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
       try {
-        val cfg = ConfigFactory.parseString("""
+        val cfg = ConfigFactory.parseString(s"""
           pekko.management.cluster.bootstrap.contact-point.http-client {
-            ca-path = "${userDir}/management-cluster-bootstrap/src/test/files/ca.crt"
+            ca-path = "${userDir}/src/test/files/ca.crt"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
         HttpContactPointBootstrap.generateSSLContext(settings) should not be null
@@ -63,7 +63,7 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
       try {
         val cfg = ConfigFactory.parseString(s"""
           pekko.management.cluster.bootstrap.contact-point.http-client {
-            ca-path = "${userDir}/management-cluster-bootstrap/src/test/files/non-existent.crt"
+            ca-path = "${userDir}/src/test/files/non-existent.crt"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
         intercept[NoSuchFileException] {
@@ -79,7 +79,7 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
       try {
         val cfg = ConfigFactory.parseString(s"""
           pekko.management.cluster.bootstrap.contact-point.http-client {
-            ca-path = "${userDir}/management-cluster-bootstrap/src/test/files/ca.crt"
+            ca-path = "${userDir}/src/test/files/ca.crt"
             tls-version = "BAD_VERSION"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
