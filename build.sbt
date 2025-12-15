@@ -149,6 +149,9 @@ lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap"
   .settings(
     name := "pekko-management-cluster-bootstrap",
     libraryDependencies := Dependencies.managementClusterBootstrap,
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     mimaPreviousArtifactsSet)
   .dependsOn(management)
   .dependsOn(managementPki)
