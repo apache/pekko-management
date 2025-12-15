@@ -26,6 +26,8 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
 
+  val userDir = System.getProperty("user.dir")
+
   "HttpContactPointBootstrap" should {
     "use a safe name when connecting over IPv6" in {
       val name = HttpContactPointBootstrap.name(Host("[fe80::1013:2070:258a:c662]"), 443)
@@ -45,9 +47,9 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
       val sys = ActorSystem("HttpContactPointBootstrapSpec")
       val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
       try {
-        val cfg = ConfigFactory.parseString("""
+        val cfg = ConfigFactory.parseString(s"""
           pekko.management.cluster.bootstrap.contact-point.http-client {
-            ca-path = "management-cluster-bootstrap/src/test/files/ca.crt"
+            ca-path = "${userDir}/src/test/files/ca.crt"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
         HttpContactPointBootstrap.generateSSLContext(settings) should not be null
@@ -59,9 +61,9 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
       val sys = ActorSystem("HttpContactPointBootstrapSpec")
       val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
       try {
-        val cfg = ConfigFactory.parseString("""
+        val cfg = ConfigFactory.parseString(s"""
           pekko.management.cluster.bootstrap.contact-point.http-client {
-            ca-path = "management-cluster-bootstrap/src/test/files/non-existent.crt"
+            ca-path = "${userDir}/src/test/files/non-existent.crt"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
         intercept[NoSuchFileException] {
@@ -75,9 +77,9 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
       val sys = ActorSystem("HttpContactPointBootstrapSpec")
       val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
       try {
-        val cfg = ConfigFactory.parseString("""
+        val cfg = ConfigFactory.parseString(s"""
           pekko.management.cluster.bootstrap.contact-point.http-client {
-            ca-path = "management-cluster-bootstrap/src/test/files/ca.crt"
+            ca-path = "${userDir}/src/test/files/ca.crt"
             tls-version = "BAD_VERSION"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)

@@ -141,6 +141,10 @@ lazy val managementClusterHttp = pekkoModule("management-cluster-http")
   .settings(
     name := "pekko-management-cluster-http",
     libraryDependencies := Dependencies.managementClusterHttp,
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Test / fork := true,
+    Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     mimaPreviousArtifactsSet)
   .dependsOn(management)
 
@@ -149,6 +153,10 @@ lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap"
   .settings(
     name := "pekko-management-cluster-bootstrap",
     libraryDependencies := Dependencies.managementClusterBootstrap,
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Test / fork := true,
+    Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     mimaPreviousArtifactsSet)
   .dependsOn(management)
   .dependsOn(managementPki)
@@ -179,6 +187,9 @@ lazy val leaseKubernetesIntTest = pekkoModule("lease-kubernetes-int-test")
     name := "pekko-lease-kubernetes-int-test",
     libraryDependencies := Dependencies.leaseKubernetesTest,
     version ~= (_.replace('+', '-')),
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Runtime / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     dockerBaseImage := "eclipse-temurin:17-jre-alpine",
     dockerUpdateLatest := true,
     dockerCommands := dockerCommands.value.flatMap {
@@ -196,7 +207,10 @@ lazy val integrationTestKubernetesApi = pekkoIntTestModule("kubernetes-api")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
-    libraryDependencies := Dependencies.bootstrapDemos)
+    libraryDependencies := Dependencies.bootstrapDemos,
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Runtime / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED")
   .dependsOn(management, managementClusterHttp, managementClusterBootstrap, discoveryKubernetesApi)
   .enablePlugins(NoPublish)
 
@@ -215,7 +229,10 @@ lazy val integrationTestKubernetesDns = pekkoIntTestModule("kubernetes-dns")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin, NoPublish)
   .settings(
-    libraryDependencies := Dependencies.bootstrapDemos)
+    libraryDependencies := Dependencies.bootstrapDemos,
+    // following is needed by Agrona lib
+    // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
+    Runtime / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED")
   .dependsOn(
     management,
     managementClusterHttp,
