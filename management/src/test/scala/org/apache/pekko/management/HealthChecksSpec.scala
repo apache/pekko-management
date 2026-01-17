@@ -213,9 +213,12 @@ class HealthChecksSpec
       val checks = im.Seq(
         NaughtyCheck)
       val hc = HealthChecks(eas, settings(checks, checks, checks))
-      hc.startupResult().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
-      hc.readyResult().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
-      hc.aliveResult().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
+      hc.startupResult().failed.futureValue.getMessage shouldEqual
+      "Check [org.apache.pekko.management.Naughty] failed: bad"
+      hc.readyResult().failed.futureValue.getMessage shouldEqual
+      "Check [org.apache.pekko.management.Naughty] failed: bad"
+      hc.aliveResult().failed.futureValue.getMessage shouldEqual
+      "Check [org.apache.pekko.management.Naughty] failed: bad"
       hc.startup().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
       hc.ready().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
       hc.alive().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
@@ -242,13 +245,15 @@ class HealthChecksSpec
       intercept[InvalidHealthCheckException] {
         val checks = im.Seq(InvalidCtrCheck)
         HealthChecks(eas, settings(checks, checks, checks))
-      }.getMessage shouldEqual "Health checks: [NamedHealthCheck(InvalidCtr,org.apache.pekko.management.InvalidCtr)] must have a no args constructor or a single argument constructor that takes an ActorSystem"
+      }.getMessage shouldEqual
+      "Health checks: [NamedHealthCheck(InvalidCtr,org.apache.pekko.management.InvalidCtr)] must have a no args constructor or a single argument constructor that takes an ActorSystem"
     }
     "provide useful error if invalid type" in {
       intercept[InvalidHealthCheckException] {
         val checks = im.Seq(WrongTypeCheck)
         HealthChecks(eas, settings(checks, checks, checks))
-      }.getMessage shouldEqual "Health checks: [NamedHealthCheck(WrongType,org.apache.pekko.management.WrongType)] must have type: () => Future[Boolean]"
+      }.getMessage shouldEqual
+      "Health checks: [NamedHealthCheck(WrongType,org.apache.pekko.management.WrongType)] must have type: () => Future[Boolean]"
     }
     "provide useful error if class not found" in {
       intercept[InvalidHealthCheckException] {

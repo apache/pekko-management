@@ -285,7 +285,9 @@ private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, 
 
   private def hasLeaseTimedOut(leaseTime: Long): Boolean = {
     System
-      .currentTimeMillis() > (leaseTime + settings.timeoutSettings.heartbeatTimeout
+      .currentTimeMillis() >
+    (leaseTime +
+    settings.timeoutSettings.heartbeatTimeout
       .toMillis - (2 * settings.timeoutSettings.heartbeatInterval.toMillis))
   }
 }

@@ -16,12 +16,7 @@ package org.apache.pekko.management.scaladsl
 import org.apache.pekko
 import pekko.Done
 import pekko.actor.{
-  ActorSystem,
-  ClassicActorSystemProvider,
-  ExtendedActorSystem,
-  Extension,
-  ExtensionId,
-  ExtensionIdProvider
+  ActorSystem, ClassicActorSystemProvider, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider
 }
 import pekko.event.{ LogSource, Logging }
 import pekko.http.javadsl.server.directives.SecurityDirectives.ProvidedCredentials

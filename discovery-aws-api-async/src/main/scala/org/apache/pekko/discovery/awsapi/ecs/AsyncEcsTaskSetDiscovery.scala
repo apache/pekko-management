@@ -39,12 +39,7 @@ import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.retries.DefaultRetryStrategy
 import software.amazon.awssdk.services.ecs._
 import software.amazon.awssdk.services.ecs.model.{
-  DescribeTasksRequest,
-  DesiredStatus,
-  ListTasksRequest,
-  Tag => _,
-  Task,
-  TaskField
+  DescribeTasksRequest, DesiredStatus, ListTasksRequest, Tag => _, Task, TaskField
 }
 import spray.json.DefaultJsonProtocol._
 import spray.json.RootJsonFormat

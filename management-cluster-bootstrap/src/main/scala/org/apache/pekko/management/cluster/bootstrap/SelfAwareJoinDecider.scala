@@ -85,7 +85,8 @@ import scala.concurrent.duration._
    */
   protected def hostMatches(host: String, target: ResolvedTarget): Boolean = {
     val hostWithoutBracket = host.replaceAll("[\\[\\]]", "")
-    host == target.host || hostWithoutBracket == target.host || target.address
+    host == target.host || hostWithoutBracket == target.host ||
+    target.address
       .map(_.getHostAddress)
       .contains(hostWithoutBracket)
   }

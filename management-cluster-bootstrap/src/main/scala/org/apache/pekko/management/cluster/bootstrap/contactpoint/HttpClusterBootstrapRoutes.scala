@@ -58,12 +58,11 @@ final class HttpClusterBootstrapRoutes(settings: ClusterBootstrapSettings) exten
   }
 
   /** Scala API */
-  val routes: Route =
-    (path("bootstrap" / "seed-nodes") & get) {
-      toStrictEntity(1.second) { // always drain everything
-        routeGetSeedNodes
-      }
+  val routes: Route = (path("bootstrap" / "seed-nodes") & get) {
+    toStrictEntity(1.second) { // always drain everything
+      routeGetSeedNodes
     }
+  }
 
   /** Java API */
   def getRoutes: pekko.http.javadsl.server.Route = RouteAdapter(routes)
