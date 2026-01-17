@@ -21,17 +21,9 @@ import pekko.http.scaladsl.model.{ HttpMethod, HttpMethods, StatusCodes, Uri }
 import Uri.Path
 import pekko.http.scaladsl.server.Route
 import pekko.management.cluster.{
-  ClusterDomainEventServerSentEventEncoder,
-  ClusterHttpManagementJsonProtocol,
-  ClusterHttpManagementMemberOperation,
-  ClusterHttpManagementMessage,
-  ClusterMembers,
-  ClusterUnreachableMember,
-  Down,
-  Leave,
-  ShardDetails,
-  ShardEntityTypeKeys,
-  ShardRegionInfo
+  ClusterDomainEventServerSentEventEncoder, ClusterHttpManagementJsonProtocol, ClusterHttpManagementMemberOperation,
+  ClusterHttpManagementMessage, ClusterMembers, ClusterUnreachableMember, Down, Leave, ShardDetails,
+  ShardEntityTypeKeys, ShardRegionInfo
 }
 import pekko.management.cluster.cluster.ClusterReadViewAccess
 import pekko.pattern.ask

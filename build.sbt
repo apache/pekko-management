@@ -295,8 +295,10 @@ lazy val docs = project
       "pekko.version" -> PekkoCoreDependency.version,
       "extref.pekko.base_url" -> s"https://pekko.apache.org/docs/pekko/${Dependencies.pekkoBinaryVersion}/%s",
       "scaladoc.pekko.base_url" -> s"https://pekko.apache.org/api/pekko/${Dependencies.pekkoBinaryVersion}/",
-      "extref.pekko-http.base_url" -> s"https://pekko.apache.org/docs/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/%s",
-      "scaladoc.pekko.http.base_url" -> s"https://pekko.apache.org/api/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/",
+      "extref.pekko-http.base_url" ->
+      s"https://pekko.apache.org/docs/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/%s",
+      "scaladoc.pekko.http.base_url" ->
+      s"https://pekko.apache.org/api/pekko-http/${Dependencies.pekkoHttpBinaryVersion}/",
       "extref.pekko-grpc.base_url" -> s"https://pekko.apache.org/docs/pekko-grpc/1.0/%s"),
     Global / pekkoParadoxIncubatorNotice := None,
     Compile / paradoxMarkdownToHtml / sourceGenerators += Def.taskDyn {

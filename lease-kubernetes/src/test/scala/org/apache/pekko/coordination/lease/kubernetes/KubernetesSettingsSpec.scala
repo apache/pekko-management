@@ -53,7 +53,8 @@ class KubernetesSettingsSpec extends AnyWordSpec with Matchers {
            lease-operation-timeout=5s
            api-server-request-timeout=6s
         """.stripMargin).apiServerRequestTimeout
-      }.getMessage shouldEqual "requirement failed: 'api-server-request-timeout can not be less than 'lease-operation-timeout'"
+      }.getMessage shouldEqual
+      "requirement failed: 'api-server-request-timeout can not be less than 'lease-operation-timeout'"
     }
   }
 

@@ -36,15 +36,8 @@ import scala.concurrent.duration._
 import scala.util.Try
 import pekko.event.Logging
 import pekko.management.cluster.bootstrap.{
-  BootstrapLogMarker,
-  ClusterBootstrapSettings,
-  JoinDecider,
-  JoinDecision,
-  JoinOtherSeedNodes,
-  JoinSelf,
-  KeepProbing,
-  SeedNodesInformation,
-  SeedNodesObservation
+  BootstrapLogMarker, ClusterBootstrapSettings, JoinDecider, JoinDecision, JoinOtherSeedNodes, JoinSelf, KeepProbing,
+  SeedNodesInformation, SeedNodesObservation
 }
 
 /** INTERNAL API */
