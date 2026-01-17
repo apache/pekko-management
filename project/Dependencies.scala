@@ -28,7 +28,7 @@ object Dependencies {
   val jacksonVersion = "2.20.1"
 
   val log4j2Version = "2.25.3"
-  val logbackVersion = "1.5.24"
+  val logbackVersion = "1.5.25"
   val slf4jVersion = "2.0.17"
 
   // often called-in transitively with insecure versions of databind / core
