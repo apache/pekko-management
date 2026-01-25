@@ -138,7 +138,7 @@ that is accessible from your Kubernetes cluster and update the `kubernetes/pekko
 ```
 $ sbt shell
 > project integration-test-kubernetes-api (or integration-test-kubernetes-dns)
-> docker:publishLocal
+> Docker / publishLocal
 ```
 
 You can run multiple different Pekko Bootstrap-based applications in the same namespace,

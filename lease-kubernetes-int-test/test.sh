@@ -9,7 +9,7 @@ PROJECT_DIR=lease-kubernetes-int-test
 JOB_YML=$1
 
 eval $(minikube -p minikube docker-env)
-sbt "lease-kubernetes-int-test / docker:publishLocal"
+sbt "lease-kubernetes-int-test / Docker / publishLocal"
 
 kubectl apply -f "$PROJECT_DIR/kubernetes/rbac.yml"
 kubectl delete -f "$PROJECT_DIR/kubernetes/$JOB_YML" || true
