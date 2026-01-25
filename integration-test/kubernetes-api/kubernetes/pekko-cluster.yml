@@ -53,6 +53,10 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: "metadata.labels['app']"
+        # Agrona requires this JVM option to work on recent JDKs
+        - name: JAVA_OPTS
+          value: "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED"
+
 #deployment
 ---
 #rbac

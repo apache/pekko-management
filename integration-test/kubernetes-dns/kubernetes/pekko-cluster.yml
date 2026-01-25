@@ -55,6 +55,9 @@ spec:
         # service defined below
         - name: PEKKO_CLUSTER_BOOTSTRAP_SERVICE_NAME
           value: "integration-test-kubernetes-dns-internal"
+        # Agrona requires this JVM option to work on recent JDKs
+        - name: JAVA_OPTS
+          value: "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED"
 
 ---
 #headless
