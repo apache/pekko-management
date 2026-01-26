@@ -80,6 +80,6 @@ The repository can be [DockerHub](https://hub.docker.com/) or your private repos
 Now that we're setup, we can build our docker image. Run the following:
 
 ```
-sbt -Ddocker.username=<user-name> -Ddocker.registry=<registry-url> docker:publish
+sbt -Ddocker.username=<user-name> -Ddocker.registry=<registry-url> Docker/publish
 ```
 

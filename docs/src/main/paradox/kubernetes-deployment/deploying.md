@@ -133,7 +133,7 @@ If your cluster is failing to form, carefully check over the logs for the follow
 To deploy the samples to minikube:
 
 * Setup your local docker environment to point to minikube: `eval $(minikube -p minikube docker-env)`
-* Deploy the image: `sbt docker:publishLocal`
+* Deploy the image: `sbt Docker / publishLocal`
 * The deployment specs in the samples contain `imagePullPolicy: Never` to prevent Kubernetes trying to download the image from an external registry
 * Create the namespace and deployment:
 

@@ -71,7 +71,7 @@ How to Build
 
 2. In order to build and publish this example into your docker hub repo run next command from `pekko-management` work folder
 
-`sbt integration-test-marathon-api-docker/docker:publish`
+`sbt integration-test-marathon-api-docker/Docker/publish`
 
 How to Deploy
 -------------
