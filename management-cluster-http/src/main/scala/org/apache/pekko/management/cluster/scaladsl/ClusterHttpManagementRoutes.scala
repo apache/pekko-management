@@ -187,7 +187,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
               eventualActorRef.success(Some(actorRef))
               ()
             }
-            .watchTermination() {
+            .watchTermination {
               case (_, eventualDone) =>
                 eventualDone.onComplete { _ =>
                   // the stream has terminated, so complete the promise if it isn't already, and

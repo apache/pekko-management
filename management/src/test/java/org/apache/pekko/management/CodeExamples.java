@@ -33,7 +33,7 @@ public class CodeExamples {
     // #start-pekko-management-with-https-context
     PekkoManagement management = PekkoManagement.get(system);
 
-    HttpsConnectionContext https = ConnectionContext.https(sslContext);
+    HttpsConnectionContext https = ConnectionContext.httpsServer(sslContext);
     management.start(settings -> settings.withHttpsConnectionContext(https));
     // #start-pekko-management-with-https-context
   }
