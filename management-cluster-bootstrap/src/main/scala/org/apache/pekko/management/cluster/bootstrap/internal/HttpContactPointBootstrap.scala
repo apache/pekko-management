@@ -118,6 +118,9 @@ private[bootstrap] class HttpContactPointBootstrap(
 
   private implicit val sys: ActorSystem = context.system
 
+  private val useCustomSslContext: Boolean =
+    settings.contactPoint.httpClient.caPath.trim.nonEmpty
+
   private lazy val clientSslContext: HttpsConnectionContext =
     ConnectionContext.httpsClient(HttpContactPointBootstrap.generateSSLContext(settings))
 
@@ -145,7 +148,7 @@ private[bootstrap] class HttpContactPointBootstrap(
   override def receive = {
     case ProbeTick =>
       log.debug("Probing [{}] for seed nodes...", probeRequest.uri)
-      val reply = if (probeRequest.uri.scheme == "https") {
+      val reply = if (probeRequest.uri.scheme == "https" && useCustomSslContext) {
         http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
           connectionContext = clientSslContext)
       } else {
