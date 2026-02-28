@@ -62,6 +62,7 @@ private[bootstrap] object HttpContactPointBootstrap {
 
   private case object ProbeTick extends DeadLetterSuppression
   private val ProbingTimerKey = "probing-key"
+  private val DefaultTlsVersion = "TLSv1.2" // keep in sync with default in reference.conf
 
   def generateSSLContext(settings: ClusterBootstrapSettings): SSLContext = {
     val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
@@ -71,7 +72,8 @@ private[bootstrap] object HttpContactPointBootstrap {
     val km: Array[KeyManager] = factory.getKeyManagers
     val caPath = settings.contactPoint.httpClient.caPath.trim
     val tm: Array[TrustManager] = if (caPath.isEmpty) {
-      Array.empty
+      // null means use the default JVM trust store, which is what we want if no CA path is configured
+      None.orNull
     } else {
       val certificates = PemManagersProvider.loadCertificates(caPath)
       PemManagersProvider.buildTrustManagers(certificates)
@@ -101,8 +103,7 @@ private[bootstrap] class HttpContactPointBootstrap(
     with Timers
     with HttpBootstrapJsonProtocol {
 
-  import HttpContactPointBootstrap.ProbeTick
-  import HttpContactPointBootstrap.ProbingTimerKey
+  import HttpContactPointBootstrap._
 
   private val cluster = Cluster(context.system)
 
@@ -115,8 +116,12 @@ private[bootstrap] class HttpContactPointBootstrap(
 
   private implicit val sys: ActorSystem = context.system
 
+  private val useCustomSslContext: Boolean =
+    settings.contactPoint.httpClient.caPath.trim.nonEmpty ||
+    settings.contactPoint.httpClient.tlsVersion != DefaultTlsVersion
+
   private lazy val clientSslContext: HttpsConnectionContext =
-    ConnectionContext.httpsClient(HttpContactPointBootstrap.generateSSLContext(settings))
+    ConnectionContext.httpsClient(generateSSLContext(settings))
 
   private val http = Http()
 
@@ -142,7 +147,7 @@ private[bootstrap] class HttpContactPointBootstrap(
   override def receive = {
     case ProbeTick =>
       log.debug("Probing [{}] for seed nodes...", probeRequest.uri)
-      val reply = if (probeRequest.uri.scheme == "https") {
+      val reply = if (probeRequest.uri.scheme == "https" && useCustomSslContext) {
         http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
           connectionContext = clientSslContext)
       } else {
