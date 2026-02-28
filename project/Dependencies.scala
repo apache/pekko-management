@@ -11,9 +11,9 @@ import sbt._
 
 object Dependencies {
   // keep in sync with .github/workflows/unit-tests.yml
-  val scala212Version = "2.12.20"
-  val scala213Version = "2.13.16"
-  val scala3Version = "3.3.6"
+  val scala212Version = "2.12.21"
+  val scala213Version = "2.13.18"
+  val scala3Version = "3.3.7"
   val crossScalaVersions = Seq(scala212Version, scala213Version, scala3Version)
 
   val pekkoVersion = PekkoCoreDependency.version
@@ -104,7 +104,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    ("software.amazon.awssdk" % "ecs" % "2.33.4").exclude("software.amazon.awssdk", "apache-client"),
+    ("software.amazon.awssdk" % "ecs" % "2.42.2").exclude("software.amazon.awssdk", "apache-client"),
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test) ++ jacksonDatabind // aws-java-sdk depends on insecure version of jackson
 
   val managementHttp = Seq(
