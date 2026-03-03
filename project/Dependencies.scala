@@ -77,13 +77,16 @@ object Dependencies {
     "com.amazonaws" % "aws-java-sdk-ecs" % awsSdkVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test) ++ jacksonDatabind // aws-java-sdk depends on insecure version of jackson
 
+  val awsSdkV2Version = "2.42.4"
+
   val discoveryAwsApiAsync = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
     "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    ("software.amazon.awssdk" % "ecs" % "2.42.4").exclude("software.amazon.awssdk", "apache-client"),
+    ("software.amazon.awssdk" % "ecs" % awsSdkV2Version).exclude("software.amazon.awssdk", "apache-client"),
+    ("software.amazon.awssdk" % "ec2" % awsSdkV2Version).exclude("software.amazon.awssdk", "apache-client"),
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test) ++ jacksonDatabind // aws-java-sdk depends on insecure version of jackson
 
   val managementHttp = Seq(

@@ -1,0 +1,48 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * license agreements; and to You under the Apache License, version 2.0:
+ *
+ *   https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * This file is part of the Apache Pekko project, which was derived from Akka.
+ */
+
+package org.apache.pekko.discovery.awsapi.ec2
+
+import org.apache.pekko.discovery.awsapi.ec2.AsyncEc2TagBasedServiceDiscovery.parseFiltersString
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+
+class AsyncFiltersParsingTest extends AnyFunSuite with Matchers {
+
+  test("empty string does not break parsing") {
+    val filters = ""
+    val result = parseFiltersString(filters)
+    result should be(empty)
+  }
+
+  test("can parse simple filter") {
+    val filters = "tag:purpose=demo"
+    val result = parseFiltersString(filters)
+    result should have size 1
+    result.head.name() should ===("tag:purpose")
+    result.head.values() should have size 1
+    result.head.values().get(0) should ===("demo")
+  }
+
+  test("can parse more complicated filter") {
+    val filters = "tag:purpose=production;tag:department=engineering;tag:critical=no"
+    val result = parseFiltersString(filters)
+    result should have size 3
+
+    result.head.name() should ===("tag:purpose")
+    result.head.values().get(0) should ===("production")
+
+    result(1).name() should ===("tag:department")
+    result(1).values().get(0) should ===("engineering")
+
+    result(2).name() should ===("tag:critical")
+    result(2).values().get(0) should ===("no")
+  }
+
+}
