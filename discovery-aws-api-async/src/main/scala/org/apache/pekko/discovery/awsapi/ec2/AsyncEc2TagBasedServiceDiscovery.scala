@@ -24,7 +24,7 @@ import scala.jdk.FutureConverters._
 import scala.util.{ Failure, Success, Try }
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.actor.ExtendedActorSystem
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ec2.AsyncEc2TagBasedServiceDiscovery.parseFiltersString
@@ -53,7 +53,7 @@ object AsyncEc2TagBasedServiceDiscovery {
 }
 
 @ApiMayChange
-class AsyncEc2TagBasedServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
+class AsyncEc2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends ServiceDiscovery {
 
   private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ec2-tag-based-async")
 
@@ -83,7 +83,7 @@ class AsyncEc2TagBasedServiceDiscovery(system: ActorSystem) extends ServiceDisco
     val overrideConfig = clientConfigFqcn match {
       case Some(fqcn) =>
         val customizer = system.dynamicAccess
-          .createInstanceFor[Ec2AsyncClientConfigCustomizer](fqcn, List(classOf[ActorSystem] -> system))
+          .createInstanceFor[Ec2AsyncClientConfigCustomizer](fqcn, List(classOf[ExtendedActorSystem] -> system))
           .recoverWith {
             case _: NoSuchMethodException =>
               system.dynamicAccess.createInstanceFor[Ec2AsyncClientConfigCustomizer](fqcn, Nil)
