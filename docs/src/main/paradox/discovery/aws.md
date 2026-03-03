@@ -160,7 +160,7 @@ Screenshot of two ECS task instances (the service name is
 
 #### Dependencies and usage (ECS Discovery)
 
-There are two "flavours" of the ECS Discovery module. 
+There are two "flavours" of the ECS Discovery module.
 
 ##### pekko-discovery-aws-api
 
