@@ -7,9 +7,14 @@
  * This file is part of the Apache Pekko project, which was derived from Akka.
  */
 
+/*
+ * Copyright (C) 2017-2021 Lightbend Inc. <https://www.lightbend.com>
+ */
+
 package org.apache.pekko.discovery.awsapi.ec2
 
-import org.apache.pekko.discovery.awsapi.ec2.AsyncEc2TagBasedServiceDiscovery.parseFiltersString
+import org.apache.pekko
+import pekko.discovery.awsapi.ec2.AsyncEc2TagBasedServiceDiscovery.parseFiltersString
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 

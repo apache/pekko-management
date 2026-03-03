@@ -7,6 +7,10 @@
  * This file is part of the Apache Pekko project, which was derived from Akka.
  */
 
+/*
+ * Copyright (C) 2017-2021 Lightbend Inc. <https://www.lightbend.com>
+ */
+
 package org.apache.pekko.discovery.awsapi.ec2
 
 import java.net.InetAddress
