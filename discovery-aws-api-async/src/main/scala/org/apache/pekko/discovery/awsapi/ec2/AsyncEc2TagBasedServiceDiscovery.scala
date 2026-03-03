@@ -21,7 +21,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.jdk.CollectionConverters._
 import scala.jdk.FutureConverters._
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 
 import org.apache.pekko
 import pekko.actor.ActorSystem
@@ -59,6 +59,12 @@ class AsyncEc2TagBasedServiceDiscovery(system: ActorSystem) extends ServiceDisco
 
   private val tagKey = config.getString("tag-key")
 
+  private val clientConfigFqcn: Option[String] =
+    config.getString("client-config") match {
+      case "" => None
+      case fqcn => Some(fqcn)
+    }
+
   private val otherFiltersString = config.getString("filters")
   private val otherFilters = parseFiltersString(otherFiltersString)
 
@@ -72,9 +78,29 @@ class AsyncEc2TagBasedServiceDiscovery(system: ActorSystem) extends ServiceDisco
     Filter.builder().name("instance-state-name").values("running").build()
 
   private lazy val ec2Client: Ec2AsyncClient = {
-    val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
+    val overrideConfigBuilder =
+      ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry())
+    val overrideConfig = clientConfigFqcn match {
+      case Some(fqcn) =>
+        val customizer = system.dynamicAccess
+          .createInstanceFor[Ec2AsyncClientConfigCustomizer](fqcn, List(classOf[ActorSystem] -> system))
+          .recoverWith {
+            case _: NoSuchMethodException =>
+              system.dynamicAccess.createInstanceFor[Ec2AsyncClientConfigCustomizer](fqcn, Nil)
+          }
+        customizer match {
+          case Success(c) => c.apply(overrideConfigBuilder).build()
+          case Failure(ex) =>
+            throw new Exception(
+              s"Could not create Ec2AsyncClientConfigCustomizer instance of '$fqcn'. " +
+              "Make sure the class exists and has either a no-argument constructor or a single-argument constructor that takes an ActorSystem.",
+              ex)
+        }
+      case None =>
+        overrideConfigBuilder.build()
+    }
     val httpClient = NettyNioAsyncHttpClient.create()
-    val client = Ec2AsyncClient.builder().overrideConfiguration(conf).httpClient(httpClient).build()
+    val client = Ec2AsyncClient.builder().overrideConfiguration(overrideConfig).httpClient(httpClient).build()
     system.registerOnTermination(client.close())
     client
   }
