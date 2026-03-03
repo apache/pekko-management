@@ -2,7 +2,7 @@
 
 If you're using EC2 directly _or_ you're using ECS with host mode networking
 _and_ you're deploying one container per cluster member, continue to
-@ref:[Discovery Method: AWS API - EC2 Tag-Based Discovery](aws.md#discovery-method-aws-api-ec2-tag-based-discovery).
+@ref:[Discovery Method: AWS API - EC2 Tag-Based Discovery](aws.md#discovery-method-aws-api-ec2-tag-based-discovery). This support is **deprecated**.
 
 If you're using ECS with
 [awsvpcs](https://aws.amazon.com/blogs/compute/introducing-cloud-native-networking-for-ecs-containers/)
@@ -23,6 +23,12 @@ instead.
 
 ### Discovery Method: AWS API - EC2 Tag-Based Discovery
 
+@@@ warning
+  `pekko-discovery-aws-api` is deprecated because it uses AWS SDK v1 which has reached
+  [end of life](https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-aws-sdk-for-java-v1-x-on-december-31-2025/).
+  We do not currently have an implementation of EC2 Tag-Based Discovery in `pekko-discovery-aws-api-async`, the recommended replacement. 
+@@@
+
 You can use tags to simply mark the instances that belong to the same cluster. Use a tag that
 has "service" as the key and set the value equal to the name of your service (same value as `pekko.management.cluster.bootstrap.contact-point-discovery.service-name`
 defined in `application.conf`, if you're using this module for bootstrapping your Pekko cluster).
@@ -40,6 +46,11 @@ ensure the "Tag New Instances" option is checked.
 
 
 #### Dependencies and usage (EC2 Tag-Based Discovery)
+
+@@@ warning
+  `pekko-discovery-aws-api` is deprecated because it uses AWS SDK v1 which has reached
+  [end of life](https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-aws-sdk-for-java-v1-x-on-december-31-2025/).
+@@@
 
 This is a separate JAR file:
 
@@ -149,13 +160,18 @@ Screenshot of two ECS task instances (the service name is
 
 #### Dependencies and usage (ECS Discovery)
 
-There are two "flavours" of the ECS Discovery module.
+There are two "flavours" of the ECS Discovery module. 
 
 ##### pekko-discovery-aws-api
 
-This uses the mainstream AWS SDK. The advantage here is that if you've already
-got the mainstream AWS SDK as a dependency you're not now also bringing in the
-preview SDK. The disadvantage is that the mainstream SDK does blocking IO.
+@@@ warning
+  `pekko-discovery-aws-api` is deprecated because it uses AWS SDK v1 which has reached
+  [end of life](https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-aws-sdk-for-java-v1-x-on-december-31-2025/).
+@@@
+
+This uses the AWS SDK v1 which ha reached end of life. It is recommended that you use
+the `pekko-discovery-aws-api-async` dependency instead.
+The main disadvantage of this old lib is that the SDK v1 uses blocking IO.
 
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
@@ -180,14 +196,8 @@ pekko.discovery {
 
 ##### pekko-discovery-aws-api-async
 
-This uses the preview AWS SDK. The advantage here is that the SDK does
-non-blocking IO, which you probably want. You might need to think carefully
-before using this though if you've already got the mainstream AWS SDK as a
-dependency.
-
-Once the async AWS SDK is out of preview it is likely that the
-`pekko-discovery-aws-api` module will be discontinued in favour of
-`pekko-discovery-aws-api-async`.
+This uses AWS SDK v2. The advantage here is that the SDK does
+non-blocking IO, which you probably want.
 
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
