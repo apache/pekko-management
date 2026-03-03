@@ -61,7 +61,7 @@ class AsyncEc2TagBasedServiceDiscovery(system: ActorSystem) extends ServiceDisco
 
   private val clientConfigFqcn: Option[String] =
     config.getString("client-config") match {
-      case "" => None
+      case ""   => None
       case fqcn => Some(fqcn)
     }
 
@@ -89,7 +89,7 @@ class AsyncEc2TagBasedServiceDiscovery(system: ActorSystem) extends ServiceDisco
               system.dynamicAccess.createInstanceFor[Ec2AsyncClientConfigCustomizer](fqcn, Nil)
           }
         customizer match {
-          case Success(c) => c.apply(overrideConfigBuilder).build()
+          case Success(c)  => c.apply(overrideConfigBuilder).build()
           case Failure(ex) =>
             throw new Exception(
               s"Could not create Ec2AsyncClientConfigCustomizer instance of '$fqcn'. " +
