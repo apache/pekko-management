@@ -21,8 +21,8 @@ import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 
 /**
  * Implement this interface to customize the `ClientOverrideConfiguration.Builder` used when
- * creating the EC2 async client. The FQCN of the implementing class can be set via the
- * {@code pekko.discovery.aws-api-ec2-tag-based-async.client-config} config entry.
+ * creating the EC2 async client. The FQCN of the implementing class can be set via the {@code
+ * pekko.discovery.aws-api-ec2-tag-based-async.client-config} config entry.
  *
  * <p>The implementing class must have either a no-argument constructor or a constructor that takes
  * an {@link org.apache.pekko.actor.ActorSystem}.
