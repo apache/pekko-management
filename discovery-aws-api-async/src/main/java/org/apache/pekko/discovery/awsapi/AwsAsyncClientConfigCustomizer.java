@@ -20,12 +20,12 @@ package org.apache.pekko.discovery.awsapi;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 
 /**
- * Implement this interface to customize the {@link ClientOverrideConfiguration.Builder} used when
+ * Implement this interface to customize the `ClientOverrideConfiguration.Builder` used when
  * creating an AWS async client. The FQCN of the implementing class can be set via the {@code
  * client-config} config entry of the relevant discovery config section.
  *
  * <p>The implementing class must have either a no-argument constructor or a constructor that takes
- * an {@link org.apache.pekko.actor.ActorSystem}.
+ * an {@link org.apache.pekko.actor.ExtendedActorSystem}.
  */
 @FunctionalInterface
 public interface AwsAsyncClientConfigCustomizer {
