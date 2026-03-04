@@ -21,13 +21,13 @@ import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.jdk.CollectionConverters._
 import scala.jdk.FutureConverters._
-import scala.util.{ Failure, Success, Try }
+import scala.util.Try
 
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, ExtendedActorSystem }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
-import pekko.discovery.awsapi.AwsAsyncClientConfigCustomizer
+import pekko.discovery.awsapi.AwsClientConfigCustomizerHelper
 import pekko.discovery.awsapi.ecs.AsyncEcsTaskSetDiscovery.resolveTasks
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -36,8 +36,6 @@ import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.http.scaladsl.{ Http, HttpExt }
 import pekko.pattern.after
 import pekko.stream.Materializer
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
-import software.amazon.awssdk.retries.DefaultRetryStrategy
 import software.amazon.awssdk.services.ecs._
 import software.amazon.awssdk.services.ecs.model.{
   DescribeTasksRequest,
@@ -62,28 +60,8 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
     }
 
   private lazy val ecsClient = {
-    val overrideConfigBuilder =
-      ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry())
     val extSystem = system.asInstanceOf[ExtendedActorSystem]
-    val overrideConfig = clientConfigFqcn match {
-      case Some(fqcn) =>
-        val customizer = extSystem.dynamicAccess
-          .createInstanceFor[AwsAsyncClientConfigCustomizer](fqcn, List(classOf[ExtendedActorSystem] -> extSystem))
-          .recoverWith {
-            case _: NoSuchMethodException =>
-              extSystem.dynamicAccess.createInstanceFor[AwsAsyncClientConfigCustomizer](fqcn, Nil)
-          }
-        customizer match {
-          case Success(c)  => c.apply(overrideConfigBuilder).build()
-          case Failure(ex) =>
-            throw new Exception(
-              s"Could not create AwsAsyncClientConfigCustomizer instance of '$fqcn'. " +
-              "Make sure the class exists and has either a no-argument constructor or a single-argument constructor that takes an ActorSystem.",
-              ex)
-        }
-      case None =>
-        overrideConfigBuilder.build()
-    }
+    val overrideConfig = AwsClientConfigCustomizerHelper.buildClientOverrideConfiguration(extSystem, clientConfigFqcn)
     EcsAsyncClient.builder().overrideConfiguration(overrideConfig).build()
   }
 
