@@ -56,6 +56,10 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
 
   private val log = Logging(system, classOf[Ec2TagBasedServiceDiscovery])
 
+  log.warning(
+    "`pekko-discovery-aws-api` is deprecated because it uses the AWS SDK v1, which is no longer maintained. " +
+    "Consider switching to `pekko-discovery-aws-api-async`, which uses the AWS SDK v2 and is actively maintained.")
+
   private implicit val ec: ExecutionContext = system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
 
   private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ec2-tag-based")
