@@ -1,6 +1,6 @@
 # Bootstrap environments
 
-A set of integration tests projects can be found in [integration-test folder of the Pekko Management project](https://github.com/apache/pekko-management/tree/master/integration-test).
+A set of integration tests projects can be found in [integration-test folder of the Pekko Management project](https://github.com/apache/pekko-management/tree/main/integration-test).
 These test various Pekko management features together in various environments such as Kubernetes.
 
 The following samples exist as standalone projects for Apache Pekko as a starting point:

@@ -138,7 +138,7 @@ setting `pekko.discovery.aws-api-ec2-tag-based.tag-key` to something else.
 
 Demo:
 
-* A working demo app is available in the [integration-test](https://github.com/apache/pekko-management/tree/master/integration-test/aws-api-ec2)
+* A working demo app is available in the [integration-test](https://github.com/apache/pekko-management/tree/main/integration-test/aws-api-ec2)
 folder.
 
 
@@ -306,7 +306,7 @@ Notes:
 Demo:
 
 * A working demo app is available in the
-  [integration-test](https://github.com/apache/pekko-management/tree/master/integration-test/aws-api-ecs)
+  [integration-test](https://github.com/apache/pekko-management/tree/main/integration-test/aws-api-ecs)
   folder. It includes CloudFormation templates with minimal permissions w.r.t to
   IAM policies and security group ingress, and so is a good starting point for
   any deployment that integrates the
