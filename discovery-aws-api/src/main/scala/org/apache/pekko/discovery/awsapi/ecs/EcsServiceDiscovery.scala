@@ -20,6 +20,7 @@ import pekko.actor.ActorSystem
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.EcsServiceDiscovery.resolveTasks
+import pekko.event.Logging
 import pekko.pattern.after
 import pekko.util.ccompat.JavaConverters._
 
@@ -36,6 +37,12 @@ import scala.concurrent.duration._
 import scala.util.Try
 
 final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
+
+  private val log = Logging(system, classOf[EcsServiceDiscovery])
+
+  log.warning(
+    "`pekko-discovery-aws-api` is deprecated because it uses the AWS SDK v1, which is no longer maintained. " +
+    "Consider switching to `pekko-discovery-aws-api-async`, which uses the AWS SDK v2 and is actively maintained.")
 
   private[this] val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs")
   private[this] val cluster = config.getString("cluster")
