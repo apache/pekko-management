@@ -100,7 +100,7 @@ Scala
 Java
 :  @@snip [CompileOnly.java](/management-cluster-bootstrap/src/test/java/jdoc/org/apache/pekko/management/cluster/bootstrap/ClusterBootstrapCompileOnly.java) { #start }
 
-`PekkoManagment().start()` will return a @Scala[`Future`]@Java[`CompletionStage`] that will fail if management cannot be started. It is 
+`PekkoManagement().start()` will return a @Scala[`Future`]@Java[`CompletionStage`] that will fail if management cannot be started. It is 
 a good idea to act on such a failure, for example by logging an error and terminating the actor system.
 
 Ensure that `seed-nodes` is not present in configuration and that either autoloading through config or `start()` is called on every node.
