@@ -27,6 +27,7 @@ import org.apache.pekko
 import pekko.actor.ExtendedActorSystem
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.awsapi.AwsAsyncClientConfigCustomizer
 import pekko.discovery.awsapi.ec2.AsyncEc2TagBasedServiceDiscovery.parseFiltersString
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.pattern.after
@@ -83,16 +84,16 @@ class AsyncEc2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Serv
     val overrideConfig = clientConfigFqcn match {
       case Some(fqcn) =>
         val customizer = system.dynamicAccess
-          .createInstanceFor[Ec2AsyncClientConfigCustomizer](fqcn, List(classOf[ExtendedActorSystem] -> system))
+          .createInstanceFor[AwsAsyncClientConfigCustomizer](fqcn, List(classOf[ExtendedActorSystem] -> system))
           .recoverWith {
             case _: NoSuchMethodException =>
-              system.dynamicAccess.createInstanceFor[Ec2AsyncClientConfigCustomizer](fqcn, Nil)
+              system.dynamicAccess.createInstanceFor[AwsAsyncClientConfigCustomizer](fqcn, Nil)
           }
         customizer match {
           case Success(c)  => c.apply(overrideConfigBuilder).build()
           case Failure(ex) =>
             throw new Exception(
-              s"Could not create Ec2AsyncClientConfigCustomizer instance of '$fqcn'. " +
+              s"Could not create AwsAsyncClientConfigCustomizer instance of '$fqcn'. " +
               "Make sure the class exists and has either a no-argument constructor or a single-argument constructor that takes an ActorSystem.",
               ex)
         }

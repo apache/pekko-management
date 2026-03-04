@@ -17,25 +17,10 @@
 
 package org.apache.pekko.discovery.awsapi.ec2;
 
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import org.apache.pekko.discovery.awsapi.AwsAsyncClientConfigCustomizer;
 
 /**
- * Implement this interface to customize the `ClientOverrideConfiguration.Builder` used when
- * creating the EC2 async client. The FQCN of the implementing class can be set via the {@code
- * pekko.discovery.aws-api-ec2-tag-based-async.client-config} config entry.
- *
- * <p>The implementing class must have either a no-argument constructor or a constructor that takes
- * an {@link org.apache.pekko.actor.ActorSystem}.
+ * @deprecated Use {@link AwsAsyncClientConfigCustomizer} instead.
  */
-@FunctionalInterface
-public interface Ec2AsyncClientConfigCustomizer {
-
-  /**
-   * Customize the given builder. This method is called after the default retry strategy has been
-   * set, so it is possible to override it.
-   *
-   * @param builder the builder to customize
-   * @return the possibly modified builder
-   */
-  ClientOverrideConfiguration.Builder apply(ClientOverrideConfiguration.Builder builder);
-}
+@Deprecated
+public interface Ec2AsyncClientConfigCustomizer extends AwsAsyncClientConfigCustomizer {}
