@@ -32,6 +32,7 @@ import pekko.discovery.awsapi.ecs.AsyncEcsServiceDiscovery.{ resolveTasks, Tag }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.pattern.after
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ecs._
 import software.amazon.awssdk.services.ecs.model.{ Tag => _, _ }
 
@@ -45,6 +46,11 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
       case ""   => None
       case fqcn => Some(fqcn)
     }
+  private[this] val awsRegion: Option[Region] =
+    config.getString("region") match {
+      case "" => None
+      case r  => Some(Region.of(r))
+    }
   private[this] val tags = config
     .getConfigList("tags")
     .asScala
@@ -57,9 +63,11 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private[this] lazy val ecsClient = {
     val extSystem = system.asInstanceOf[ExtendedActorSystem]
+    val builder = EcsAsyncClient.builder()
+    awsRegion.foreach(builder.region)
     val overrideConfig = AwsClientConfigCustomizerHelper.buildClientOverrideConfiguration(extSystem, clientConfigFqcn)
     val httpClient = NettyNioAsyncHttpClient.create()
-    EcsAsyncClient.builder().overrideConfiguration(overrideConfig).httpClient(httpClient).build()
+    builder.overrideConfiguration(overrideConfig).httpClient(httpClient).build()
   }
 
   private[this] implicit val ec: ExecutionContext = system.dispatcher

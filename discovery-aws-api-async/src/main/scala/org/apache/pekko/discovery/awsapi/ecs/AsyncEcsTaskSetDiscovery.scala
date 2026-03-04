@@ -36,6 +36,7 @@ import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.http.scaladsl.{ Http, HttpExt }
 import pekko.pattern.after
 import pekko.stream.Materializer
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ecs._
 import software.amazon.awssdk.services.ecs.model.{
   DescribeTasksRequest,
@@ -58,11 +59,18 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
       case ""   => None
       case fqcn => Some(fqcn)
     }
+  private val awsRegion: Option[Region] =
+    config.getString("region") match {
+      case "" => None
+      case r  => Some(Region.of(r))
+    }
 
   private lazy val ecsClient = {
     val extSystem = system.asInstanceOf[ExtendedActorSystem]
+    val builder = EcsAsyncClient.builder()
+    awsRegion.foreach(builder.region)
     val overrideConfig = AwsClientConfigCustomizerHelper.buildClientOverrideConfiguration(extSystem, clientConfigFqcn)
-    EcsAsyncClient.builder().overrideConfiguration(overrideConfig).build()
+    builder.overrideConfiguration(overrideConfig).build()
   }
 
   private implicit val actorSystem: ActorSystem = system

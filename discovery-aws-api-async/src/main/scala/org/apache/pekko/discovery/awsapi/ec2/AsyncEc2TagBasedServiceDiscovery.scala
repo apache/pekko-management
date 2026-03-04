@@ -32,6 +32,7 @@ import pekko.discovery.awsapi.ec2.AsyncEc2TagBasedServiceDiscovery.parseFiltersS
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.pattern.after
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ec2.Ec2AsyncClient
 import software.amazon.awssdk.services.ec2.model.{ DescribeInstancesRequest, Filter }
 
@@ -64,6 +65,12 @@ class AsyncEc2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Serv
       case fqcn => Some(fqcn)
     }
 
+  private val awsRegion: Option[Region] =
+    config.getString("region") match {
+      case "" => None
+      case r  => Some(Region.of(r))
+    }
+
   private val otherFiltersString = config.getString("filters")
   private val otherFilters = parseFiltersString(otherFiltersString)
 
@@ -77,9 +84,11 @@ class AsyncEc2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Serv
     Filter.builder().name("instance-state-name").values("running").build()
 
   private lazy val ec2Client: Ec2AsyncClient = {
+    val builder = Ec2AsyncClient.builder()
+    awsRegion.foreach(builder.region)
     val overrideConfig = AwsClientConfigCustomizerHelper.buildClientOverrideConfiguration(system, clientConfigFqcn)
     val httpClient = NettyNioAsyncHttpClient.create()
-    val client = Ec2AsyncClient.builder().overrideConfiguration(overrideConfig).httpClient(httpClient).build()
+    val client = builder.overrideConfiguration(overrideConfig).httpClient(httpClient).build()
     system.registerOnTermination(client.close())
     client
   }
