@@ -1,8 +1,6 @@
 # Apache Pekko Discovery Methods
 
-As of version `1.0.0` of Pekko Management @extref:[Pekko Discovery](pekko:discovery/index.html)
-has become a core Pekko module. Older versions of Service Discovery from Pekko Management are not compatible with the 
-Pekko Discovery module in Pekko.
+@extref:[Pekko Discovery](pekko:discovery/index.html) is a core Pekko module.
 
 Pekko Management contains methods for:
 
