@@ -16,7 +16,7 @@ The CRD has been adapted for Pekko.
 
 For all your namespaces remove the leases
 ```
-kubectl delete leases.akka.io --all -n <YOUR NAMSPACE>
+kubectl delete leases.akka.io --all -n <YOUR NAMESPACE>
 ```
 
 And RBAC
