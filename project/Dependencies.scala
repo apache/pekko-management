@@ -47,7 +47,7 @@ object Dependencies {
   val discoveryConsul = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
-    "org.kiwiproject" % "consul-client" % "1.9.2",
+    "org.kiwiproject" % "consul-client" % "1.10.1",
     "org.testcontainers" % "testcontainers-consul" % "2.0.3" % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
@@ -77,7 +77,7 @@ object Dependencies {
     "com.amazonaws" % "aws-java-sdk-ecs" % awsSdkVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test) ++ jacksonDatabind // aws-java-sdk depends on insecure version of jackson
 
-  val awsSdkV2Version = "2.42.4"
+  val awsSdkV2Version = "2.42.13"
 
   val discoveryAwsApiAsync = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
@@ -137,7 +137,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-http-core" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test,
-    "org.mockito" % "mockito-core" % "5.22.0" % Test,
+    "org.mockito" % "mockito-core" % "5.23.0" % Test,
     "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test,
     "org.apache.pekko" %% "pekko-distributed-data" % pekkoVersion % Test,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
