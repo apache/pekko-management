@@ -24,9 +24,10 @@ import scala.jdk.FutureConverters._
 import scala.util.Try
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.actor.{ ActorSystem, ExtendedActorSystem }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.awsapi.AwsClientConfigCustomizerHelper
 import pekko.discovery.awsapi.ecs.AsyncEcsTaskSetDiscovery.resolveTasks
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -35,8 +36,7 @@ import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.http.scaladsl.{ Http, HttpExt }
 import pekko.pattern.after
 import pekko.stream.Materializer
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
-import software.amazon.awssdk.retries.DefaultRetryStrategy
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ecs._
 import software.amazon.awssdk.services.ecs.model.{
   DescribeTasksRequest,
@@ -54,10 +54,23 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs-task-set-async")
   private val cluster = config.getString("cluster")
+  private val clientConfigFqcn: Option[String] =
+    config.getString("client-config") match {
+      case ""   => None
+      case fqcn => Some(fqcn)
+    }
+  private val awsRegion: Option[Region] =
+    config.getString("region") match {
+      case "" => None
+      case r  => Some(Region.of(r))
+    }
 
   private lazy val ecsClient = {
-    val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
-    EcsAsyncClient.builder().overrideConfiguration(conf).build()
+    val extSystem = system.asInstanceOf[ExtendedActorSystem]
+    val builder = EcsAsyncClient.builder()
+    awsRegion.foreach(builder.region)
+    val overrideConfig = AwsClientConfigCustomizerHelper.buildClientOverrideConfiguration(extSystem, clientConfigFqcn)
+    builder.overrideConfiguration(overrideConfig).build()
   }
 
   private implicit val actorSystem: ActorSystem = system
