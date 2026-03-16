@@ -24,15 +24,15 @@ import scala.jdk.FutureConverters._
 import scala.util.Try
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.actor.{ ActorSystem, ExtendedActorSystem }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
+import pekko.discovery.awsapi.AwsClientConfigCustomizerHelper
 import pekko.discovery.awsapi.ecs.AsyncEcsServiceDiscovery.{ resolveTasks, Tag }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.pattern.after
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient
-import software.amazon.awssdk.retries.DefaultRetryStrategy
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ecs._
 import software.amazon.awssdk.services.ecs.model.{ Tag => _, _ }
 
@@ -41,6 +41,16 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private[this] val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs-async")
   private[this] val cluster = config.getString("cluster")
+  private[this] val clientConfigFqcn: Option[String] =
+    config.getString("client-config") match {
+      case ""   => None
+      case fqcn => Some(fqcn)
+    }
+  private[this] val awsRegion: Option[Region] =
+    config.getString("region") match {
+      case "" => None
+      case r  => Some(Region.of(r))
+    }
   private[this] val tags = config
     .getConfigList("tags")
     .asScala
@@ -52,9 +62,12 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     .toList
 
   private[this] lazy val ecsClient = {
-    val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
+    val extSystem = system.asInstanceOf[ExtendedActorSystem]
+    val builder = EcsAsyncClient.builder()
+    awsRegion.foreach(builder.region)
+    val overrideConfig = AwsClientConfigCustomizerHelper.buildClientOverrideConfiguration(extSystem, clientConfigFqcn)
     val httpClient = NettyNioAsyncHttpClient.create()
-    EcsAsyncClient.builder().overrideConfiguration(conf).httpClient(httpClient).build()
+    builder.overrideConfiguration(overrideConfig).httpClient(httpClient).build()
   }
 
   private[this] implicit val ec: ExecutionContext = system.dispatcher
