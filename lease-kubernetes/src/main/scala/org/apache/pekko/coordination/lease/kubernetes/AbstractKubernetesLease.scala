@@ -57,7 +57,13 @@ object AbstractKubernetesLease {
   private def makeDNS1039Compatible(name: String): String = {
     val normalized =
       Normalizer.normalize(name, Normalizer.Form.NFKD).toLowerCase.replaceAll("[_.]", "-").replaceAll("[^-a-z0-9]", "")
-    trim(truncateTo63Characters(normalized), List('-'))
+    val trimmed = trim(truncateTo63Characters(normalized), List('-'))
+    if (normalized.length <= 63) trimmed
+    else {
+      val hash = Integer.toHexString(name.hashCode).take(8)
+      val prefix = trim(trimmed.dropRight(9), List('-'))
+      s"$prefix-$hash"
+    }
   }
 }
 
