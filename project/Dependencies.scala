@@ -31,6 +31,8 @@ object Dependencies {
   val logbackVersion = "1.5.32"
   val slf4jVersion = "2.0.17"
 
+  val commonsCodecVersion = "1.21.0"
+
   // often called-in transitively with insecure versions of databind / core
   private val jacksonDatabind = Seq(
     "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion)
@@ -158,6 +160,7 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
+    "commons-codec" % "commons-codec" % commonsCodecVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
     "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % Test,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test) ++

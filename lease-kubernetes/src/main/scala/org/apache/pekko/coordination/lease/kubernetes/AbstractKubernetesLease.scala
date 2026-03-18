@@ -18,7 +18,6 @@ import java.security.MessageDigest
 import java.text.Normalizer
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.HexFormat
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.{ Failure, Success }
 import scala.annotation.nowarn
@@ -34,6 +33,7 @@ import pekko.coordination.lease.LeaseTimeoutException
 import pekko.pattern.AskTimeoutException
 import pekko.util.ConstantFun
 import pekko.util.Timeout
+import org.apache.commons.codec.binary.Base32
 import org.slf4j.LoggerFactory
 
 object AbstractKubernetesLease {
@@ -54,13 +54,13 @@ object AbstractKubernetesLease {
 
   /**
    * Hashes a name with SHA-256.
-   * Outputs the hex encoding of the hash.
+   * Outputs the base32 unpadded lowercase encoding of the hash.
    */
   private def sha256Hash(name: String): String = {
     val digest = MessageDigest.getInstance("SHA-256")
     val bytes = digest.digest(name.getBytes(StandardCharsets.UTF_8))
 
-    HexFormat.of.formatHex(bytes)
+    Base32.builder().get().encodeAsString(bytes).replaceAll("=", "").toLowerCase
   }
 
   /**
@@ -75,7 +75,7 @@ object AbstractKubernetesLease {
       // Here we allow for 253 characters on this behavior, as it is opt in
       if (normalized.length > 253) {
         val hash = sha256Hash(name)
-        val prefix = trim(normalized.dropRight(hash.length + 1), List('-'))
+        val prefix = trim(normalized.take(253 - hash.length - 1), List('-'))
 
         s"$prefix-$hash"
       } else {

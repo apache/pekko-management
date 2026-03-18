@@ -54,8 +54,10 @@ class AbstractKubernetesLeaseSpec extends AnyWordSpec with Matchers with Private
     "hash a lease name longer than 253 characters when lease hash is allowed" in {
       val leaseName =
         "test-with-long-system-name-that-has-more-than-the-expected-characters-count-and-is-very-long-that-will-for-sure-break-singleton-pekko://test-with-long-system-name-that-has-more-than-the-expected-characters-count-and-is-very-long-that-will-for-sure-break/path/to/actor"
-      makeDNS1039Compatible(leaseName, allowLeaseHash = true) shouldEqual
-      "test-with-long-system-name-that-has-more-than-the-expected-characters-count-and-is-very-long-that-will-for-sure-break-singleton-pekkotest-with-long-system-name-that-has-more-than-the-expected-char-86dc7f1f46a24ef6762afe7278ae942bf10dfc748381bed91630b53c2155ea55"
+      val result = makeDNS1039Compatible(leaseName, allowLeaseHash = true)
+      result.length shouldEqual 253
+      result shouldEqual
+      "test-with-long-system-name-that-has-more-than-the-expected-characters-count-and-is-very-long-that-will-for-sure-break-singleton-pekkotest-with-long-system-name-that-has-more-than-the-expected-characte-q3oh6h2gujhpm5rk7zzhrluufpyq37duqoa35wiwgc2tyikv5jkq"
     }
   }
 
