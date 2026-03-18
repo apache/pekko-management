@@ -25,18 +25,37 @@ class AbstractKubernetesLeaseSpec extends AnyWordSpec with Matchers with Private
 
   private val makeDNS1039CompatibleMethod = PrivateMethod[String](Symbol("makeDNS1039Compatible"))
 
-  private def makeDNS1039Compatible(leaseName: String): String =
-    AbstractKubernetesLease.invokePrivate(makeDNS1039CompatibleMethod(leaseName))
+  private def makeDNS1039Compatible(leaseName: String, allowLeaseHash: Boolean): String =
+    AbstractKubernetesLease.invokePrivate(makeDNS1039CompatibleMethod(leaseName, allowLeaseHash))
 
   "AbstractKubernetesLease" should {
-    "normalize a lease name shorter than 63 characters" in {
-      val leaseName = "test-system-singleton-pekko://test-system/path/to/actor"
-      makeDNS1039Compatible(leaseName) shouldEqual "test-system-singleton-pekkotest-systempathtoactor"
+    "normalize a lease name shorter than 63 characters" when {
+      "lease hash is allowed" in {
+        val leaseName = "test-system-singleton-pekko://test-system/path/to/actor"
+        makeDNS1039Compatible(leaseName, allowLeaseHash = true) shouldEqual
+        "test-system-singleton-pekkotest-systempathtoactor"
+      }
+      "lease hash is not allowed" in {
+        val leaseName = "test-system-singleton-pekko://test-system/path/to/actor"
+        makeDNS1039Compatible(leaseName, allowLeaseHash = false) shouldEqual
+        "test-system-singleton-pekkotest-systempathtoactor"
+      }
     }
-    "hash a lease name longer than 63 characters" in {
+    "normalize and truncate a lease name longer than 63 characters when lease hash is not allowed" in {
+      val leaseName = "test-system-bit-too-long-singleton-pekko://test-system-bit-too-long/path/to/actor"
+      makeDNS1039Compatible(leaseName, allowLeaseHash = false) shouldEqual
+      "test-system-bit-too-long-singleton-pekkotest-system-bit-too-lon"
+    }
+    "normalize a lease name shorter than 253 characters when lease hash is allowed" in {
+      val leaseName = "test-system-bit-too-long-singleton-pekko://test-system-bit-too-long/path/to/actor"
+      makeDNS1039Compatible(leaseName, allowLeaseHash = true) shouldEqual
+      "test-system-bit-too-long-singleton-pekkotest-system-bit-too-longpathtoactor"
+    }
+    "hash a lease name longer than 253 characters when lease hash is allowed" in {
       val leaseName =
-        "test-with-long-system-name-that-has-more-than-the-expected-characters-count-singleton-pekko://test-with-long-system-name-that-has-more-than-the-expected-characters-count/path/to/actor"
-      makeDNS1039Compatible(leaseName) shouldEqual "test-with-long-system-name-that-has-more-than-the-expe-5c4332cf"
+        "test-with-long-system-name-that-has-more-than-the-expected-characters-count-and-is-very-long-that-will-for-sure-break-singleton-pekko://test-with-long-system-name-that-has-more-than-the-expected-characters-count-and-is-very-long-that-will-for-sure-break/path/to/actor"
+      makeDNS1039Compatible(leaseName, allowLeaseHash = true) shouldEqual
+      "test-with-long-system-name-that-has-more-than-the-expected-characters-count-and-is-very-long-that-will-for-sure-break-singleton-pekkotest-with-long-system-name-that-has-more-than-the-expected-char-86dc7f1f46a24ef6762afe7278ae942bf10dfc748381bed91630b53c2155ea55"
     }
   }
 

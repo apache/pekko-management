@@ -73,7 +73,9 @@ private[pekko] object KubernetesSettings {
       secure = config.getBoolean("secure-api-server"),
       tlsVersion = config.getString("tls-version"),
       bodyReadTimeout = apiServerRequestTimeout / 2,
-      tokenRetrySettings = tokenRetrySettings)
+      tokenRetrySettings = tokenRetrySettings,
+      allowLeaseNameHash = config.getBoolean("allow-lease-name-hash")
+    )
   }
 }
 
@@ -107,4 +109,5 @@ private[pekko] class KubernetesSettings(
       10.millis,
       1.minute,
       0.3
-    ))
+    ),
+    val allowLeaseNameHash: Boolean = false)
