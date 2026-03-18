@@ -60,7 +60,7 @@ object AbstractKubernetesLease {
     val digest = MessageDigest.getInstance("SHA-256")
     val bytes = digest.digest(name.getBytes(StandardCharsets.UTF_8))
 
-    val base32WithPadding = Base32.builder().get().encodeAsString(bytes).toLowerCase
+    val base32WithPadding = new Base32().encodeAsString(bytes).toLowerCase
 
     val paddingIndex = base32WithPadding.indexOf('=')
 
