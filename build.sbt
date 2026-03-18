@@ -62,7 +62,14 @@ lazy val root = project
   .aggregate(projectList: _*)
   .settings(
     name := "pekko-management-root",
-    GlobalScope / parallelExecution := false)
+    GlobalScope / parallelExecution := false,
+    ScalaUnidoc / unidoc / unidocAllClasspaths := {
+      val desiredJar = s"commons-codec-${Dependencies.commonsCodecVersion}.jar"
+      (ScalaUnidoc / unidoc / unidocAllClasspaths).value.map { cp =>
+        cp.filter(e => !e.data.getName.startsWith("commons-codec-") || e.data.getName == desiredJar)
+      }
+    }
+  )
   .enablePlugins(NoPublish)
 
 val mimaCompareVersion = "1.0.0"
