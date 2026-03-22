@@ -110,7 +110,11 @@ lazy val management = pekkoModule("management")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-management",
-    libraryDependencies := Dependencies.managementHttp,
+    libraryDependencies := Dependencies.managementHttp ++ Seq(
+      "com.github.sbt.junit" % "jupiter-interface" % JupiterKeys.jupiterVersion.value % Test,
+      "org.junit.jupiter" % "junit-jupiter-api" % JupiterKeys.junitJupiterVersion.value % Test,
+      "org.junit.jupiter" % "junit-jupiter-engine" % JupiterKeys.junitJupiterVersion.value % Test,
+      "org.junit.platform" % "junit-platform-launcher" % JupiterKeys.junitPlatformVersion.value % Test),
     mimaPreviousArtifactsSet)
 
 lazy val managementPki = pekkoModule("management-pki")
@@ -140,7 +144,11 @@ lazy val managementClusterHttp = pekkoModule("management-cluster-http")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-management-cluster-http",
-    libraryDependencies := Dependencies.managementClusterHttp,
+    libraryDependencies := Dependencies.managementClusterHttp ++ Seq(
+      "com.github.sbt.junit" % "jupiter-interface" % JupiterKeys.jupiterVersion.value % Test,
+      "org.junit.jupiter" % "junit-jupiter-api" % JupiterKeys.junitJupiterVersion.value % Test,
+      "org.junit.jupiter" % "junit-jupiter-engine" % JupiterKeys.junitJupiterVersion.value % Test,
+      "org.junit.platform" % "junit-platform-launcher" % JupiterKeys.junitPlatformVersion.value % Test),
     // following is needed by Agrona lib
     // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
     Test / fork := true,
@@ -152,7 +160,11 @@ lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap"
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
   .settings(
     name := "pekko-management-cluster-bootstrap",
-    libraryDependencies := Dependencies.managementClusterBootstrap,
+    libraryDependencies := Dependencies.managementClusterBootstrap ++ Seq(
+      "com.github.sbt.junit" % "jupiter-interface" % JupiterKeys.jupiterVersion.value % Test,
+      "org.junit.jupiter" % "junit-jupiter-api" % JupiterKeys.junitJupiterVersion.value % Test,
+      "org.junit.jupiter" % "junit-jupiter-engine" % JupiterKeys.junitJupiterVersion.value % Test,
+      "org.junit.platform" % "junit-platform-launcher" % JupiterKeys.junitPlatformVersion.value % Test),
     // following is needed by Agrona lib
     // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
     Test / fork := true,

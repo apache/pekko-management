@@ -13,7 +13,7 @@
 
 package org.apache.pekko.management;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.typesafe.config.ConfigFactory;
 import java.util.Arrays;
@@ -32,12 +32,11 @@ import org.apache.pekko.management.javadsl.LivenessCheckSetup;
 import org.apache.pekko.management.javadsl.ReadinessCheckSetup;
 import org.apache.pekko.management.javadsl.StartupCheckSetup;
 import org.apache.pekko.testkit.javadsl.TestKit;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
-import org.scalatestplus.junit.JUnitSuite;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class HealthCheckTest extends JUnitSuite {
+public class HealthCheckTest {
   private static Throwable cause = new RuntimeException("oh dear");
 
   @SuppressWarnings("unused")
@@ -154,7 +153,7 @@ public class HealthCheckTest extends JUnitSuite {
                 java.time.Duration.ofSeconds(1)));
     try {
       checks.alive().toCompletableFuture().get();
-      Assert.fail("Expected exception");
+      Assertions.fail("Expected exception");
     } catch (ExecutionException re) {
       assertEquals(cause, re.getCause().getCause());
     }
@@ -197,7 +196,7 @@ public class HealthCheckTest extends JUnitSuite {
     }
   }
 
-  @AfterClass
+  @AfterAll
   public static void cleanup() {
     TestKit.shutdownActorSystem(system);
   }

@@ -15,7 +15,7 @@ package org.apache.org.apache.pekko.management.cluster.bootstrap;
 
 import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ClusterBootstrapJavaCompileTest {
 

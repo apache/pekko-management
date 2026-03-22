@@ -15,7 +15,7 @@ package org.apache.pekko.management.http;
 
 import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.management.cluster.ClusterHttpManagementRouteProvider;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ClusterHttpManagementJavaCompileTest {
 
