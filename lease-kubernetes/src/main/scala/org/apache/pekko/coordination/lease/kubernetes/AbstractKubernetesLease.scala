@@ -13,6 +13,8 @@
 
 package org.apache.pekko.coordination.lease.kubernetes
 
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.text.Normalizer
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -31,6 +33,7 @@ import pekko.coordination.lease.LeaseTimeoutException
 import pekko.pattern.AskTimeoutException
 import pekko.util.ConstantFun
 import pekko.util.Timeout
+import org.apache.commons.codec.binary.Base32
 import org.slf4j.LoggerFactory
 
 object AbstractKubernetesLease {
@@ -50,14 +53,41 @@ object AbstractKubernetesLease {
     name.dropWhile(characters.contains(_)).reverse.dropWhile(characters.contains(_)).reverse
 
   /**
+   * Hashes a name with SHA-256.
+   * Outputs the base32 unpadded lowercase encoding of the hash.
+   */
+  private def sha256Hash(name: String): String = {
+    val digest = MessageDigest.getInstance("SHA-256")
+    val bytes = digest.digest(name.getBytes(StandardCharsets.UTF_8))
+
+    val base32WithPadding = new Base32().encodeAsString(bytes).toLowerCase
+
+    val paddingIndex = base32WithPadding.indexOf('=')
+
+    if (paddingIndex > 0) base32WithPadding.substring(0, paddingIndex) else base32WithPadding
+  }
+
+  /**
    * Make a name compatible with DNS 1039 standard: like a single domain name segment.
    * Regex to follow: [a-z]([-a-z0-9]*[a-z0-9])
-   * Limit the resulting name to 63 characters
    */
-  private def makeDNS1039Compatible(name: String): String = {
+  private def makeDNS1039Compatible(name: String, allowHash: Boolean): String = {
     val normalized =
       Normalizer.normalize(name, Normalizer.Form.NFKD).toLowerCase.replaceAll("[_.]", "-").replaceAll("[^-a-z0-9]", "")
-    trim(truncateTo63Characters(normalized), List('-'))
+
+    if (allowHash) {
+      // Here we allow for 253 characters on this behavior, as it is opt in
+      if (normalized.length > 253) {
+        val hash = sha256Hash(name)
+        val prefix = trim(normalized.take(253 - hash.length - 1), List('-'))
+
+        s"$prefix-$hash"
+      } else {
+        trim(normalized, List('-'))
+      }
+    } else {
+      trim(truncateTo63Characters(normalized), List('-'))
+    }
   }
 }
 
@@ -74,7 +104,7 @@ abstract class AbstractKubernetesLease(system: ExtendedActorSystem, leaseTaken: 
 
   private implicit val timeout: Timeout = Timeout(settings.timeoutSettings.operationTimeout)
 
-  private val leaseName = makeDNS1039Compatible(settings.leaseName)
+  private val leaseName = makeDNS1039Compatible(settings.leaseName, k8sSettings.allowLeaseNameHash)
   private val leaseActor = system.systemActorOf(
     LeaseActor.props(k8sApi, settings, leaseName, leaseTaken),
     s"kubernetesLease${AbstractKubernetesLease.leaseCounter.incrementAndGet}")
