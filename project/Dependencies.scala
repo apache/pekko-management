@@ -99,8 +99,7 @@ object Dependencies {
 
   val managementPki = Seq(
     "org.apache.pekko" %% "pekko-pki" % pekkoVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-    "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % Test)
+    "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 
   val managementLoglevelsLogback = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
@@ -159,7 +158,6 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-slf4j" % pekkoVersion,
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-    "org.scalatestplus" %% "junit-4-13" % scalaTestPlusJUnitVersion % Test,
     "org.apache.pekko" %% "pekko-testkit" % pekkoVersion % Test) ++
     wireMockDependencies
 
