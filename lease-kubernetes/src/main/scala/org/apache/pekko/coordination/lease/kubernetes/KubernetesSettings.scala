@@ -73,7 +73,9 @@ private[pekko] object KubernetesSettings {
       secure = config.getBoolean("secure-api-server"),
       tlsVersion = config.getString("tls-version"),
       bodyReadTimeout = apiServerRequestTimeout / 2,
-      tokenRetrySettings = tokenRetrySettings)
+      tokenRetrySettings = tokenRetrySettings,
+      leaseLabelMaxLength = config.getInt("lease-name-max-length"),
+      onTruncateAddHashLength = config.getInt("on-truncate-add-hash-length"))
   }
 }
 
@@ -107,4 +109,6 @@ private[pekko] class KubernetesSettings(
       10.millis,
       1.minute,
       0.3
-    ))
+    ),
+    val leaseLabelMaxLength: Int = 63,
+    val onTruncateAddHashLength: Int = 8)
