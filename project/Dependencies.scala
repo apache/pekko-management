@@ -26,7 +26,7 @@ object Dependencies {
   val guavaVersion = "33.6.0-jre"
   val jacksonVersion = "2.21.3"
 
-  val log4j2Version = "2.25.4"
+  val log4j2Version = "2.26.0"
   val logbackVersion = "1.5.32"
   val slf4jVersion = "2.0.17"
 
