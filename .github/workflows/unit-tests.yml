@@ -46,7 +46,7 @@ jobs:
         uses: sbt/setup-sbt@508b753e53cb6095967669e0911487d2b9bc9f41 # v1.1.22
           
       - name: Cache Coursier cache
-        uses: coursier/cache-action@90c37294538be80a558fd665531fcdc2b467b475 # v8.1.0
+        uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d # v8.1.1
 
       # hack to solve "Cannot assign requested address" issue - https://github.community/t/github-action-and-oserror-errno-99-cannot-assign-requested-address/173973/1
       - name: Add the current IP address, long hostname and short hostname record to /etc/hosts file
@@ -87,7 +87,7 @@ jobs:
         uses: sbt/setup-sbt@508b753e53cb6095967669e0911487d2b9bc9f41 # v1.1.22
           
       - name: Cache Coursier cache
-        uses: coursier/cache-action@90c37294538be80a558fd665531fcdc2b467b475 # v8.1.0
+        uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d # v8.1.1
 
       - name: Create all API docs for artifacts/website and all reference docs
         run: sbt "unidoc; docs/paradox"
