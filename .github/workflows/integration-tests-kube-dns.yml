@@ -50,7 +50,7 @@ jobs:
         uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d # v8.1.1
 
       - name: Setup Minikube
-        uses: manusa/actions-setup-minikube@285c4cc66c939eb2ca21ef94b444f4b430ede447 # v2.17.0
+        uses: manusa/actions-setup-minikube@b65276017fdec6f1e6498129fb740e34e260dc55 # v2.18.0
         with:
           minikube version: 'v1.36.0'
           kubernetes version: 'v1.29.15'
