@@ -27,6 +27,10 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.github.tomakehurst.wiremock.stubbing.Scenario
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.testkit.EventFilter
+import pekko.testkit.ImplicitSender
+import pekko.testkit.TestKit
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.Eventually
@@ -36,10 +40,6 @@ import org.scalatest.time.Millis
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
 import org.scalatest.wordspec.AnyWordSpecLike
-import pekko.actor.ActorSystem
-import pekko.testkit.EventFilter
-import pekko.testkit.ImplicitSender
-import pekko.testkit.TestKit
 
 import scala.concurrent.duration._
 
@@ -181,9 +181,9 @@ class KubernetesApiSpec
       stubFor(getPod(podName1).willReturn(aResponse().withStatus(404)))
       EventFilter
         .warning(pattern = ".*Failed to get revision", occurrences = 5)
-        .intercept({
+        .intercept {
           assert(kubernetesApi.readRevision().failed.futureValue.isInstanceOf[ReadRevisionException])
-        })
+        }
     }
 
     "retry and then fail when replicaset not found" in {
@@ -191,18 +191,18 @@ class KubernetesApiSpec
       stubFor(getReplicaSet("parent-replicaset-id").willReturn(aResponse().withStatus(404)))
       EventFilter
         .warning(pattern = ".*Failed to get revision", occurrences = 5)
-        .intercept({
+        .intercept {
           assert(kubernetesApi.readRevision().failed.futureValue.isInstanceOf[ReadRevisionException])
-        })
+        }
     }
 
     "log if pod json can not be parsed" in {
       stubPodResponse(json = """{ "invalid": "json" }""")
       EventFilter
         .warning(pattern = ".*Error while parsing Pod*")
-        .intercept({
+        .intercept {
           assert(kubernetesApi.readRevision().failed.futureValue.isInstanceOf[ReadRevisionException])
-        })
+        }
     }
 
     "log if replica json can not be parsed" in {
@@ -210,9 +210,9 @@ class KubernetesApiSpec
       stubReplicaResponse(json = """{ "invalid": "json" }""")
       EventFilter
         .warning(pattern = ".*Error while parsing Pod*")
-        .intercept({
+        .intercept {
           assert(kubernetesApi.readRevision().failed.futureValue.isInstanceOf[ReadRevisionException])
-        })
+        }
     }
 
     "break the loop if consecutive request succeeds" in {
@@ -234,9 +234,9 @@ class KubernetesApiSpec
       stubReplicaResponse()
       EventFilter
         .warning(pattern = ".*Try again*", occurrences = 2)
-        .intercept({
+        .intercept {
           kubernetesApi.readRevision().futureValue should be("1")
-        })
+        }
     }
   }
 }
