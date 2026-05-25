@@ -78,7 +78,7 @@ final class PodDeletionCost(implicit system: ExtendedActorSystem) extends Extens
   if (autostart) {
     log.info("PodDeletionCost loaded through 'pekko.extensions' auto-starting itself.")
     try {
-      PodDeletionCost(system).start()
+      start()
     } catch {
       case NonFatal(ex) =>
         log.error(ex, "Failed to autostart PodDeletionCost extension")

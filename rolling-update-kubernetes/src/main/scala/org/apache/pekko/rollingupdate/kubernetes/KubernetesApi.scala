@@ -62,6 +62,11 @@ private[pekko] final case class PodCost(podName: String, cost: Int, address: Str
 /**
  * INTERNAL API
  */
+@InternalApi private[pekko] sealed class MissingPodNameException(message: String) extends RuntimeException(message)
+
+/**
+ * INTERNAL API
+ */
 @InternalApi private[pekko] sealed class GetPodException(message: String) extends RuntimeException(message)
 
 /**
