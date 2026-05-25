@@ -85,9 +85,25 @@ The following configuration is required, more details for each and additional co
 
 * `pekko.rollingupdate.kubernetes.pod-name`: this can be provided by setting `KUBERNETES_POD_NAME` environment variable to `metadata.name` on the Kubernetes container spec.
 
+```yaml
+        env:
+        - name: KUBERNETES_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+```
+
 Additionally, the pod annotator needs to know which namespace the pod belongs to. By default, this will be detected by reading the namespace
 from the service account secret, in `/var/run/secrets/kubernetes.io/serviceaccount/namespace`, but can be overridden by
 setting `pekko.rollingupdate.kubernetes.namespace` or by providing `KUBERNETES_NAMESPACE` environment variable.
+
+```yaml
+        env:
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+```
 
 ##### Role based access control
 
@@ -132,11 +148,11 @@ This RBAC example covers only the permissions needed for this `PodDeletionCost` 
 
 ## app-version from Deployment
 
-When using Cluster Sharding, it is [recommended](https://pekko.apache.org/docs/pekko/current/additional/rolling-updates.html#cluster-sharding) for rolling updates that you define an increasing `pekko.cluster.app-version` configuration property for each roll out.
+When using Cluster Sharding, it is [recommended](https://pekko.apache.org/docs/pekko/current/additional/rolling-updates.html#cluster-sharding) to define an increasing `pekko.cluster.app-version` configuration property for each roll out.
 
 This works well unless you use `kubectl rollout undo` which deploys the previous ReplicaSet configuration which contains the previous value for that config.
 
-To fix this, you can use `AppVersionRevision` to read the current annotation `deployment.kubernetes.io/revision` (part of the ReplicaSet) from the Kubernetes Deployment via the Kubernetes API which always increases, also during a rollback:
+To fix this, you can use `AppVersionRevision` to read the current annotation `deployment.kubernetes.io/revision` (part of the ReplicaSet) from the Kubernetes Deployment via the Kubernetes API which always increases, also during a rollback.
 
 ### Using
 
@@ -166,9 +182,25 @@ The following configuration is required, more details for each and additional co
 
 * `pekko.rollingupdate.kubernetes.pod-name`: this can be provided by setting `KUBERNETES_POD_NAME` environment variable to `metadata.name` on the Kubernetes container spec.
 
+```yaml
+        env:
+        - name: KUBERNETES_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+```
+
 Additionally, the pod annotator needs to know which namespace the pod belongs to. By default, this will be detected by reading the namespace
 from the service account secret, in `/var/run/secrets/kubernetes.io/serviceaccount/namespace`, but can be overridden by
 setting `pekko.rollingupdate.kubernetes.namespace` or by providing `KUBERNETES_NAMESPACE` environment variable.
+
+```yaml
+        env:
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+```
 
 #### Role based access control
 
