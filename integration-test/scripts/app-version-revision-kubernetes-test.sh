@@ -19,14 +19,17 @@ sbt $PROJECT_NAME/Docker/publishLocal
 # Param $1 is the expected revision
 testRevisionInPodsLog () {
   echo "Testing for revision $1:"
+
+  # Wait for the rollout to fully complete before checking logs
+  kubectl rollout status deployment/$APP_NAME -n $NAMESPACE --timeout=120s
+
   for i in {1..20}
   do
     sleep 5
-    echo "Waiting for rolling update to complete ...  (revision $1, $i/20)"
+    echo "Waiting for all pods to be ready ...  (revision $1, $i/20)"
     kubectl get pods -n $NAMESPACE
 
-    # the two lines below ensure a rollout is fully completed, before we look at the logs for updated revision
-    # if not filtering out Terminated or pods that are not not ready (0/1) we will see previous revisions in the logs
+    # ensure all pods are ready and none are terminating or creating
     [ `kubectl get pods -n $NAMESPACE | grep Terminating | wc -l` -ne 0 ] && continue   # loop again until no Terminating nodes in the list
     [ `kubectl get pods -n $NAMESPACE | grep 0/1 | wc -l` -eq 0 ] && break              # exit the loop once we only have READY (1/1) pods
   done
