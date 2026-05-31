@@ -34,7 +34,7 @@ testRevisionInPodsLog () {
   if [ $i -eq 20 ]
   then
     echo "Pods did not get ready (revision $1)"
-    kubectl -n $NAMESPACE describe deployment pekko-rollingupdate-demo
+    kubectl -n $NAMESPACE describe deployment pekko-rolling-update-demo
     exit -1
   fi
 
@@ -63,7 +63,7 @@ testRevisionInPodsLog () {
 # prep
 docker images | head
 kubectl create namespace $NAMESPACE || true
-kubectl -n $NAMESPACE delete deployment pekko-rollingupdate-demo || true
+kubectl -n $NAMESPACE delete deployment pekko-rolling-update-demo || true
 kubectl -n $NAMESPACE apply -f $DEPLOYMENT
 
 # after the initial deployment
