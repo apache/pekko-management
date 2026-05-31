@@ -327,8 +327,8 @@ PUTs must contain resourceVersions. Response:
   /**
    * Start a proxy in local minikube:
    * - kubectl proxy --port=8080
-   * - replic_set_name=$(curl -s http://localhost:8080/api/v1/namespaces/pekko-rollingupdate-demo-ns/pods | jq '.items[0].metadata.ownerReferences[0].name'| tr -d '"')
-   * - revision=$(curl -s http://localhost:8080/apis/apps/v1/namespaces/pekko-rollingupdate-demo-ns/replicasets/"$replic_set_name" | jq '.metadata.annotations["deployment.kubernetes.io/revision"]'| tr -d '"')
+   * - replic_set_name=$(curl -s http://localhost:8080/api/v1/namespaces/pekko-rolling-update-demo-ns/pods | jq '.items[0].metadata.ownerReferences[0].name'| tr -d '"')
+   * - revision=$(curl -s http://localhost:8080/apis/apps/v1/namespaces/pekko-rolling-update-demo-ns/replicasets/"$replic_set_name" | jq '.metadata.annotations["deployment.kubernetes.io/revision"]'| tr -d '"')
    */
   override def readRevision(): Future[String] = {
     val maxTries = 5

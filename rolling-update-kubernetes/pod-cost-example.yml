@@ -4,12 +4,12 @@ metadata:
   name: sampleservice
 spec:
   pods:
-    - address: pekko://SampleService@10.42.0.13:2552
+    - address: pekko://SampleService@10.42.0.13:7355
       cost: 10000
       podName: "pod1"
       time: 1681909802669
       uid: 3870636288020406585
-    - address: pekko://SampleService@10.42.0.14:2552
+    - address: pekko://SampleService@10.42.0.14:7355
       cost: 9900
       podName: "pod2"
       time: 1681909802716
