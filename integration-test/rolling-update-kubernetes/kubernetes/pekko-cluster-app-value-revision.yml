@@ -57,8 +57,9 @@ spec:
               fieldPath: metadata.name
         - name: REQUIRED_CONTACT_POINT_NR
           value: "3"
+        # Agrona requires the --add-opens JVM option to work on recent JDKs
         - name: JAVA_TOOL_OPTIONS
-          value: "-XX:InitialRAMPercentage=75 -XX:MaxRAMPercentage=75"
+          value: "-XX:InitialRAMPercentage=75 -XX:MaxRAMPercentage=75 --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
