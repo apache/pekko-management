@@ -25,7 +25,7 @@ import pekko.rollingupdate.kubernetes.PodDeletionCost
 
 object PodDeletionCostDemoApp extends App {
 
-  implicit val system: ActorSystem = ActorSystem("pekko-rolling-update-demo")
+  implicit val system: ActorSystem = ActorSystem("pekko-rollingupdate-demo")
 
   import system.log
   val cluster = Cluster(system)
