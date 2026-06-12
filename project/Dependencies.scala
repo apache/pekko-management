@@ -12,7 +12,7 @@ import sbt._
 object Dependencies {
   // keep in sync with .github/workflows/unit-tests.yml
   val scala213Version = "2.13.18"
-  val scala3Version = "3.3.7"
+  val scala3Version = "3.3.8"
   val crossScalaVersions = Seq(scala213Version, scala3Version)
 
   val pekkoVersion = PekkoCoreDependency.version
