@@ -23,7 +23,7 @@ trait CopyrightHeader extends AutoPlugin {
 
   override def trigger: PluginTrigger = allRequirements
 
-  protected def headerMappingSettings: Seq[Def.Setting[_]] =
+  protected def headerMappingSettings: Seq[Def.Setting[?]] =
     Seq(Compile, Test).flatMap { config =>
       inConfig(config)(
         Seq(
@@ -35,9 +35,9 @@ trait CopyrightHeader extends AutoPlugin {
             HeaderFileType("template") -> cStyleComment)))
     }
 
-  override def projectSettings: Seq[Def.Setting[_]] = Def.settings(headerMappingSettings, additional)
+  override def projectSettings: Seq[Def.Setting[?]] = Def.settings(headerMappingSettings, additional)
 
-  def additional: Seq[Def.Setting[_]] =
+  def additional: Seq[Def.Setting[?]] =
     Def.settings(Compile / compile := {
         (Compile / headerCreate).value
         (Compile / compile).value
