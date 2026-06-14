@@ -55,7 +55,8 @@ object Common extends AutoPlugin {
             "-Wdead-code")
         else if (scalaVersion.value == Dependencies.scala3Version)
           scalacOptionsBase ++: Seq(
-            "-Werror")
+            "-Werror",
+            "-Yfuture-lazy-vals")
         else
           scalacOptionsBase
       },
