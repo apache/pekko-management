@@ -50,7 +50,7 @@ jobs:
           echo -e "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)\t$(hostname -f) $(hostname -s)" | sudo tee -a /etc/hosts
 
       - name: Check code formatted
-        run: sbt javafmtCheckAll
+        run: sbt checkCodeStyle
 
       - name: Run tests with Scala ${{ matrix.scalaVersion }} and Java ${{ matrix.javaVersion }}
         run: sbt "++${{ matrix.scalaVersion }} test" ${{ matrix.sbtOpts }}
