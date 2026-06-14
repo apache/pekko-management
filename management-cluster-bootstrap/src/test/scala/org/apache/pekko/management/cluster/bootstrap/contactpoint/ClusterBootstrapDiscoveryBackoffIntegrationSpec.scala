@@ -110,7 +110,7 @@ class ClusterBootstrapDiscoveryBackoffIntegrationSpec extends AnyWordSpecLike wi
     val bootstrapB = ClusterBootstrap(systemB)
 
     val baseTime = System.currentTimeMillis()
-    case class DiscoveryRequest(time: Long, attempt: Int, res: Future[_]) {
+    case class DiscoveryRequest(time: Long, attempt: Int, res: Future[?]) {
       override def toString = s"DiscoveryRequest(${(time - baseTime).millis}, $attempt, $res)"
     }
     val resolveProbe = TestProbe()(systemA)

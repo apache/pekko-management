@@ -26,7 +26,7 @@ object Common extends AutoPlugin {
 
   val isScala3 = Def.setting(scalaBinaryVersion.value == "3")
 
-  override lazy val projectSettings: Seq[sbt.Def.Setting[_]] =
+  override lazy val projectSettings: Seq[sbt.Def.Setting[?]] =
     Seq(
       startYear := Some(2022),
       homepage := Some(url("https://pekko.apache.org/")),

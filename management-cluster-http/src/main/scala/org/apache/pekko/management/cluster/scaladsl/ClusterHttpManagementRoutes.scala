@@ -144,7 +144,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
     import pekko.stream.scaladsl.Source
     import scala.concurrent.{ ExecutionContext, Promise }
 
-    val eventClasses: Map[String, Class[_]] = Map(
+    val eventClasses: Map[String, Class[?]] = Map(
       "ClusterDomainEvent" -> classOf[ClusterEvent.ClusterDomainEvent],
       "MemberEvent" -> classOf[ClusterEvent.MemberEvent],
       "MemberJoined" -> classOf[ClusterEvent.MemberJoined],
@@ -171,7 +171,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
         parameter("type".as[String].*) { providedEventTypes =>
           val classes =
             if (providedEventTypes.nonEmpty)
-              providedEventTypes.foldLeft(List.empty[Class[_]]) {
+              providedEventTypes.foldLeft(List.empty[Class[?]]) {
                 case (accum, eventType) =>
                   eventClasses.get(eventType).toList ::: accum
               }
