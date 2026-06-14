@@ -32,7 +32,8 @@ import scala.concurrent.duration._
     system: ActorSystem,
     settings: ClusterBootstrapSettings) extends JoinDecider {
 
-  protected val log = Logging.withMarker(system, getClass)(LogSource.fromClass)
+  protected implicit val classLogSource: LogSource[Class[_]] = LogSource.fromClass
+  protected val log = Logging.withMarker(system, getClass: Class[_])
 
   /** Returns the current `selfContactPoints` as a String for logging, e.g. [127.0.0.1:64714]. */
   protected def contactPointString(contactPoint: (String, Int)): String =

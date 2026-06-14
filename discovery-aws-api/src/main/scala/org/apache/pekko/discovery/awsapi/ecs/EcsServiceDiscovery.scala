@@ -45,10 +45,10 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     "`pekko-discovery-aws-api` is deprecated because it uses the AWS SDK v1, which is no longer maintained. " +
     "Consider switching to `pekko-discovery-aws-api-async`, which uses the AWS SDK v2 and is actively maintained.")
 
-  private[this] val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs")
-  private[this] val cluster = config.getString("cluster")
+  private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs")
+  private val cluster = config.getString("cluster")
 
-  private[this] lazy val ecsClient = {
+  private lazy val ecsClient = {
     // we have our own retry/backoff mechanism, so we don't need EC2Client's in addition
     val clientConfiguration = new ClientConfiguration()
     clientConfiguration.setRetryPolicy(PredefinedRetryPolicies.NO_RETRY_POLICY)
@@ -63,7 +63,7 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     builder.build()
   }
 
-  private[this] implicit val ec: ExecutionContext = system.dispatcher
+  private implicit val ec: ExecutionContext = system.dispatcher
 
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     Future.firstCompletedOf(
@@ -114,7 +114,7 @@ object EcsServiceDiscovery {
     tasks
   }
 
-  @tailrec private[this] def listTaskArns(
+  @tailrec private def listTaskArns(
       ecsClient: AmazonECS,
       cluster: String,
       serviceName: String,
@@ -141,7 +141,7 @@ object EcsServiceDiscovery {
     }
   }
 
-  private[this] def describeTasks(ecsClient: AmazonECS, cluster: String, taskArns: Seq[String]): Seq[Task] =
+  private def describeTasks(ecsClient: AmazonECS, cluster: String, taskArns: Seq[String]): Seq[Task] =
     for {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.
       group <- taskArns.grouped(100).toList

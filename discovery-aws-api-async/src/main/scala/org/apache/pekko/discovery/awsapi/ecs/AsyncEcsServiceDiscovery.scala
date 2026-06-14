@@ -39,9 +39,9 @@ import software.amazon.awssdk.services.ecs.model.{ Tag => _, _ }
 @ApiMayChange
 class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
-  private[this] val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs-async")
-  private[this] val cluster = config.getString("cluster")
-  private[this] val tags = config
+  private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs-async")
+  private val cluster = config.getString("cluster")
+  private val tags = config
     .getConfigList("tags")
     .asScala
     .map { tagConfig =>
@@ -51,13 +51,13 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     }
     .toList
 
-  private[this] lazy val ecsClient = {
+  private lazy val ecsClient = {
     val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
     val httpClient = NettyNioAsyncHttpClient.create()
     EcsAsyncClient.builder().overrideConfiguration(conf).httpClient(httpClient).build()
   }
 
-  private[this] implicit val ec: ExecutionContext = system.dispatcher
+  private implicit val ec: ExecutionContext = system.dispatcher
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     Future.firstCompletedOf(
@@ -94,7 +94,7 @@ object AsyncEcsServiceDiscovery {
       }
     } yield tasksWithTags
 
-  private[this] def listTaskArns(
+  private def listTaskArns(
       ecsClient: EcsAsyncClient,
       cluster: String,
       serviceName: String,
@@ -124,7 +124,7 @@ object AsyncEcsServiceDiscovery {
       }
     } yield taskArns
 
-  private[this] def describeTasks(ecsClient: EcsAsyncClient, cluster: String, taskArns: Seq[String])(
+  private def describeTasks(ecsClient: EcsAsyncClient, cluster: String, taskArns: Seq[String])(
       implicit ec: ExecutionContext): Future[Seq[Task]] =
     for {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.

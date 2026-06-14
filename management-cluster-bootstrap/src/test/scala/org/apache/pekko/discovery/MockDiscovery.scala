@@ -49,7 +49,8 @@ object MockDiscovery {
 @InternalApi
 final class MockDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
-  private val log = Logging(system, getClass)(LogSource.fromClass)
+  private implicit val classLogSource: LogSource[Class[_]] = LogSource.fromClass
+  private val log = Logging(system, getClass: Class[_])
 
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     MockDiscovery.data.get().get(query) match {

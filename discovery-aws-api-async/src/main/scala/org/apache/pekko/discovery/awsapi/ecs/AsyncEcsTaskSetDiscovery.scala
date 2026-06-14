@@ -87,10 +87,10 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
 @ApiMayChange
 object AsyncEcsTaskSetDiscovery {
 
-  private[this] case class TaskMetadata(TaskARN: String)
-  private[this] case class TaskSet(value: String) extends AnyVal
+  private case class TaskMetadata(TaskARN: String)
+  private case class TaskSet(value: String) extends AnyVal
 
-  private[this] implicit val orderFormat: RootJsonFormat[TaskMetadata] = jsonFormat1(TaskMetadata.apply)
+  private implicit val orderFormat: RootJsonFormat[TaskMetadata] = jsonFormat1(TaskMetadata.apply)
 
   private val ECS_CONTAINER_METADATA_URI_PATH = "ECS_CONTAINER_METADATA_URI"
 
@@ -112,7 +112,7 @@ object AsyncEcsTaskSetDiscovery {
     } yield tasks
 
   // https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v3.html
-  private[this] def resolveTaskMetadata(httpClient: HttpExt)(
+  private def resolveTaskMetadata(httpClient: HttpExt)(
       implicit
       ec: ExecutionContext,
       mat: Materializer): Future[Option[TaskMetadata]] = {
@@ -132,13 +132,13 @@ object AsyncEcsTaskSetDiscovery {
     }
   }
 
-  private[this] def resolveTaskSet(ecsClient: EcsAsyncClient, cluster: String, taskArn: String)(
+  private def resolveTaskSet(ecsClient: EcsAsyncClient, cluster: String, taskArn: String)(
       implicit ec: ExecutionContext): Future[Option[TaskSet]] =
     ecsClient.describeTasks(
       DescribeTasksRequest.builder().cluster(cluster).tasks(taskArn).include(TaskField.TAGS).build()).asScala.map(
       _.tasks().asScala.headOption).map(_.map(task => TaskSet(task.startedBy())))
 
-  private[this] def listTaskArns(
+  private def listTaskArns(
       ecsClient: EcsAsyncClient,
       cluster: String,
       taskSet: TaskSet,
@@ -168,7 +168,7 @@ object AsyncEcsTaskSetDiscovery {
       }
     } yield taskArns
 
-  private[this] def describeTasks(ecsClient: EcsAsyncClient, cluster: String, taskArns: Seq[String])(
+  private def describeTasks(ecsClient: EcsAsyncClient, cluster: String, taskArns: Seq[String])(
       implicit ec: ExecutionContext): Future[Seq[Task]] =
     for {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.

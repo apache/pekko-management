@@ -71,7 +71,7 @@ final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Exten
       .get
   }
 
-  private[this] val _selfContactPointUri: Promise[Uri] = Promise()
+  private val _selfContactPointUri: Promise[Uri] = Promise()
 
   // autostart if the extension is loaded through the config extension list
   private val autostart =

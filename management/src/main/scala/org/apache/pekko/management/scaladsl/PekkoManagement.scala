@@ -72,7 +72,8 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
       "pekko-management-cluster-http"),
     logWarning = true)
 
-  private val log = Logging.withMarker(system, getClass)(LogSource.fromClass)
+  private implicit val classLogSource: LogSource[Class[_]] = LogSource.fromClass
+  private val log = Logging.withMarker(system, getClass: Class[_])
   val settings: PekkoManagementSettings = new PekkoManagementSettings(system.settings.config)
 
   import system.dispatcher
