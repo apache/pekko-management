@@ -151,7 +151,6 @@ lazy val managementClusterHttp = pekkoModule("management-cluster-http")
     // following is needed by Agrona lib
     // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
     Test / fork := true,
-    Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     mimaPreviousArtifactsSet)
   .dependsOn(management)
 
@@ -163,7 +162,6 @@ lazy val managementClusterBootstrap = pekkoModule("management-cluster-bootstrap"
     // following is needed by Agrona lib
     // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
     Test / fork := true,
-    Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     mimaPreviousArtifactsSet)
   .dependsOn(management)
   .dependsOn(managementPki)
@@ -184,7 +182,6 @@ lazy val rollingUpdateKubernetes = pekkoModule("rolling-update-kubernetes")
     // following is needed by Agrona lib
     // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
     Test / fork := true,
-    Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
     mimaPreviousArtifacts := Set.empty)
   .dependsOn(managementPki)
 
@@ -196,8 +193,7 @@ lazy val rollingUpdateKubernetesIntTest = pekkoModule("rolling-update-kubernetes
     libraryDependencies := Dependencies.rollingUpdateKubernetesIntTest,
     // following is needed by Agrona lib
     // https://github.com/aeron-io/agrona/wiki/Change-Log#200-2024-12-17
-    Test / fork := true,
-    Test / javaOptions += "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED")
+    Test / fork := true)
   .dependsOn(rollingUpdateKubernetes)
   .enablePlugins(NoPublish)
 
