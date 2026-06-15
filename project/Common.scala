@@ -49,16 +49,21 @@ object Common extends AutoPlugin {
           "-unchecked",
           "-deprecation",
           "-release:17")
-        if (scalaVersion.value == Dependencies.scala213Version)
+        if (scalaBinaryVersion.value == "2.13")
           scalacOptionsBase ++: Seq(
             "-Werror",
             "-Wdead-code")
-        else if (scalaVersion.value == Dependencies.scala3Version)
+        else
           scalacOptionsBase ++: Seq(
             "-Werror",
-            "-Yfuture-lazy-vals")
-        else
-          scalacOptionsBase
+            "-Yfuture-lazy-vals",
+            "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s",
+            "-Wconf:msg=is deprecated for wildcard arguments of types:s",
+            "-Wconf:msg=The trailing ` _` for eta-expansion is unnecessary:s",
+            "-Wconf:msg=with as a type operator has been deprecated:s",
+            "-Wconf:msg=Unreachable case except for null:s",
+            "-Wconf:msg=is no longer supported for vararg splices:s",
+            "-Wconf:msg=bad option.*-Yfuture-lazy-vals:s")
       },
       javacOptions ++= Seq(
         "-Xlint:unchecked"),

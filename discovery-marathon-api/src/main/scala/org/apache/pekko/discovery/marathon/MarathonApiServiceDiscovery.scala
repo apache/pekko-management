@@ -87,7 +87,8 @@ class MarathonApiServiceDiscovery(implicit system: ActorSystem) extends ServiceD
   import MarathonApiServiceDiscovery._
   import system.dispatcher
 
-  private val log = Logging(system, getClass)(LogSource.fromClass)
+  private implicit val classLogSource: LogSource[Class[?]] = LogSource.fromClass
+  private val log = Logging(system, getClass: Class[?])
 
   private val http = Http()
 

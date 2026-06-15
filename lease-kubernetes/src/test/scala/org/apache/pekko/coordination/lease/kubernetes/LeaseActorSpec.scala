@@ -237,7 +237,7 @@ class LeaseActorSpec
     }
 
     "heartbeat conflict should call lease lost callback" in new Test {
-      @volatile var callbackCalled: Option[Throwable] = _
+      @volatile var callbackCalled: Option[Throwable] = None
       acquireLease(reason => callbackCalled = reason)
       expectHeartBeat()
       granted.get() shouldEqual true
@@ -266,7 +266,7 @@ class LeaseActorSpec
 
     "heartbeat fail should call lease lost callback" in new Test {
       val k8sApiFailure = new LeaseException("Failed to communicate with API server")
-      @volatile var callbackCalled: Option[Throwable] = _
+      @volatile var callbackCalled: Option[Throwable] = None
       acquireLease(reason => callbackCalled = reason)
       expectHeartBeat()
       granted.get() shouldEqual true

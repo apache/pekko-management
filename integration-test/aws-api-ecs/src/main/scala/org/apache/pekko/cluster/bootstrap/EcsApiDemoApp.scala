@@ -44,7 +44,7 @@ object EcsApiDemoApp {
     ClusterBootstrap(system).start()
   }
 
-  private[this] def getPrivateAddressOrExit: InetAddress =
+  private def getPrivateAddressOrExit: InetAddress =
     AsyncEcsDiscovery.getContainerAddress match {
       case Left(error) =>
         System.err.println(s"$error Halting.")
