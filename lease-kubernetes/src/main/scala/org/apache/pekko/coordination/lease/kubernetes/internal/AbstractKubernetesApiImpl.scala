@@ -47,8 +47,8 @@ import scala.util.control.NonFatal
   import system.dispatcher
 
   protected implicit val sys: ActorSystem = system
-  private implicit val classLogSource: LogSource[Class[_]] = LogSource.fromClass
-  protected val log: LoggingAdapter = Logging(system, getClass: Class[_])
+  private implicit val classLogSource: LogSource[Class[?]] = LogSource.fromClass
+  protected val log: LoggingAdapter = Logging(system, getClass: Class[?])
   private val http: HttpExt = Http()(system)
 
   private lazy val sslContext: SSLContext = {
