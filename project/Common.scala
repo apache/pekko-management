@@ -26,6 +26,9 @@ object Common extends AutoPlugin {
 
   val isScala3 = Def.setting(scalaBinaryVersion.value == "3")
 
+  override def globalSettings =
+    Seq(excludeLintKeys ++= Set(autoAPIMappings, projectInfoVersion))
+
   override lazy val projectSettings: Seq[sbt.Def.Setting[?]] =
     Seq(
       startYear := Some(2022),

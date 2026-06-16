@@ -338,6 +338,7 @@ lazy val docs = project
     Preprocess / preprocessRules := Seq(
       ("\\.java\\.scala".r, _ => ".java")),
     previewPath := (Paradox / siteSubdirName).value,
+    Global / excludeLintKeys += previewPath,
     paradoxGroups := Map("Language" -> Seq("Java", "Scala")),
     Paradox / siteSubdirName := s"docs/pekko-management/${if (isSnapshot.value) "snapshot" else version.value}",
     Compile / paradoxProperties ++= Map(
