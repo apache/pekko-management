@@ -20,7 +20,7 @@ addSbtPlugin("com.github.pjfanning" % "sbt-source-dist" % "0.1.13")
 addSbtPlugin("com.github.pjfanning" % "sbt-pekko-build" % "0.4.7")
 addSbtPlugin("com.github.sbt" % "sbt-license-report" % "1.9.0")
 addSbtPlugin("com.github.sbt" % "sbt-git" % "2.1.0")
-addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.5")
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.6")
 addSbtPlugin("com.lightbend.sbt" % "sbt-bill-of-materials" % "1.0.2")
 addSbtPlugin("com.github.sbt.junit" % "sbt-jupiter-interface" % "0.19.0")
 
