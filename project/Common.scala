@@ -57,7 +57,8 @@ object Common extends AutoPlugin {
             "-Werror",
             "-Wdead-code")
         else
-          scalacOptionsBase ++: Seq(
+          scalacOptionsBase ++:
+          (Seq(
             "-Werror",
             "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s",
             "-Wconf:msg=is deprecated for wildcard arguments of types:s",
@@ -65,7 +66,9 @@ object Common extends AutoPlugin {
             "-Wconf:msg=with as a type operator has been deprecated:s",
             "-Wconf:msg=Unreachable case except for null:s",
             "-Wconf:msg=is no longer supported for vararg splices:s") ++
-          (if (CrossVersion.partialVersion(scalaVersion.value).exists(_._2 < 9)) Seq("-Yfuture-lazy-vals", "-Wconf:msg=bad option.*-Yfuture-lazy-vals:s") else Seq.empty)
+          (if (CrossVersion.partialVersion(scalaVersion.value).exists(_._2 < 9))
+             Seq("-Yfuture-lazy-vals", "-Wconf:msg=bad option.*-Yfuture-lazy-vals:s")
+           else Seq.empty))
       },
       javacOptions ++= Seq(
         "-Xlint:unchecked"),
