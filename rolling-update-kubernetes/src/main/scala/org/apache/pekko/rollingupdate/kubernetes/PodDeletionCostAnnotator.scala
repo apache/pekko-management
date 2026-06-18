@@ -67,7 +67,8 @@ import com.typesafe.config.Config
 
   Cluster(context.system).subscribe(context.self, classOf[ClusterEvent.MemberUp], classOf[ClusterEvent.MemberRemoved])
 
-  def receive: Receive = idle(0, SortedSet.empty(Member.ageOrdering), 0)
+  private implicit val memberAgeOrdering: Ordering[Member] = Member.ageOrdering
+  def receive: Receive = idle(0, SortedSet.empty, 0)
 
   private def idle(deletionCost: Int, membersByAgeDesc: SortedSet[Member], retryNr: Int): Receive = {
     case cs @ ClusterEvent.CurrentClusterState(members, _, _, _, _) =>
