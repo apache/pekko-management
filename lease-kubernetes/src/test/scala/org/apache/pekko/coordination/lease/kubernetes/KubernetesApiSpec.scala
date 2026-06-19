@@ -53,7 +53,27 @@ class KubernetesApiSpec
   val wireMockServer = new WireMockServer(wireMockConfig().port(0))
   wireMockServer.start()
 
+  // Generous request deadline for the functional tests. Every request inside
+  // `AbstractKubernetesApiImpl.makeRequest` is raced against `apiServerRequestTimeout`, and the
+  // first HTTP request through Pekko HTTP pays connection-pool/JIT warm-up cost (observed ~0.8s
+  // locally, more on a loaded CI box). A 1s deadline here is what made this suite flaky: the
+  // warm-up request would lose the race and fail with a spurious LeaseTimeoutException.
+  // See https://github.com/apache/pekko-management/issues/216
+  private val robustRequestTimeout = 10.seconds
+
   val settings = new KubernetesSettings(
+    "",
+    "",
+    "localhost",
+    wireMockServer.port(),
+    namespace = Some("lease"),
+    "",
+    apiServerRequestTimeout = robustRequestTimeout,
+    secure = false,
+    bodyReadTimeout = robustRequestTimeout)
+
+  // Short deadline used ONLY by the deliberate "timeout on ..." tests, so they fail fast.
+  val timeoutSettings = new KubernetesSettings(
     "",
     "",
     "localhost",
@@ -65,10 +85,16 @@ class KubernetesApiSpec
 
   WireMock.configureFor(settings.apiServerPort)
 
-  // double the default timeout for CI (https://github.com/apache/pekko-management/issues/216)
   implicit val patience: PatienceConfig = PatienceConfig(testKitSettings.DefaultTimeout.duration.*(2))
 
   val underTest = new KubernetesApiImpl(system, settings) {
+    // avoid touching slow CI filesystem
+    override protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] =
+      Future.successful(None)
+  }
+
+  // Same as `underTest`, but with the short `timeoutSettings`, for the deliberate timeout tests.
+  val underTestTimeouts = new KubernetesApiImpl(system, timeoutSettings) {
     // avoid touching slow CI filesystem
     override protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] =
       Future.successful(None)
@@ -201,7 +227,7 @@ class KubernetesApiSpec
       stubFor(
         get(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
-            .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
+            .withFixedDelay((timeoutSettings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
             .withHeader("Content-Type", "application/json")
             .withBody(s"""
@@ -222,7 +248,7 @@ class KubernetesApiSpec
                |}
             """.stripMargin)))
 
-      underTest
+      underTestTimeouts
         .readOrCreateLeaseResource(lease)
         .failed
         .futureValue
@@ -239,11 +265,11 @@ class KubernetesApiSpec
       stubFor(
         post(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
-            .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
+            .withFixedDelay((timeoutSettings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
             .withHeader("Content-Type", "application/json")))
 
-      underTest
+      underTestTimeouts
         .readOrCreateLeaseResource(lease)
         .failed
         .futureValue
@@ -256,11 +282,11 @@ class KubernetesApiSpec
       stubFor(
         put(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
-            .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
+            .withFixedDelay((timeoutSettings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)
             .withHeader("Content-Type", "application/json")))
 
-      underTest.updateLeaseResource(lease, owner, "1").failed.futureValue.getMessage shouldEqual
+      underTestTimeouts.updateLeaseResource(lease, owner, "1").failed.futureValue.getMessage shouldEqual
       s"Timed out updating lease [$lease] to owner [$owner]. It is not known if the update happened. Is the API server up?"
     }
 
@@ -269,10 +295,10 @@ class KubernetesApiSpec
       stubFor(
         delete(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(
           aResponse()
-            .withFixedDelay((settings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
+            .withFixedDelay((timeoutSettings.apiServerRequestTimeout * 2).toMillis.toInt) // Oh noes
             .withStatus(StatusCodes.OK.intValue)))
 
-      underTest.removeLease(lease).failed.futureValue.getMessage shouldEqual
+      underTestTimeouts.removeLease(lease).failed.futureValue.getMessage shouldEqual
       s"Timed out removing lease [$lease]. It is not known if the remove happened. Is the API server up?"
     }
 
@@ -309,7 +335,7 @@ class KubernetesApiSpec
         wireMockServer.port(),
         namespace = Some("lease"),
         "",
-        apiServerRequestTimeout = 1.second,
+        apiServerRequestTimeout = robustRequestTimeout,
         secure = false)
 
       val toFail = new AtomicBoolean(true)
@@ -340,7 +366,7 @@ class KubernetesApiSpec
         wireMockServer.port(),
         namespace = Some("lease"),
         "",
-        apiServerRequestTimeout = 1.second,
+        apiServerRequestTimeout = robustRequestTimeout,
         secure = false)
 
       val retryUnauthorized = new KubernetesApiImpl(system, newSettings) {
