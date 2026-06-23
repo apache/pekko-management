@@ -13,6 +13,7 @@
 
 package org.apache.pekko.rollingupdate.kubernetes
 
+import java.util.Locale
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -260,7 +261,7 @@ PUTs must contain resourceVersions. Response:
     Uri.Path.Empty / "apis" / "pekko.apache.org" / "v1" / "namespaces" / namespace / "podcosts" /
     crName
       .replaceAll("[^\\d\\w\\-\\.]", "")
-      .toLowerCase
+      .toLowerCase(Locale.ROOT)
 
   private def requestForPath(
       path: Uri.Path,

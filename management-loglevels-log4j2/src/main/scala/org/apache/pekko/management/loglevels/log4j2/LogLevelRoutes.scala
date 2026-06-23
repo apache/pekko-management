@@ -13,6 +13,8 @@
 
 package org.apache.pekko.management.loglevels.log4j2
 
+import java.util.Locale
+
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.{ Level, LogManager }
 import org.apache.pekko
@@ -116,7 +118,7 @@ private[pekko] object LoggingUnmarshallers {
 
   implicit val levelFromStringUnmarshaller: Unmarshaller[String, Level] =
     Unmarshaller.strict { string =>
-      if (!validLevels(string.toUpperCase))
+      if (!validLevels(string.toUpperCase(Locale.ROOT)))
         throw new IllegalArgumentException(s"Unknown logger level $string, allowed are [${validLevels.mkString(",")}]")
       Level.valueOf(string)
     }

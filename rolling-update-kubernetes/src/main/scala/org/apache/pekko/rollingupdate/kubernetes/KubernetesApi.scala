@@ -14,6 +14,7 @@
 package org.apache.pekko.rollingupdate.kubernetes
 
 import java.text.Normalizer
+import java.util.Locale
 
 import scala.collection.immutable
 import scala.concurrent.Future
@@ -92,7 +93,10 @@ private[pekko] final case class PodCost(podName: String, cost: Int, address: Str
    */
   def makeDNS1039Compatible(name: String): String = {
     val normalized =
-      Normalizer.normalize(name, Normalizer.Form.NFKD).toLowerCase.replaceAll("[_.]", "-").replaceAll("[^-a-z0-9]", "")
+      Normalizer.normalize(name, Normalizer.Form.NFKD)
+        .toLowerCase(Locale.ROOT)
+        .replaceAll("[_.]", "-")
+        .replaceAll("[^-a-z0-9]", "")
     if (normalized.length > 63)
       throw new IllegalArgumentException(s"Too long resource name [$normalized]. At most 63 characters are accepted. " +
         "A custom resource name can be defined in configuration `pekko.rollingupdate.kubernetes.custom-resource.cr-name`.")

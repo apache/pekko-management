@@ -13,6 +13,7 @@
 
 package org.apache.pekko.management.loglevels.logback
 
+import java.util.Locale
 import scala.annotation.nowarn
 
 import ch.qos.logback.classic.{ Level, LoggerContext }
@@ -122,9 +123,9 @@ private[pekko] object LoggingUnmarshallers {
 
   implicit val levelFromStringUnmarshaller: Unmarshaller[String, Level] =
     Unmarshaller.strict { string =>
-      if (!validLevels(string.toUpperCase))
+      if (!validLevels(string.toUpperCase(Locale.ROOT)))
         throw new IllegalArgumentException(s"Unknown logger level $string, allowed are [${validLevels.mkString(",")}]")
-      Level.valueOf(string)
+      Level.valueOf(string.toUpperCase(Locale.ROOT))
     }
 
   implicit val classicLevelFromStringUnmarshaller: Unmarshaller[String, ClassicLogging.LogLevel] =

@@ -16,6 +16,7 @@ package org.apache.pekko.coordination.lease.kubernetes
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.Normalizer
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.{ ExecutionContext, Future }
@@ -97,7 +98,10 @@ object AbstractKubernetesLease {
    */
   private[kubernetes] def makeDNS1039Compatible(name: String, maxLength: Int = 63, hashLength: Int = 0): String = {
     val normalized =
-      Normalizer.normalize(name, Normalizer.Form.NFKD).toLowerCase.replaceAll("[_.]", "-").replaceAll("[^-a-z0-9]", "")
+      Normalizer.normalize(name, Normalizer.Form.NFKD)
+      .toLowerCase(Locale.ROOT)
+      .replaceAll("[_.]", "-")
+      .replaceAll("[^-a-z0-9]", "")
     if (normalized.length <= maxLength || hashLength <= 0) {
       trim(truncateToLength(normalized, maxLength), List('-'))
     } else {

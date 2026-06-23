@@ -143,7 +143,7 @@ object NativeKubernetesApiImpl {
       Uri.Path.Empty / "apis" / "coordination.k8s.io" / "v1" / "namespaces" / ns / "leases" /
       name
         .replaceAll("[^\\d\\w\\-\\.]", "")
-        .toLowerCase
+        .toLowerCase(Locale.ROOT)
     }(ExecutionContext.parasitic)
   }
 
