@@ -99,9 +99,9 @@ object AbstractKubernetesLease {
   private[kubernetes] def makeDNS1039Compatible(name: String, maxLength: Int = 63, hashLength: Int = 0): String = {
     val normalized =
       Normalizer.normalize(name, Normalizer.Form.NFKD)
-      .toLowerCase(Locale.ROOT)
-      .replaceAll("[_.]", "-")
-      .replaceAll("[^-a-z0-9]", "")
+        .toLowerCase(Locale.ROOT)
+        .replaceAll("[_.]", "-")
+        .replaceAll("[^-a-z0-9]", "")
     if (normalized.length <= maxLength || hashLength <= 0) {
       trim(truncateToLength(normalized, maxLength), List('-'))
     } else {
