@@ -94,7 +94,8 @@ private[pekko] final case class PodCost(podName: String, cost: Int, address: Str
     val normalized =
       Normalizer.normalize(name, Normalizer.Form.NFKD).toLowerCase.replaceAll("[_.]", "-").replaceAll("[^-a-z0-9]", "")
     if (normalized.length > 63)
-      throw new IllegalArgumentException(s"Resource name [$normalized] is too long. At most 63 characters are accepted. " +
+      throw new IllegalArgumentException(
+        s"Resource name [$normalized] is too long. At most 63 characters are accepted. " +
         "A custom resource name can be defined in configuration `pekko.rollingupdate.kubernetes.custom-resource.cr-name`.")
     trim(normalized, List('-'))
   }
