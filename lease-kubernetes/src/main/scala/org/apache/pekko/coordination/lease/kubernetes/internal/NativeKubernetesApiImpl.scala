@@ -26,9 +26,11 @@ import pekko.coordination.lease.LeaseException
 import pekko.http.scaladsl.marshalling.Marshal
 import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.unmarshalling.Unmarshal
+
 import java.time.{ Instant, LocalDateTime, ZoneId }
 import java.time.format.{ DateTimeFormatter, DateTimeFormatterBuilder }
 import java.time.temporal.ChronoField
+import java.util.Locale
 import scala.concurrent.{ ExecutionContext, Future }
 
 object NativeKubernetesApiImpl {
@@ -143,7 +145,7 @@ object NativeKubernetesApiImpl {
       Uri.Path.Empty / "apis" / "coordination.k8s.io" / "v1" / "namespaces" / ns / "leases" /
       name
         .replaceAll("[^\\d\\w\\-\\.]", "")
-        .toLowerCase
+        .toLowerCase(Locale.ROOT)
     }(ExecutionContext.parasitic)
   }
 

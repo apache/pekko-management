@@ -38,6 +38,7 @@ import pekko.pattern.ask
 import pekko.pattern.AskTimeoutException
 import pekko.util.Timeout
 
+import java.util.Locale
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 
@@ -298,7 +299,7 @@ object ClusterHttpManagementRoutes extends ClusterHttpManagementJsonProtocol {
   private def routePutCluster(cluster: Cluster): Route = {
     put {
       formField("operation") { operation =>
-        if (operation.toLowerCase == "prepare-for-full-shutdown") {
+        if (operation.toLowerCase(Locale.ROOT) == "prepare-for-full-shutdown") {
           cluster.prepareForFullClusterShutdown()
           complete(ClusterHttpManagementMessage(s"Preparing for full cluster shutdown"))
         } else {

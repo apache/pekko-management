@@ -13,6 +13,7 @@
 
 package org.apache.pekko.coordination.lease.kubernetes.internal
 
+import java.util.Locale
 import scala.concurrent.{ ExecutionContext, Future }
 
 import org.apache.pekko
@@ -135,7 +136,7 @@ PUTs must contain resourceVersions. Response:
       Uri.Path.Empty / "apis" / "pekko.apache.org" / "v1" / "namespaces" / ns / "leases" /
       name
         .replaceAll("[^\\d\\w\\-\\.]", "")
-        .toLowerCase
+        .toLowerCase(Locale.ROOT)
     }(ExecutionContext.parasitic)
   }
 
