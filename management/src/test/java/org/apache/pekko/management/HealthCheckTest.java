@@ -16,8 +16,6 @@ package org.apache.pekko.management;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.typesafe.config.ConfigFactory;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -72,7 +70,7 @@ public class HealthCheckTest {
   @Test
   public void okReturnsTrue() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        Collections.singletonList(
+        List.of(
             new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
     HealthChecks checks =
         new HealthChecks(
@@ -96,7 +94,7 @@ public class HealthCheckTest {
   @Test
   public void notOkayReturnsFalse() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        Collections.singletonList(
+        List.of(
             new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
     HealthChecks checks =
         new HealthChecks(
@@ -120,7 +118,7 @@ public class HealthCheckTest {
   @Test
   public void creatableThroughLegacyConstructor() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        Collections.singletonList(
+        List.of(
             new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
     HealthChecks checks =
         new HealthChecks(
@@ -138,7 +136,7 @@ public class HealthCheckTest {
   @Test
   public void throwsReturnsFailed() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        Collections.singletonList(
+        List.of(
             new NamedHealthCheck("Throws", "org.apache.pekko.management.HealthCheckTest$Throws"));
     HealthChecks checks =
         new HealthChecks(
@@ -162,11 +160,11 @@ public class HealthCheckTest {
   @Test
   public void defineViaActorSystemSetup() throws Exception {
     StartupCheckSetup startupCheckSetup =
-        StartupCheckSetup.create(system -> Collections.singletonList(new NotOk(system)));
+        StartupCheckSetup.create(system -> List.of(new NotOk(system)));
     ReadinessCheckSetup readinessSetup =
-        ReadinessCheckSetup.create(system -> Arrays.asList(new Ok(), new NotOk(system)));
+        ReadinessCheckSetup.create(system -> List.of(new Ok(), new NotOk(system)));
     LivenessCheckSetup livenessSetup =
-        LivenessCheckSetup.create(system -> Collections.singletonList(new NotOk(system)));
+        LivenessCheckSetup.create(system -> List.of(new NotOk(system)));
     // bootstrapSetup is needed for config (otherwise default config)
     BootstrapSetup bootstrapSetup = BootstrapSetup.create(ConfigFactory.parseString("some=thing"));
     ActorSystemSetup actorSystemSetup =
@@ -178,9 +176,9 @@ public class HealthCheckTest {
           new HealthChecks(
               sys2,
               HealthCheckSettings.create(
-                  Collections.emptyList(),
-                  Collections.emptyList(),
-                  Collections.emptyList(),
+                  List.of(),
+                  List.of(),
+                  List.of(),
                   "startup",
                   "ready",
                   "alive",
