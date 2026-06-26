@@ -71,8 +71,7 @@ public class HealthCheckTest {
   @Test
   public void okReturnsTrue() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        List.of(
-            new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
+        List.of(new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
     HealthChecks checks =
         new HealthChecks(
             system,
@@ -95,8 +94,7 @@ public class HealthCheckTest {
   @Test
   public void notOkayReturnsFalse() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        List.of(
-            new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
+        List.of(new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
     HealthChecks checks =
         new HealthChecks(
             system,
@@ -119,8 +117,7 @@ public class HealthCheckTest {
   @Test
   public void creatableThroughLegacyConstructor() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        List.of(
-            new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
+        List.of(new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
     HealthChecks checks =
         new HealthChecks(
             system,
