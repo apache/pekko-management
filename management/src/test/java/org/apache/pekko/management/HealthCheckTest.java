@@ -16,6 +16,7 @@ package org.apache.pekko.management;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.typesafe.config.ConfigFactory;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -176,9 +177,9 @@ public class HealthCheckTest {
           new HealthChecks(
               sys2,
               HealthCheckSettings.create(
-                  List.of(),
-                  List.of(),
-                  List.of(),
+                  Collections.emptyList(),
+                  Collections.emptyList(),
+                  Collections.emptyList(),
                   "startup",
                   "ready",
                   "alive",
