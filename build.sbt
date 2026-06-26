@@ -26,6 +26,9 @@ ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 
 ThisBuild / javafmtFormatterCompatibleJavaVersion := 17
 
+ThisBuild / JupiterKeys.junitJupiterVersion := "6.1.0"
+ThisBuild / JupiterKeys.junitPlatformVersion := "6.1.0"
+
 ThisBuild / javafmt / excludeFilter := (javafmt / excludeFilter).value || new SimpleFileFilter(
   _.getCanonicalPath.contains(s"${java.io.File.separator}jdoc${java.io.File.separator}")
 )
