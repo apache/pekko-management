@@ -26,7 +26,6 @@ ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
 
 ThisBuild / javafmtFormatterCompatibleJavaVersion := 17
 
-ThisBuild / JupiterKeys.junitJupiterVersion := "6.1.1"
 ThisBuild / JupiterKeys.junitPlatformVersion := "6.1.1"
 
 ThisBuild / javafmt / excludeFilter := (javafmt / excludeFilter).value || new SimpleFileFilter(
