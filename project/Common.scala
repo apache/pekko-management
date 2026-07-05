@@ -66,7 +66,7 @@ object Common extends AutoPlugin {
             "-Wconf:msg=with as a type operator has been deprecated:s",
             "-Wconf:msg=Unreachable case except for null:s",
             "-Wconf:msg=is no longer supported for vararg splices:s") ++
-          (if (CrossVersion.partialVersion(scalaVersion.value).exists(_._2 < 9))
+          (if (scalaVersion.value.startsWith("3.3."))
              Seq("-Yfuture-lazy-vals", "-Wconf:msg=bad option.*-Yfuture-lazy-vals:s")
            else Seq.empty))
       },
