@@ -71,16 +71,6 @@ class HealthCheckSettingsSpec extends AnyWordSpec with Matchers {
         checkDuration = java.time.Duration.ofSeconds(1L))
         .startupChecks shouldEqual Nil
     }
-
-    "be creatable with legacy create method" in {
-      HealthCheckSettings.create(
-        readinessChecks = java.util.Collections.emptyList(),
-        livenessChecks = java.util.Collections.emptyList(),
-        readinessPath = "",
-        livenessPath = "",
-        checkDuration = java.time.Duration.ofSeconds(1L))
-        .startupChecks shouldEqual Nil
-    }
   }
 
 }
