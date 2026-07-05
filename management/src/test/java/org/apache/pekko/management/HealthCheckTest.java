@@ -114,6 +114,7 @@ public class HealthCheckTest {
     assertEquals(true, checks.ready().toCompletableFuture().get());
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void creatableThroughLegacyConstructor() throws Exception {
     List<NamedHealthCheck> healthChecks =
