@@ -21,16 +21,22 @@ import pekko.management.cluster.bootstrap.ClusterBootstrap
 import pekko.management.scaladsl.PekkoManagement
 
 //#main
-object Node1 extends App {
-  new Main(1)
+object Node1 {
+  def main(args: Array[String]): Unit = {
+    new Main(1)
+  }
 }
 
-object Node2 extends App {
-  new Main(2)
+object Node2 {
+  def main(args: Array[String]): Unit = {
+    new Main(2)
+  }
 }
 
-object Node3 extends App {
-  new Main(3)
+object Node3 {
+  def main(args: Array[String]): Unit = {
+    new Main(3)
+  }
 }
 
 class Main(nr: Int) {

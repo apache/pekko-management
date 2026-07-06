@@ -22,31 +22,33 @@ import pekko.http.scaladsl.server.Directives._
 import pekko.management.cluster.bootstrap.ClusterBootstrap
 import pekko.management.scaladsl.PekkoManagement
 
-object MarathonApiDockerDemoApp extends App {
-  implicit val system: ActorSystem = ActorSystem("my-system")
+object MarathonApiDockerDemoApp {
+  def main(args: Array[String]): Unit = {
+    implicit val system: ActorSystem = ActorSystem("my-system")
 
-  val cluster = Cluster(system)
+    val cluster = Cluster(system)
 
-  def isReady() = {
-    val selfNow = cluster.selfMember
+    def isReady() = {
+      val selfNow = cluster.selfMember
 
-    selfNow.status == MemberStatus.Up
+      selfNow.status == MemberStatus.Up
+    }
+
+    def isHealthy() = {
+      isReady()
+    }
+
+    val route =
+      concat(
+        path("ping")(complete("pong!")),
+        path("healthy")(complete(if (isHealthy()) StatusCodes.OK else StatusCodes.ServiceUnavailable)),
+        path("ready")(complete(if (isReady()) StatusCodes.OK else StatusCodes.ServiceUnavailable)))
+
+    PekkoManagement(system).start()
+    ClusterBootstrap(system).start()
+
+    val host: String = sys.env.get("HOST").getOrElse("127.0.0.1")
+    val port: Int = sys.env.get("PORT_HTTP").map(_.toInt).getOrElse(8080)
+    Http().newServerAt(host, port).bind(route)
   }
-
-  def isHealthy() = {
-    isReady()
-  }
-
-  val route =
-    concat(
-      path("ping")(complete("pong!")),
-      path("healthy")(complete(if (isHealthy()) StatusCodes.OK else StatusCodes.ServiceUnavailable)),
-      path("ready")(complete(if (isReady()) StatusCodes.OK else StatusCodes.ServiceUnavailable)))
-
-  PekkoManagement(system).start()
-  ClusterBootstrap(system).start()
-
-  private val host: String = sys.env.get("HOST").getOrElse("127.0.0.1")
-  private val port: Int = sys.env.get("PORT_HTTP").map(_.toInt).getOrElse(8080)
-  Http().newServerAt(host, port).bind(route)
 }

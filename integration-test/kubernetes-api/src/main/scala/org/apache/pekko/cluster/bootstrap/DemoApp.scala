@@ -25,41 +25,43 @@ import pekko.management.cluster.bootstrap.ClusterBootstrap
 import org.apache.pekko.management.scaladsl.PekkoManagement
 //#start-pekko-management
 
-object DemoApp extends App {
+object DemoApp {
+  def main(args: Array[String]): Unit = {
 
-  implicit val system: ActorSystem = ActorSystem("Appka")
+    implicit val system: ActorSystem = ActorSystem("Appka")
 
-  import system.log
-  val cluster = Cluster(system)
+    import system.log
+    val cluster = Cluster(system)
 
-  log.info(s"Started [$system], cluster.selfAddress = ${cluster.selfAddress}")
+    log.info(s"Started [$system], cluster.selfAddress = ${cluster.selfAddress}")
 
-  // #start-pekko-management
-  PekkoManagement(system).start()
-  // #start-pekko-management
-  ClusterBootstrap(system).start()
+    // #start-pekko-management
+    PekkoManagement(system).start()
+    // #start-pekko-management
+    ClusterBootstrap(system).start()
 
-  cluster.subscribe(
-    system.actorOf(Props[ClusterWatcher]()),
-    ClusterEvent.InitialStateAsEvents,
-    classOf[ClusterDomainEvent])
+    cluster.subscribe(
+      system.actorOf(Props[ClusterWatcher]()),
+      ClusterEvent.InitialStateAsEvents,
+      classOf[ClusterDomainEvent])
 
-  // add real app routes here
-  val routes =
-    path("hello") {
-      get {
-        complete(
-          HttpEntity(
-            ContentTypes.`text/html(UTF-8)`,
-            "<h1>Hello</h1>"))
+    // add real app routes here
+    val routes =
+      path("hello") {
+        get {
+          complete(
+            HttpEntity(
+              ContentTypes.`text/html(UTF-8)`,
+              "<h1>Hello</h1>"))
+        }
       }
+    Http().newServerAt("0.0.0.0", 8080).bind(routes)
+
+    Cluster(system).registerOnMemberUp {
+      log.info("Cluster member is up!")
     }
-  Http().newServerAt("0.0.0.0", 8080).bind(routes)
 
-  Cluster(system).registerOnMemberUp {
-    log.info("Cluster member is up!")
   }
-
 }
 
 class ClusterWatcher extends Actor with ActorLogging {
