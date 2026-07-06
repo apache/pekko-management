@@ -18,12 +18,14 @@ import pekko.actor.ActorSystem
 import pekko.management.cluster.bootstrap.ClusterBootstrap
 import pekko.management.scaladsl.PekkoManagement
 
-object Ec2DemoApp extends App {
+object Ec2DemoApp {
+  def main(args: Array[String]): Unit = {
 
-  implicit val system: ActorSystem = ActorSystem("demo")
+    implicit val system: ActorSystem = ActorSystem("demo")
 
-  PekkoManagement(system).start()
+    PekkoManagement(system).start()
 
-  ClusterBootstrap(system).start()
+    ClusterBootstrap(system).start()
 
+  }
 }

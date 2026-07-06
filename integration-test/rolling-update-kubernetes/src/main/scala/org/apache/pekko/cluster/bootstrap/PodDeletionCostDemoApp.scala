@@ -23,23 +23,25 @@ import pekko.management.scaladsl.PekkoManagement
 import pekko.rollingupdate.kubernetes.AppVersionRevision
 import pekko.rollingupdate.kubernetes.PodDeletionCost
 
-object PodDeletionCostDemoApp extends App {
+object PodDeletionCostDemoApp {
+  def main(args: Array[String]): Unit = {
 
-  implicit val system: ActorSystem = ActorSystem("pekko-rolling-update-demo")
+    implicit val system: ActorSystem = ActorSystem("pekko-rolling-update-demo")
 
-  import system.log
-  val cluster = Cluster(system)
+    import system.log
+    val cluster = Cluster(system)
 
-  log.info(s"Started [$system], cluster.selfAddress = ${cluster.selfAddress}")
+    log.info(s"Started [$system], cluster.selfAddress = ${cluster.selfAddress}")
 
-  PekkoManagement(system).start()
+    PekkoManagement(system).start()
 
-  // preferred to be called before ClusterBootstrap
-  AppVersionRevision(system).start()
+    // preferred to be called before ClusterBootstrap
+    AppVersionRevision(system).start()
 
-  ClusterBootstrap(system).start()
+    ClusterBootstrap(system).start()
 
-  PodDeletionCost(system).start()
+    PodDeletionCost(system).start()
 
-  Http().newServerAt("0.0.0.0", 8080).bind(complete("Hello world"))
+    Http().newServerAt("0.0.0.0", 8080).bind(complete("Hello world"))
+  }
 }

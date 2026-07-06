@@ -23,25 +23,27 @@ import pekko.stream.scaladsl.Sink
 import pekko.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 
-object DemoApp extends App {
+object DemoApp {
+  def main(args: Array[String]): Unit = {
 
-  implicit val system: ActorSystem = ActorSystem("simple")
+    implicit val system: ActorSystem = ActorSystem("simple")
 
-  import system.log
-  import system.dispatcher
-  val cluster = Cluster(system)
+    import system.log
+    import system.dispatcher
+    val cluster = Cluster(system)
 
-  log.info("Started [{}], cluster.selfAddress = {}", system, cluster.selfAddress)
+    log.info("Started [{}], cluster.selfAddress = {}", system, cluster.selfAddress)
 
-  PekkoManagement(system).start()
-  ClusterBootstrap(system).start()
+    PekkoManagement(system).start()
+    ClusterBootstrap(system).start()
 
-  cluster
-    .subscribe(system.actorOf(Props[ClusterWatcher]), ClusterEvent.InitialStateAsEvents, classOf[ClusterDomainEvent])
+    cluster
+      .subscribe(system.actorOf(Props[ClusterWatcher]), ClusterEvent.InitialStateAsEvents, classOf[ClusterDomainEvent])
 
-  import pekko.http.scaladsl.server.Directives._
-  Http().bindAndHandle(complete("Hello world"), "0.0.0.0", 8080)
+    import pekko.http.scaladsl.server.Directives._
+    Http().bindAndHandle(complete("Hello world"), "0.0.0.0", 8080)
 
+  }
 }
 
 class ClusterWatcher extends Actor with ActorLogging {
