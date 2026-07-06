@@ -14,6 +14,7 @@
 package org.apache.pekko.rollingupdate.kubernetes
 
 import java.util.Locale
+import java.nio.charset.StandardCharsets
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -455,7 +456,7 @@ PUTs must contain resourceVersions. Response:
     val file = Paths.get(path)
     if (Files.exists(file)) {
       try {
-        Some(new String(Files.readAllBytes(file), "utf-8"))
+        Some(new String(Files.readAllBytes(file), StandardCharsets.UTF_8))
       } catch {
         case NonFatal(e) =>
           log.error(e, "Error reading {} from {}", name, path)
