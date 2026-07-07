@@ -20,7 +20,7 @@ jobs:
         include:
           - { javaVersion: 17,  scalaVersion: 2.13, sbtOpts: '' }
           - { javaVersion: 17,  scalaVersion: 3.3,  sbtOpts: '' }
-          - { javaVersion: 17,  scalaVersion: 3.8,  sbtOpts: '' }
+          - { javaVersion: 17,  scalaVersion: next,  sbtOpts: '' }
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -54,7 +54,9 @@ jobs:
         run: sbt checkCodeStyle
 
       - name: Run tests with Scala ${{ matrix.scalaVersion }} and Java ${{ matrix.javaVersion }}
-        run: sbt "++${{ matrix.scalaVersion }} test" ${{ matrix.sbtOpts }}
+        run: |-
+          scala_version="$(bash .github/scripts/resolve-scala-version.sh "${{ matrix.scalaVersion }}")"
+          sbt "++${scala_version}! test" ${{ matrix.sbtOpts }}
 
       - name: Print logs on failure
         if: ${{ failure() }}
