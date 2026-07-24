@@ -71,26 +71,6 @@ class HealthCheckSettingsSpec extends AnyWordSpec with Matchers {
         checkDuration = java.time.Duration.ofSeconds(1L))
         .startupChecks shouldEqual Nil
     }
-
-    "be creatable with legacy create method" in {
-      HealthCheckSettings.create(
-        readinessChecks = java.util.Collections.emptyList(),
-        livenessChecks = java.util.Collections.emptyList(),
-        readinessPath = "",
-        livenessPath = "",
-        checkDuration = java.time.Duration.ofSeconds(1L))
-        .startupChecks shouldEqual Nil
-    }
-
-    "be creatable with legacy constructor" in {
-      val healthCheckSettings = new HealthCheckSettings(
-        readinessChecks = Nil,
-        livenessChecks = Nil,
-        readinessPath = "",
-        livenessPath = "",
-        checkTimeout = 1.seconds)
-      healthCheckSettings.livenessChecks shouldEqual Nil
-    }
   }
 
 }

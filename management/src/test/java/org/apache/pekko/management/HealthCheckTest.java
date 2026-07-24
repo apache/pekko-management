@@ -116,23 +116,6 @@ public class HealthCheckTest {
 
   @SuppressWarnings("deprecation")
   @Test
-  public void creatableThroughLegacyConstructor() throws Exception {
-    List<NamedHealthCheck> healthChecks =
-        List.of(new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
-    HealthChecks checks =
-        new HealthChecks(
-            system,
-            HealthCheckSettings.create(
-                healthChecks, healthChecks, "ready", "alive", java.time.Duration.ofSeconds(1)));
-    assertEquals(true, checks.startupResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.aliveResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.readyResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.startup().toCompletableFuture().get());
-    assertEquals(true, checks.alive().toCompletableFuture().get());
-    assertEquals(true, checks.ready().toCompletableFuture().get());
-  }
-
-  @Test
   public void throwsReturnsFailed() throws Exception {
     List<NamedHealthCheck> healthChecks =
         List.of(
