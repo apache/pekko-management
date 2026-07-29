@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.util.control.NonFatal
 
 import org.apache.pekko
@@ -41,7 +42,7 @@ import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.model.headers.Authorization
 import pekko.http.scaladsl.model.headers.OAuth2BearerToken
 import pekko.http.scaladsl.unmarshalling.Unmarshal
-import pekko.pattern.after
+
 import pekko.pki.kubernetes.PemManagersProvider
 import pekko.util.ByteString
 
@@ -280,13 +281,25 @@ PUTs must contain resourceVersions. Response:
       }
     }
 
-    // make sure we always consume response body (in case of timeout)
-    val strictResponse = response.flatMap(_.toStrict(settings.bodyReadTimeout))
-
-    val timeout = after(settings.apiServiceRequestTimeout, using = system.scheduler)(
-      Future.failed(new PodCostTimeoutException(s"$timeoutMsg. Is the API server up?")))
-
-    Future.firstCompletedOf(Seq(strictResponse, timeout))
+    // Use a Promise-based pattern instead of Future.firstCompletedOf so that when the
+    // timeout fires first, we properly discard the in-flight response entity to release
+    // the HTTP connection back to the pool.
+    val promise = Promise[HttpResponse]()
+    val timeoutCancellable = system.scheduler.scheduleOnce(settings.apiServiceRequestTimeout) {
+      promise.tryFailure(new PodCostTimeoutException(s"$timeoutMsg. Is the API server up?"))
+    }
+    response.onComplete {
+      case scala.util.Success(resp) =>
+        timeoutCancellable.cancel()
+        if (!promise.trySuccess(resp)) {
+          // Timeout already fired — discard the response to release the connection
+          resp.discardEntityBytes()(pekko.stream.Materializer.matFromSystem(system))
+        }
+      case scala.util.Failure(ex) =>
+        timeoutCancellable.cancel()
+        promise.tryFailure(ex)
+    }(system.dispatcher)
+    promise.future.flatMap(_.toStrict(settings.bodyReadTimeout))
   }
 
   private def toPodCostResource(cr: PodCostCustomResource) = {
@@ -311,8 +324,7 @@ PUTs must contain resourceVersions. Response:
           Unmarshal(responseEntity).to[PodCostCustomResource].map(cr => Some(toPodCostResource(cr)))
         case StatusCodes.Conflict =>
           log.debug("creation of PodCost resource failed as already exists. Will attempt to read again")
-          entity.discardBytes()
-          // someone else has created it
+          // response entity already consumed by toStrict above; someone else has created it
           Future.successful(None)
         case StatusCodes.Unauthorized =>
           handleUnauthorized(response)

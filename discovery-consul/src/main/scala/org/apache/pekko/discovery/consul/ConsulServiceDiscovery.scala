@@ -20,7 +20,6 @@ import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.consul.ConsulServiceDiscovery._
 import pekko.discovery.{ Lookup, ServiceDiscovery }
-import pekko.pattern.after
 import org.kiwiproject.consul.Consul
 import org.kiwiproject.consul.async.ConsulResponseCallback
 import org.kiwiproject.consul.model.ConsulResponse
@@ -45,11 +44,17 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     implicit val ec: ExecutionContext = system.dispatcher
-    Future.firstCompletedOf(
-      Seq(
-        after(resolveTimeout, using = system.scheduler)(
-          Future.failed(new TimeoutException(s"Lookup for [$lookup] timed-out, within [$resolveTimeout]!"))),
-        lookupInConsul(lookup.serviceName)))
+    // Use a Promise-based pattern instead of Future.firstCompletedOf to avoid leaking
+    // the underlying Consul HTTP connections when the timeout fires first.
+    val promise = Promise[Resolved]()
+    val timeoutCancellable = system.scheduler.scheduleOnce(resolveTimeout) {
+      promise.tryFailure(new TimeoutException(s"Lookup for [$lookup] timed-out, within [$resolveTimeout]!"))
+    }
+    lookupInConsul(lookup.serviceName).onComplete { result =>
+      timeoutCancellable.cancel()
+      promise.tryComplete(result)
+    }
+    promise.future
   }
 
   private def lookupInConsul(name: String)(implicit executionContext: ExecutionContext): Future[Resolved] = {
