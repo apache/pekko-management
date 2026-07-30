@@ -17,3 +17,4 @@
 
 # OperationInProgress changes
 ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#OperationInProgress.unapply")
+ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#OperationInProgress.apply")
