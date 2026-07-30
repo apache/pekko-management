@@ -60,7 +60,11 @@ private[pekko] object LeaseActor {
       operationStartTime: Long = System.nanoTime())
       extends Data
       with ReplyRequired
-  case class GrantedVersion(version: String, leaseLostCallback: Option[Throwable] => Unit) extends Data
+  case class GrantedVersion(
+      version: String,
+      leaseLostCallback: Option[Throwable] => Unit,
+      heartbeatFailures: Int = 0)
+      extends Data
 
   sealed trait Command
   case class Acquire(leaseLostCallback: Option[Throwable] => Unit = ConstantFun.scalaAnyToUnit) extends Command
@@ -70,6 +74,7 @@ private[pekko] object LeaseActor {
   private case class ReadResponse(response: LeaseResource) extends Command
   private case class WriteResponse(response: Either[LeaseResource, LeaseResource]) extends Command
   private case object Heartbeat extends Command
+  private case object HeartbeatRetry extends Command
 
   sealed trait Response
   case object LeaseAcquired extends Response
@@ -77,8 +82,13 @@ private[pekko] object LeaseActor {
   case object LeaseReleased extends Response with DeadLetterSuppression
   case class InvalidRequest(reason: String) extends Response with DeadLetterSuppression
 
-  def props(k8sApi: KubernetesApi, settings: LeaseSettings, leaseName: String, granted: AtomicBoolean): Props = {
-    Props(new LeaseActor(k8sApi, settings, leaseName, granted))
+  def props(
+      k8sApi: KubernetesApi,
+      settings: LeaseSettings,
+      leaseName: String,
+      granted: AtomicBoolean,
+      heartbeatMaxRetries: Int = 3): Props = {
+    Props(new LeaseActor(k8sApi, settings, leaseName, granted, heartbeatMaxRetries))
   }
 
 }
@@ -87,8 +97,12 @@ private[pekko] object LeaseActor {
  * INTERNAL API
  */
 @InternalApi
-private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, leaseName: String,
-    granted: AtomicBoolean)
+private[pekko] class LeaseActor(
+    k8sApi: KubernetesApi,
+    settings: LeaseSettings,
+    leaseName: String,
+    granted: AtomicBoolean,
+    heartbeatMaxRetries: Int)
     extends LoggingFSM[LeaseActor.State, LeaseActor.Data] {
 
   import pekko.pattern.pipe
@@ -169,12 +183,13 @@ private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, 
         goto(Granted).using(GrantedVersion(response.version, leaseLost))
       }
 
-    case Event(WriteResponse(Left(LeaseResource(None, version, _))), OperationInProgress(who, oldVersion, _, _)) =>
+    case Event(WriteResponse(Left(LeaseResource(None, version, _))),
+          OperationInProgress(who, oldVersion, leaseLost, startTime)) =>
       require(oldVersion != version)
-      who ! LeaseAcquired
       // Try again as lock version has moved on but is not taken
+      // Do not reply yet — wait for the retry to succeed
       pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(r => WriteResponse(r))).to(self)
-      stay()
+      stay().using(OperationInProgress(who, oldVersion, leaseLost, startTime))
     case Event(WriteResponse(Left(LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _)) =>
       // The audacity, someone else has taken the lease :(
       who ! LeaseTaken
@@ -182,8 +197,12 @@ private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, 
   }
 
   when(Granted) {
-    case Event(Heartbeat, GrantedVersion(version, _)) =>
+    case Event(Heartbeat, GrantedVersion(version, _, _)) =>
       log.debug("Heartbeat: updating lease time. Version {}", version)
+      pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(WriteResponse.apply)).to(self)
+      stay()
+    case Event(HeartbeatRetry, GrantedVersion(version, _, _)) =>
+      log.debug("Heartbeat retry: updating lease time. Version {}", version)
       pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(WriteResponse.apply)).to(self)
       stay()
     case Event(WriteResponse(Right(resource)), gv: GrantedVersion) =>
@@ -192,19 +211,31 @@ private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, 
         "response from API server has different owner for success: " + resource)
       log.debug("Heartbeat: lease time updated: Version {}", resource.version)
       startSingleTimer("heartbeat", Heartbeat, settings.timeoutSettings.heartbeatInterval)
-      stay().using(gv.copy(version = resource.version))
-    case Event(WriteResponse(Left(lr @ _)), GrantedVersion(_, leaseLost)) =>
+      stay().using(gv.copy(version = resource.version, heartbeatFailures = 0))
+    case Event(WriteResponse(Left(lr @ _)), GrantedVersion(_, leaseLost, _)) =>
       log.warning("Conflict during heartbeat to lease {}. Lease assumed to be released.", lr)
       granted.set(false)
       executeLeaseLockCallback(leaseLost, None)
       goto(Idle).using(ReadRequired)
-    case Event(Failure(t), GrantedVersion(_, leaseLost)) =>
-      // FIXME, retry if timeout far enough off: https://github.com/lightbend/akka-commercial-addons/issues/501
-      log.warning("Failure during heartbeat to lease: [{}]. Lease assumed to be released.", t.getMessage)
-      granted.set(false)
-      executeLeaseLockCallback(leaseLost, Some(t))
-      goto(Idle).using(ReadRequired)
-    case Event(Release(), GrantedVersion(version, leaseLost)) =>
+    case Event(Failure(t), gv @ GrantedVersion(_, leaseLost, failures)) =>
+      if (failures < heartbeatMaxRetries) {
+        log.warning(
+          "Failure during heartbeat to lease: [{}]. Retrying (attempt {}/{}).",
+          t.getMessage,
+          failures + 1,
+          heartbeatMaxRetries)
+        val retryDelay = settings.timeoutSettings.heartbeatInterval / (heartbeatMaxRetries + 1)
+        startSingleTimer("heartbeat-retry", HeartbeatRetry, retryDelay)
+        stay().using(gv.copy(heartbeatFailures = failures + 1))
+      } else {
+        log.warning(
+          "Failure during heartbeat to lease: [{}]. Retries exhausted. Lease assumed to be released.",
+          t.getMessage)
+        granted.set(false)
+        executeLeaseLockCallback(leaseLost, Some(t))
+        goto(Idle).using(ReadRequired)
+      }
+    case Event(Release(), GrantedVersion(version, leaseLost, _)) =>
       pipe(k8sApi.updateLeaseResource(leaseName, "", version).map(WriteResponse.apply)).to(self)
       goto(Releasing).using(OperationInProgress(sender(), version, leaseLost))
     case Event(Acquire(leaseLostCallback), gv: GrantedVersion) =>
@@ -273,6 +304,7 @@ private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, 
       startSingleTimer("heartbeat", Heartbeat, settings.timeoutSettings.heartbeatInterval)
     case Granted -> _ =>
       cancelTimer("heartbeat")
+      cancelTimer("heartbeat-retry")
       granted.set(false)
   }
 

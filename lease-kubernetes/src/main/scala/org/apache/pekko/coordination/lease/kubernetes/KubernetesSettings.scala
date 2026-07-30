@@ -75,7 +75,8 @@ private[pekko] object KubernetesSettings {
       bodyReadTimeout = apiServerRequestTimeout / 2,
       tokenRetrySettings = tokenRetrySettings,
       leaseLabelMaxLength = config.getInt("lease-name-max-length"),
-      onTruncateAddHashLength = config.getInt("on-truncate-add-hash-length"))
+      onTruncateAddHashLength = config.getInt("on-truncate-add-hash-length"),
+      heartbeatMaxRetries = config.getInt("heartbeat-max-retries"))
   }
 }
 
@@ -111,4 +112,5 @@ private[pekko] class KubernetesSettings(
       0.3
     ),
     val leaseLabelMaxLength: Int = 63,
-    val onTruncateAddHashLength: Int = 8)
+    val onTruncateAddHashLength: Int = 8,
+    val heartbeatMaxRetries: Int = 3)
