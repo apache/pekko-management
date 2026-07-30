@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.util.control.NonFatal
 
 import org.apache.pekko
@@ -283,10 +284,17 @@ PUTs must contain resourceVersions. Response:
     // make sure we always consume response body (in case of timeout)
     val strictResponse = response.flatMap(_.toStrict(settings.bodyReadTimeout))
 
-    val timeout = after(settings.apiServiceRequestTimeout, using = system.scheduler)(
-      Future.failed(new PodCostTimeoutException(s"$timeoutMsg. Is the API server up?")))
+    val result = Promise[HttpResponse]()
+    strictResponse.foreach(result.trySuccess)
+    strictResponse.failed.foreach(result.tryFailure)
 
-    Future.firstCompletedOf(Seq(strictResponse, timeout))
+    after(settings.apiServiceRequestTimeout, using = system.scheduler)(Future.successful(())).foreach { _ =>
+      // timeout fired; discard the response entity if one arrives to avoid leaking the connection
+      response.foreach(_.discardEntityBytes())
+      result.tryFailure(new PodCostTimeoutException(s"$timeoutMsg. Is the API server up?"))
+    }
+
+    result.future
   }
 
   private def toPodCostResource(cr: PodCostCustomResource) = {
@@ -390,9 +398,8 @@ PUTs must contain resourceVersions. Response:
         case StatusCodes.Unauthorized =>
           handleUnauthorized(response)
         case unexpected =>
-          responseEntity
-            .toStrict(settings.bodyReadTimeout)
-            .flatMap(e => Unmarshal(e).to[String])
+          Unmarshal(responseEntity)
+            .to[String]
             .map(body =>
               throw new ReplicaSetException(
                 s"Unexpected response from API server when retrieving ReplicaSet: $unexpected. Body: $body"))
