@@ -39,6 +39,7 @@ object NativeKubernetesApiImpl {
     new DateTimeFormatterBuilder().parseDefaulting(ChronoField.OFFSET_SECONDS,
       0).append(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).optionalStart.appendFraction(
       ChronoField.NANO_OF_SECOND, 6, 6, true).optionalEnd.appendLiteral("Z").toFormatter
+  private val UTC_FORMATTER: DateTimeFormatter = RFC3339MICRO_FORMATTER.withZone(ZoneId.of("UTC"))
 }
 
 /**
@@ -182,7 +183,7 @@ object NativeKubernetesApiImpl {
   }
 
   private def currentTimeRFC3339: String = {
-    RFC3339MICRO_FORMATTER.withZone(ZoneId.of("UTC")).format(Instant.now())
+    NativeKubernetesApiImpl.UTC_FORMATTER.format(Instant.now())
   }
 
   private def toLeaseResource(lcr: NativeLeaseResource) = {
@@ -195,7 +196,7 @@ object NativeKubernetesApiImpl {
       case other     => Some(other)
     }
     LeaseResource(owner, lcr.metadata.resourceVersion.get,
-      LocalDateTime.parse(lcr.spec.acquireTime, RFC3339MICRO_FORMATTER)
+      LocalDateTime.parse(lcr.spec.acquireTime, NativeKubernetesApiImpl.RFC3339MICRO_FORMATTER)
         .atZone(ZoneId.of("UTC"))
         .toInstant
         .toEpochMilli)
