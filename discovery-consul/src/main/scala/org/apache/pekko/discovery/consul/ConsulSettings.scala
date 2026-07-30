@@ -17,8 +17,8 @@ import org.apache.pekko
 import pekko.actor.ClassicActorSystemProvider
 import pekko.actor.{ ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider }
 import pekko.annotation.ApiMayChange
-import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
+import scala.jdk.DurationConverters._
 
 @ApiMayChange
 final class ConsulSettings(system: ExtendedActorSystem) extends Extension {
@@ -33,13 +33,13 @@ final class ConsulSettings(system: ExtendedActorSystem) extends Extension {
     consulConfig.getString("application-pekko-management-port-tag-prefix")
 
   val connectTimeout: FiniteDuration =
-    consulConfig.getDuration("connect-timeout", TimeUnit.MILLISECONDS).millis
+    consulConfig.getDuration("connect-timeout").toScala
 
   val readTimeout: FiniteDuration =
-    consulConfig.getDuration("read-timeout", TimeUnit.MILLISECONDS).millis
+    consulConfig.getDuration("read-timeout").toScala
 
   val writeTimeout: FiniteDuration =
-    consulConfig.getDuration("write-timeout", TimeUnit.MILLISECONDS).millis
+    consulConfig.getDuration("write-timeout").toScala
 
   val parallelism: Int = consulConfig.getInt("lookup-parallelism")
 }
