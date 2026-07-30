@@ -17,6 +17,10 @@
 
 # OperationInProgress changes
 ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#GrantedVersion.unapply")
+ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#GrantedVersion.copy")
+ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#GrantedVersion.this")
+ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#GrantedVersion.apply")
+ProblemFilters.exclude[MissingTypesProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor$GrantedVersion$")
 ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#OperationInProgress.unapply")
 ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#OperationInProgress.apply")
 ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.coordination.lease.kubernetes.LeaseActor#OperationInProgress.copy")
