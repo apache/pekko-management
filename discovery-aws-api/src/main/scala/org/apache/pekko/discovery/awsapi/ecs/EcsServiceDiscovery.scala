@@ -63,14 +63,15 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     builder.build()
   }
 
+  private implicit val ec: ExecutionContext =
+    system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
+
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-client-close") { () =>
     Future {
       ecsClient.shutdown()
       pekko.Done
-    }(system.dispatcher)
+    }(ec)
   }
-
-  private implicit val ec: ExecutionContext = system.dispatcher
 
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     Future.firstCompletedOf(
