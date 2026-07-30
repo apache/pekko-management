@@ -140,7 +140,7 @@ abstract class AbstractKubernetesLease(system: ExtendedActorSystem, leaseTaken: 
       k8sSettings.leaseLabelMaxLength,
       k8sSettings.onTruncateAddHashLength)
   private val leaseActor = system.systemActorOf(
-    LeaseActor.props(k8sApi, settings, leaseName, leaseTaken),
+    LeaseActor.props(k8sApi, settings, leaseName, leaseTaken, k8sSettings.heartbeatMaxRetries),
     s"kubernetesLease${AbstractKubernetesLease.leaseCounter.incrementAndGet}")
   if (leaseName != settings.leaseName) {
     logger.info(
