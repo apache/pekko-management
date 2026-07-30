@@ -174,9 +174,11 @@ class LeaseActorSpec
       val k8sApiFailure = new LeaseException("Failed to communicate with API server")
       acquireLease()
       underTest ! Release()
-      updateProbe.expectMsg(("", currentVersion))
-      incrementVersion()
-      updateProbe.reply(Failure(k8sApiFailure))
+      // Initial attempt + 3 retries = 4 total failures
+      for (_ <- 1 to 4) {
+        updateProbe.expectMsg(("", currentVersion))
+        updateProbe.reply(Failure(k8sApiFailure))
+      }
       senderProbe.expectMsg(Failure(k8sApiFailure))
     }
 
@@ -584,6 +586,53 @@ class LeaseActorSpec
       updateProbe.expectMsg((ownerName, conflictVersion.toString))
       updateProbe.reply(Right(LeaseResource(Some(ownerName), conflictVersion.toString, System.currentTimeMillis())))
       senderProbe.expectMsg(LeaseAcquired)
+    }
+
+    "immediately report release failure with no retries" in new NoRetryTest {
+      val k8sApiFailure = new LeaseException("Failed to communicate with API server")
+      acquireLease()
+      underTest ! Release()
+      updateProbe.expectMsg(("", currentVersion))
+      updateProbe.reply(Failure(k8sApiFailure))
+      senderProbe.expectMsg(Failure(k8sApiFailure))
+    }
+
+    "allow re-acquire after immediate release failure" in new NoRetryTest {
+      acquireLease()
+      underTest ! Release()
+      updateProbe.expectMsg(("", currentVersion))
+      updateProbe.reply(Failure(new LeaseException("Failed")))
+      senderProbe.expectMsgType[Failure]
+      acquireLease()
+    }
+
+  }
+
+  "LeaseActor release retry" should {
+
+    "retry release on failure and succeed" in new Test {
+      acquireLease()
+      underTest ! Release()
+      // First attempt fails
+      updateProbe.expectMsg(("", currentVersion))
+      updateProbe.reply(Failure(new LeaseException("transient error")))
+      // Retry succeeds
+      updateProbe.expectMsg(("", currentVersion))
+      incrementVersion()
+      updateProbe.reply(Right(LeaseResource(None, currentVersion, System.currentTimeMillis())))
+      senderProbe.expectMsg(LeaseReleased)
+    }
+
+    "report release failure after retries exhausted" in new Test {
+      val k8sApiFailure = new LeaseException("Failed to communicate with API server")
+      acquireLease()
+      underTest ! Release()
+      // Initial attempt + 3 retries = 4 total failures
+      for (_ <- 1 to 4) {
+        updateProbe.expectMsg(("", currentVersion))
+        updateProbe.reply(Failure(k8sApiFailure))
+      }
+      senderProbe.expectMsg(Failure(k8sApiFailure))
     }
 
   }

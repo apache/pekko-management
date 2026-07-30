@@ -57,7 +57,8 @@ private[pekko] object LeaseActor {
       replyTo: ActorRef,
       version: String,
       leaseLostCallback: Option[Throwable] => Unit,
-      operationStartTime: Long = System.nanoTime())
+      operationStartTime: Long = System.nanoTime(),
+      releaseRetries: Int = 0)
       extends Data
       with ReplyRequired
   case class GrantedVersion(
@@ -75,6 +76,7 @@ private[pekko] object LeaseActor {
   private case class WriteResponse(response: Either[LeaseResource, LeaseResource]) extends Command
   private case object Heartbeat extends Command
   private case object HeartbeatRetry extends Command
+  private case object ReleaseRetry extends Command
 
   sealed trait Response
   case object LeaseAcquired extends Response
@@ -167,7 +169,7 @@ private[pekko] class LeaseActor(
   when(Granting) {
     case Event(
           WriteResponse(Right(response)),
-          cc @ OperationInProgress(who, oldVersion, leaseLost, operationStartTime)) =>
+          cc @ OperationInProgress(who, oldVersion, leaseLost, operationStartTime, _)) =>
       require(
         oldVersion != response.version,
         s"Update response from Kubernetes API should not return the same version: Response: $response. Client: $cc")
@@ -184,13 +186,13 @@ private[pekko] class LeaseActor(
       }
 
     case Event(WriteResponse(Left(LeaseResource(None, version, _))),
-          OperationInProgress(who, oldVersion, leaseLost, startTime)) =>
+          OperationInProgress(who, oldVersion, leaseLost, startTime, _)) =>
       require(oldVersion != version)
       // Try again as lock version has moved on but is not taken
       // Do not reply yet — wait for the retry to succeed
       pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(r => WriteResponse(r))).to(self)
       stay().using(OperationInProgress(who, oldVersion, leaseLost, startTime))
-    case Event(WriteResponse(Left(LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _)) =>
+    case Event(WriteResponse(Left(LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _, _)) =>
       // The audacity, someone else has taken the lease :(
       who ! LeaseTaken
       goto(Idle).using(ReadRequired) // can't use version as another owner has the lock
@@ -252,23 +254,41 @@ private[pekko] class LeaseActor(
     }
 
   when(Releasing) {
-    // FIXME deal with failure from releasing the the lock, currently handled in whenUnhandled but could retry to remove: https://github.com/lightbend/akka-commercial-addons/issues/502
-    case Event(WriteResponse(Right(lr)), OperationInProgress(who, _, _, _)) =>
+    case Event(WriteResponse(Right(lr)), OperationInProgress(who, _, _, _, _)) =>
       require(lr.owner.isEmpty, "Released lease has unexpected owner: " + lr)
       who ! LeaseReleased
       goto(Idle).using(LeaseCleared(lr.version))
-    case Event(WriteResponse(Left(lr @ LeaseResource(None, _, _))), OperationInProgress(who, _, _, _)) =>
+    case Event(WriteResponse(Left(lr @ LeaseResource(None, _, _))), OperationInProgress(who, _, _, _, _)) =>
       log.warning(
         "Release conflict and owner has been removed: {}. Lease will continue to work but TTL must have been reached to allow another node to remove lease.",
         lr)
       who ! LeaseReleased
       goto(Idle).using(ReadRequired)
-    case Event(WriteResponse(Left(lr @ LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _)) =>
+    case Event(WriteResponse(Left(lr @ LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _, _)) =>
       log.warning(
         "Release conflict and owner has changed: {}. Lease will continue to work but TTL must have been reached to allow another node to update the lease.",
         lr)
       who ! LeaseReleased
       goto(Idle).using(ReadRequired)
+    case Event(Failure(t), op @ OperationInProgress(who, version, _, _, retries)) =>
+      if (retries < heartbeatMaxRetries) {
+        log.warning(
+          "Failure releasing lease: [{}]. Retrying (attempt {}/{}).",
+          t.getMessage,
+          retries + 1,
+          heartbeatMaxRetries)
+        val retryDelay = settings.timeoutSettings.heartbeatInterval / (heartbeatMaxRetries + 1)
+        startSingleTimer("release-retry", ReleaseRetry, retryDelay)
+        stay().using(op.copy(releaseRetries = retries + 1))
+      } else {
+        log.warning("Failure releasing lease: [{}]. Retries exhausted.", t.getMessage)
+        who ! Failure(t)
+        goto(Idle).using(ReadRequired)
+      }
+    case Event(ReleaseRetry, OperationInProgress(who, version, leaseLost, startTime, retries)) =>
+      log.debug("Release retry: releasing lease. Version {}", version)
+      pipe(k8sApi.updateLeaseResource(leaseName, "", version).map(WriteResponse.apply)).to(self)
+      stay().using(OperationInProgress(who, version, leaseLost, startTime, retries))
   }
 
   whenUnhandled {
@@ -306,6 +326,8 @@ private[pekko] class LeaseActor(
       cancelTimer("heartbeat")
       cancelTimer("heartbeat-retry")
       granted.set(false)
+    case Releasing -> _ =>
+      cancelTimer("release-retry")
   }
 
   private def tryGetLease(
