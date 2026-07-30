@@ -47,13 +47,19 @@ import scala.concurrent.duration._
    * to HTTP binding, during [[pekko.management.scaladsl.PekkoManagement.start()]], hence we
    * accept blocking on this initialization. If no value is received, the future will fail with
    * a `TimeoutException` and ClusterBootstrap will log an explanatory error to the user.
+   *
+   * The result is cached after the first successful resolution to avoid repeated blocking.
    */
-  private[bootstrap] def selfContactPoint: (String, Int) =
-    Await.result(
+  @volatile private var cachedSelfContactPoint: Option[(String, Int)] = None
+
+  private[bootstrap] def selfContactPoint: (String, Int) = cachedSelfContactPoint.getOrElse {
+    val result = Await.result(
       ClusterBootstrap(system).selfContactPoint
         .map(uri => (uri.authority.host.toString, uri.authority.port))(system.dispatcher),
-      Duration.Inf // the future has a timeout
-    )
+      15.seconds)
+    cachedSelfContactPoint = Some(result)
+    result
+  }
 
   /**
    * Determines whether it has the need and ability to join self and create a new cluster.
@@ -66,7 +72,7 @@ import scala.concurrent.duration._
         log.warning(
           BootstrapLogMarker.inProgress(info.contactPoints.map(contactPointString), info.allSeedNodes),
           "Self contact point [{}] not found in targets {}",
-          contactPointString(selfContactPoint),
+          contactPointString(self),
           info.contactPoints.mkString(", "))
       }
       false
