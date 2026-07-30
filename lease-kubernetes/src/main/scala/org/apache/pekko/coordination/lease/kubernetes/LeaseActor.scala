@@ -247,6 +247,7 @@ private[pekko] class LeaseActor(k8sApi: KubernetesApi, settings: LeaseSettings, 
         ownerName,
         leaseName,
         stateName)
+      sender() ! InvalidRequest("Tried to acquire a lease while previous acquire/release still in progress")
       stay().using(data)
     case Event(Release(), data @ _) =>
       log.info(

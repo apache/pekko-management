@@ -33,7 +33,7 @@ import java.nio.file.{ Files, Paths }
 import java.security.{ KeyStore, SecureRandom }
 import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 import scala.collection.immutable
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.util.control.NonFatal
 
 /**
@@ -78,10 +78,10 @@ import scala.util.control.NonFatal
   }
 
   protected val scheme: String = if (settings.secure) "https" else "http"
-  private[pekko] def apiToken() = readConfigVarFromFilesystem(settings.apiTokenPath, "api-token").map(
-    _.getOrElse(""))(ExecutionContext.parasitic)
+  private lazy val apiToken: Future[String] = readConfigVarFromFilesystem(settings.apiTokenPath, "api-token")
+    .map(_.getOrElse(""))(ExecutionContext.parasitic)
   private def headers() = if (settings.secure) {
-    apiToken().map { token =>
+    apiToken.map { token =>
       immutable.Seq(Authorization(OAuth2BearerToken(token)))
     }(ExecutionContext.parasitic)
   } else
@@ -193,10 +193,17 @@ import scala.util.control.NonFatal
     // make sure we always consume response body (in case of timeout)
     val strictResponse = response.flatMap(_.toStrict(settings.bodyReadTimeout))
 
-    val timeout = after(settings.apiServerRequestTimeout, using = system.scheduler)(
-      Future.failed(new LeaseTimeoutException(s"$timeoutMsg. Is the API server up?")))
+    val result = Promise[HttpResponse]()
+    strictResponse.foreach(result.trySuccess)
+    strictResponse.failed.foreach(result.tryFailure)
 
-    Future.firstCompletedOf(Seq(strictResponse, timeout))
+    after(settings.apiServerRequestTimeout, using = system.scheduler)(Future.successful(())).foreach { _ =>
+      // timeout fired; discard the response entity if one arrives to avoid leaking the connection
+      response.foreach(_.discardEntityBytes())
+      result.tryFailure(new LeaseTimeoutException(s"$timeoutMsg. Is the API server up?"))
+    }
+
+    result.future
   }
 
   protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] = {
