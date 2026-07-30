@@ -300,7 +300,8 @@ class LeaseActorSpec
 
       // second acquire while first is still pending
       underTest.tell(LeaseActor.Acquire(), secondSender.ref)
-      secondSender.expectMsg(InvalidRequest("Tried to acquire a lease while previous acquire/release still in progress"))
+      secondSender.expectMsg(
+        InvalidRequest("Tried to acquire a lease while previous acquire/release still in progress"))
 
       // first acquire completes normally
       leaseProbe.reply(LeaseResource(None, currentVersion, System.currentTimeMillis()))
@@ -319,7 +320,8 @@ class LeaseActorSpec
 
       // second acquire while granting
       underTest.tell(LeaseActor.Acquire(), secondSender.ref)
-      secondSender.expectMsg(InvalidRequest("Tried to acquire a lease while previous acquire/release still in progress"))
+      secondSender.expectMsg(
+        InvalidRequest("Tried to acquire a lease while previous acquire/release still in progress"))
 
       // first acquire completes normally
       incrementVersion()
