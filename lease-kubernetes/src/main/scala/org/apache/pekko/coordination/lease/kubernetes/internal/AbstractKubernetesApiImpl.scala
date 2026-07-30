@@ -78,10 +78,10 @@ import scala.util.control.NonFatal
   }
 
   protected val scheme: String = if (settings.secure) "https" else "http"
-  private lazy val apiToken: Future[String] = readConfigVarFromFilesystem(settings.apiTokenPath, "api-token")
-    .map(_.getOrElse(""))(ExecutionContext.parasitic)
+  private[pekko] def apiToken() = readConfigVarFromFilesystem(settings.apiTokenPath, "api-token").map(
+    _.getOrElse(""))(ExecutionContext.parasitic)
   private def headers() = if (settings.secure) {
-    apiToken.map { token =>
+    apiToken().map { token =>
       immutable.Seq(Authorization(OAuth2BearerToken(token)))
     }(ExecutionContext.parasitic)
   } else

@@ -293,10 +293,38 @@ class LeaseActorSpec
       acquireLease()
     }
 
-    "lease acquire in reading state" in new Test {
-      // TODO this could accumulate senders and reply to all, atm it'll log saying
-      // previous action hasn't finished
-      pending
+    "reply InvalidRequest when acquire arrives while read is pending" in new Test {
+      val secondSender = TestProbe()
+      underTest.tell(LeaseActor.Acquire(), senderProbe.ref)
+      leaseProbe.expectMsg(leaseName)
+
+      // second acquire while first is still pending
+      underTest.tell(LeaseActor.Acquire(), secondSender.ref)
+      secondSender.expectMsg(InvalidRequest("Tried to acquire a lease while previous acquire/release still in progress"))
+
+      // first acquire completes normally
+      leaseProbe.reply(LeaseResource(None, currentVersion, System.currentTimeMillis()))
+      updateProbe.expectMsg((ownerName, currentVersion))
+      incrementVersion()
+      updateProbe.reply(Right(LeaseResource(Some(ownerName), currentVersion, System.currentTimeMillis())))
+      senderProbe.expectMsg(LeaseAcquired)
+    }
+
+    "reply InvalidRequest when acquire arrives while grant is in progress" in new Test {
+      val secondSender = TestProbe()
+      underTest.tell(LeaseActor.Acquire(), senderProbe.ref)
+      leaseProbe.expectMsg(leaseName)
+      leaseProbe.reply(LeaseResource(None, currentVersion, System.currentTimeMillis()))
+      updateProbe.expectMsg((ownerName, currentVersion))
+
+      // second acquire while granting
+      underTest.tell(LeaseActor.Acquire(), secondSender.ref)
+      secondSender.expectMsg(InvalidRequest("Tried to acquire a lease while previous acquire/release still in progress"))
+
+      // first acquire completes normally
+      incrementVersion()
+      updateProbe.reply(Right(LeaseResource(Some(ownerName), currentVersion, System.currentTimeMillis())))
+      senderProbe.expectMsg(LeaseAcquired)
     }
 
     "return lease taken if conflict when updating lease" in new Test {
