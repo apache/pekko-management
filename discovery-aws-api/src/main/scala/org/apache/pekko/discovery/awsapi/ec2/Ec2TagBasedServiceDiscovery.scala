@@ -19,7 +19,7 @@ import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.ec2.model.{ DescribeInstancesRequest, Filter, Reservation }
 import com.amazonaws.services.ec2.{ AmazonEC2, AmazonEC2ClientBuilder }
 import org.apache.pekko
-import pekko.actor.ExtendedActorSystem
+import pekko.actor.{ CoordinatedShutdown, ExtendedActorSystem }
 import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ec2.Ec2TagBasedServiceDiscovery.parseFiltersString
@@ -100,7 +100,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
       }
   }
 
-  private val ec2Client: AmazonEC2 = {
+  private lazy val ec2Client: AmazonEC2 = {
     val clientConfiguration = clientConfigFqcn match {
       case Some(fqcn) =>
         getCustomClientConfigurationInstance(fqcn) match {
@@ -130,6 +130,13 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
     builder.build()
   }
 
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ec2-client-close") { () =>
+    Future {
+      ec2Client.shutdown()
+      pekko.Done
+    }(ec)
+  }
+
   @tailrec
   private def getInstances(
       client: AmazonEC2,
@@ -144,9 +151,10 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
     val describeInstancesResult = client.describeInstances(describeInstancesRequest)
 
     val ips: List[String] =
-      describeInstancesResult.getReservations.asScala.toList
-        .flatMap((r: Reservation) => r.getInstances.asScala.toList)
+      describeInstancesResult.getReservations.asScala
+        .flatMap((r: Reservation) => r.getInstances.asScala)
         .map(instance => instance.getPrivateIpAddress)
+        .toList
 
     val accumulatedIps = accumulator ++ ips
 

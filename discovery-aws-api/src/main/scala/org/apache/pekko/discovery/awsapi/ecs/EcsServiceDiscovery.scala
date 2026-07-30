@@ -17,7 +17,7 @@ import java.net.{ InetAddress, NetworkInterface }
 import java.util.concurrent.TimeoutException
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.EcsServiceDiscovery.resolveTasks
@@ -61,6 +61,13 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     }
 
     builder.build()
+  }
+
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-client-close") { () =>
+    Future {
+      ecsClient.shutdown()
+      pekko.Done
+    }(system.dispatcher)
   }
 
   private implicit val ec: ExecutionContext = system.dispatcher
@@ -144,7 +151,7 @@ object EcsServiceDiscovery {
   private def describeTasks(ecsClient: AmazonECS, cluster: String, taskArns: Seq[String]): Seq[Task] =
     for {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.
-      group <- taskArns.grouped(100).toList
+      group <- taskArns.grouped(100).toSeq
       tasks = ecsClient.describeTasks(
         new DescribeTasksRequest().withCluster(cluster).withTasks(group.asJava))
       task <- tasks.getTasks.asScala
