@@ -28,9 +28,13 @@ import org.kiwiproject.consul.model.ConsulResponse
 import org.kiwiproject.consul.model.catalog.CatalogService
 import org.kiwiproject.consul.option.Options
 
+import java.io.FileInputStream
 import java.net.InetAddress
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
 import java.util
 import java.util.concurrent.TimeoutException
+import javax.net.ssl.{ SSLContext, TrustManagerFactory }
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
@@ -41,14 +45,31 @@ import scala.util.Try
 class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private val settings = ConsulSettings.get(system)
-  private val consul =
-    Consul
+  private val consul = {
+    val builder = Consul
       .builder()
       .withHostAndPort(HostAndPort.fromParts(settings.consulHost, settings.consulPort))
       .withConnectTimeoutMillis(settings.connectTimeout.toMillis)
       .withReadTimeoutMillis(settings.readTimeout.toMillis)
       .withWriteTimeoutMillis(settings.writeTimeout.toMillis)
-      .build()
+    settings.consulToken.foreach(builder.withTokenAuth)
+    if (settings.tlsEnabled) {
+      builder.withHttps(true)
+      settings.caPath.foreach { caPath =>
+        val cf = CertificateFactory.getInstance("X.509")
+        val caCert = cf.generateCertificate(new FileInputStream(caPath))
+        val ks = KeyStore.getInstance(KeyStore.getDefaultType)
+        ks.load(null)
+        ks.setCertificateEntry("ca", caCert)
+        val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
+        tmf.init(ks)
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, tmf.getTrustManagers, null)
+        builder.withSslContext(sslContext)
+      }
+    }
+    builder.build()
+  }
   private val blockingEc: ExecutionContext = system.dispatchers.lookup(DefaultBlockingDispatcherId)
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "consul-close") { () =>

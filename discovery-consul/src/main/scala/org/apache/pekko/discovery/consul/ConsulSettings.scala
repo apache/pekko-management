@@ -42,6 +42,18 @@ final class ConsulSettings(system: ExtendedActorSystem) extends Extension {
     consulConfig.getDuration("write-timeout").toScala
 
   val parallelism: Int = consulConfig.getInt("lookup-parallelism")
+
+  val consulToken: Option[String] = consulConfig.getString("consul-token") match {
+    case ""  => None
+    case tok => Some(tok)
+  }
+
+  val tlsEnabled: Boolean = consulConfig.getBoolean("tls-enabled")
+
+  val caPath: Option[String] = consulConfig.getString("ca-path") match {
+    case ""   => None
+    case path => Some(path)
+  }
 }
 
 @ApiMayChange
