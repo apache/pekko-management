@@ -17,6 +17,8 @@ import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.nio.file.{ Files, Paths }
 import java.security.{ KeyStore, SecureRandom }
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
 import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 
 import scala.collection.immutable
@@ -33,6 +35,7 @@ import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.kubernetes.JsonFormat._
 import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.{ targets, KubernetesApiException }
+import pekko.discovery.kubernetes.PodList.{ Added, Deleted, Modified, WatchEvent }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.dispatch.Dispatchers.DefaultBlockingDispatcherId
 import pekko.event.Logging
@@ -43,6 +46,9 @@ import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.model.headers.{ Authorization, HttpEncodings, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pki.kubernetes.PemManagersProvider
+import pekko.stream.scaladsl.Sink
+import pekko.util.ByteString
+import spray.json._
 
 object KubernetesApiServiceDiscovery {
 
@@ -137,7 +143,20 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
 
   import system.dispatcher
 
+  // Watch mode state: cache of pods keyed by pod name, and resource version for reconnection
+  private val podCache = new AtomicReference[immutable.Map[String, PodList.Pod]](immutable.Map.empty)
+  @volatile private var watchResourceVersion: Option[String] = None
+  private val startedWatches = new ConcurrentHashMap[String, Boolean]()
+
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
+    if (settings.apiPollMode == "watch") {
+      lookupWatch(query, resolveTimeout)
+    } else {
+      lookupList(query, resolveTimeout)
+    }
+  }
+
+  private def lookupList(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     val labelSelector = settings.podLabelSelector(query.serviceName)
 
     for {
@@ -277,5 +296,246 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         Coders.NoCoding
     }
     decoder.decodeMessage(response)
+  }
+
+  // ---- Watch mode methods ----
+
+  private def lookupWatch(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
+    val labelSelector = settings.podLabelSelector(query.serviceName)
+
+    for {
+      setup <- kubernetesSetup
+
+      _ <- {
+        val watchKey = s"${setup.podNamespace}:$labelSelector"
+        if (Option(startedWatches.putIfAbsent(watchKey, true)).isEmpty) {
+          log.info(
+            "Starting watch for pods with label selector: [{}]. Namespace: [{}]",
+            labelSelector,
+            setup.podNamespace)
+          startWatch(setup, labelSelector)
+        } else {
+          Future.successful(())
+        }
+      }
+
+    } yield {
+      val cachedPods = podCache.get()
+      val podList = PodList(cachedPods.values.toList)
+      val addresses =
+        targets(podList, query.portName, setup.podNamespace, settings.podDomain, settings.rawIp, settings.containerName)
+      if (addresses.isEmpty && cachedPods.nonEmpty) {
+        if (log.isInfoEnabled) {
+          val containerPortNames =
+            cachedPods.values.flatMap(_.spec).flatMap(_.containers).flatMap(_.ports).flatten.toSet
+          log.info(
+            "No targets found from pod cache. Is the correct port name configured? Current configuration: [{}]. Ports on pods: [{}]",
+            query.portName,
+            containerPortNames)
+        }
+      }
+      Resolved(
+        serviceName = query.serviceName,
+        addresses = addresses)
+    }
+  }
+
+  private def startWatch(setup: KubernetesApiServiceDiscovery.KubernetesSetup, labelSelector: String): Future[Unit] = {
+    val token = setup.apiToken
+    val namespace = setup.podNamespace
+    val httpsContext = setup.clientHttpsConnectionContext
+
+    // Perform initial list to populate cache and get resourceVersion
+    val listFuture = for {
+      listReq <- optionToFuture(
+        listRequest(token, namespace, labelSelector),
+        s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})")
+      listResp <- http.singleRequest(listReq, httpsContext).map(decodeResponse)
+      bytes <- listResp.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
+      podList <- {
+        listResp.status match {
+          case StatusCodes.OK =>
+            Unmarshal(HttpEntity(ContentTypes.`application/json`, bytes)).to[PodList]
+          case other =>
+            log.warning("Initial list failed with status [{}]", other)
+            Future.successful(PodList(Nil))
+        }
+      }
+    } yield {
+      updatePodCache(podList)
+      watchResourceVersion = podList.items
+        .flatMap(_.metadata.flatMap(_.resourceVersion))
+        .lastOption
+        .orElse(Some("0"))
+      podList
+    }
+
+    listFuture.flatMap { _ =>
+      startWatchStream(token, namespace, labelSelector, httpsContext)
+    }.recover {
+      case NonFatal(e) =>
+        log.error(e, "Failed to start watch for pods with label selector: [{}]", labelSelector)
+        scheduleWatchRestart(setup, labelSelector, settings.watchOnErrorReconnectDelay)
+    }
+  }
+
+  private def startWatchStream(
+      token: String,
+      namespace: String,
+      labelSelector: String,
+      httpsContext: HttpsConnectionContext): Future[Unit] = {
+    optionToFuture(
+      watchRequest(token, namespace, labelSelector, watchResourceVersion),
+      s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})"
+    ).flatMap { request =>
+      log.debug("Starting watch stream with resourceVersion: [{}]", watchResourceVersion)
+      http.singleRequest(request, httpsContext).flatMap { response =>
+        response.status match {
+          case StatusCodes.OK =>
+            log.info("Watch stream started for label selector: [{}]", labelSelector)
+            val decoded = decodeResponse(response)
+            processWatchStream(decoded, token, namespace, labelSelector, httpsContext)
+            Future.successful(())
+          case StatusCodes.Gone =>
+            // resourceVersion too old, reset and restart
+            log.warning("Watch resourceVersion expired (410 Gone), restarting with fresh list")
+            watchResourceVersion = None
+            val setup = KubernetesApiServiceDiscovery.KubernetesSetup(namespace, token, httpsContext)
+            scheduleWatchRestart(setup, labelSelector, settings.watchReconnectDelay)
+            Future.successful(())
+          case other =>
+            log.warning("Watch request failed with status [{}]", other)
+            Future.failed(new KubernetesApiException(s"Watch request failed with status $other"))
+        }
+      }
+    }
+  }
+
+  private def processWatchStream(
+      response: HttpResponse,
+      token: String,
+      namespace: String,
+      labelSelector: String,
+      httpsContext: HttpsConnectionContext): Unit = {
+    response.entity.dataBytes
+      .map(_.utf8String)
+      .statefulMapConcat { () =>
+        var buffer = ""
+        chunk => {
+          buffer += chunk
+          val lines = buffer.split("\n", -1).toList
+          buffer = lines.last
+          lines.init.filter(_.nonEmpty)
+        }
+      }
+      .map { line =>
+        Try(JsonFormat.watchEventFormat.read(line.parseJson))
+      }
+      .mapConcat {
+        case scala.util.Success(event) =>
+          processWatchEvent(event)
+          Nil
+        case scala.util.Failure(ex) =>
+          log.warning("Failed to parse watch event: [{}]", ex.getMessage)
+          Nil
+      }
+      .runWith(Sink.ignore)
+      .onComplete {
+        case scala.util.Success(_) =>
+          log.info("Watch stream completed, reconnecting")
+          val setup = KubernetesApiServiceDiscovery.KubernetesSetup(namespace, token, httpsContext)
+          scheduleWatchRestart(setup, labelSelector, settings.watchReconnectDelay)
+        case scala.util.Failure(ex) =>
+          log.warning("Watch stream failed: [{}], reconnecting", ex.getMessage)
+          val setup = KubernetesApiServiceDiscovery.KubernetesSetup(namespace, token, httpsContext)
+          scheduleWatchRestart(setup, labelSelector, settings.watchOnErrorReconnectDelay)
+      }
+  }
+
+  private def processWatchEvent(event: WatchEvent): Unit = {
+    val podName = event.pod.metadata.flatMap(_.name).getOrElse("unknown")
+    event.eventType match {
+      case Added | Modified =>
+        log.debug("Watch event [{}] for pod [{}]", event.eventType, podName)
+        podCache.updateAndGet(new java.util.function.UnaryOperator[immutable.Map[String, PodList.Pod]] {
+          override def apply(cache: immutable.Map[String, PodList.Pod]): immutable.Map[String, PodList.Pod] =
+            cache + (podName -> event.pod)
+        })
+        event.pod.metadata.flatMap(_.resourceVersion).foreach(rv => watchResourceVersion = Some(rv))
+      case Deleted =>
+        log.debug("Watch event DELETED for pod [{}]", podName)
+        podCache.updateAndGet(new java.util.function.UnaryOperator[immutable.Map[String, PodList.Pod]] {
+          override def apply(cache: immutable.Map[String, PodList.Pod]): immutable.Map[String, PodList.Pod] =
+            cache - podName
+        })
+        event.pod.metadata.flatMap(_.resourceVersion).foreach(rv => watchResourceVersion = Some(rv))
+      case other =>
+        log.warning("Unexpected watch event type [{}] for pod [{}]", other, podName)
+    }
+  }
+
+  private def scheduleWatchRestart(
+      setup: KubernetesApiServiceDiscovery.KubernetesSetup,
+      labelSelector: String,
+      delay: FiniteDuration): Unit = {
+    system.scheduler.scheduleOnce(delay) {
+      log.info("Restarting watch for label selector: [{}]", labelSelector)
+      startWatchStream(setup.apiToken, setup.podNamespace, labelSelector, setup.clientHttpsConnectionContext)
+        .recover {
+          case NonFatal(e) =>
+            log.error(e, "Watch restart failed for label selector: [{}]", labelSelector)
+            scheduleWatchRestart(setup, labelSelector, settings.watchOnErrorReconnectDelay)
+        }
+    }
+  }
+
+  private def listRequest(token: String, namespace: String, labelSelector: String): Option[HttpRequest] = {
+    for {
+      host <- sys.env.get(settings.apiServiceHostEnvName)
+      portStr <- sys.env.get(settings.apiServicePortEnvName)
+      port <- Try(portStr.toInt).toOption
+    } yield {
+      val path = Uri.Path.Empty / "api" / "v1" / "namespaces" / namespace / "pods"
+      val query = Uri.Query("labelSelector" -> labelSelector)
+      val uri = Uri.from(scheme = "https", host = host, port = port).withPath(path).withQuery(query)
+
+      val authHeaders = immutable.Seq(Authorization(OAuth2BearerToken(token)))
+      val acceptEncodingHeader = HttpEncodings.getForKey(settings.httpRequestAcceptEncoding)
+        .map(httpEncoding => AcceptEncoding.create(httpEncoding))
+      HttpRequest(uri = uri, headers = authHeaders ++ acceptEncodingHeader)
+    }
+  }
+
+  private def watchRequest(
+      token: String,
+      namespace: String,
+      labelSelector: String,
+      resourceVersion: Option[String]): Option[HttpRequest] = {
+    for {
+      host <- sys.env.get(settings.apiServiceHostEnvName)
+      portStr <- sys.env.get(settings.apiServicePortEnvName)
+      port <- Try(portStr.toInt).toOption
+    } yield {
+      val path = Uri.Path.Empty / "api" / "v1" / "namespaces" / namespace / "pods"
+      val params = Seq("labelSelector" -> labelSelector, "watch" -> "true") ++
+        resourceVersion.map(rv => "resourceVersion" -> rv)
+      val query = Uri.Query(params: _*)
+      val uri = Uri.from(scheme = "https", host = host, port = port).withPath(path).withQuery(query)
+
+      val authHeaders = immutable.Seq(Authorization(OAuth2BearerToken(token)))
+      val acceptEncodingHeader = HttpEncodings.getForKey(settings.httpRequestAcceptEncoding)
+        .map(httpEncoding => AcceptEncoding.create(httpEncoding))
+      HttpRequest(uri = uri, headers = authHeaders ++ acceptEncodingHeader)
+    }
+  }
+
+  private def updatePodCache(podList: PodList): Unit = {
+    val runningPods = podList.items.collect {
+      case pod
+          if pod.metadata.flatMap(_.deletionTimestamp).isEmpty &&
+          pod.status.flatMap(_.phase).contains("Running") =>
+        pod.metadata.flatMap(_.name).getOrElse("unknown") -> pod
+    }.toMap
+    podCache.set(runningPods)
   }
 }

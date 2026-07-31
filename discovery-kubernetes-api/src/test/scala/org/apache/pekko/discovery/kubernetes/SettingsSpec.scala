@@ -17,6 +17,8 @@
 
 package org.apache.pekko.discovery.kubernetes
 
+import scala.concurrent.duration._
+
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.ActorSystem
@@ -45,6 +47,61 @@ class SettingsSpec extends AnyWordSpec with Matchers {
       try {
         val settings = Settings(system)
         settings.tlsVersion shouldBe "TLSv1.3"
+      } finally {
+        system.terminate()
+      }
+    }
+    "default api-poll-mode to list" in {
+      val system = ActorSystem("test")
+      try {
+        val settings = Settings(system)
+        settings.apiPollMode shouldBe "list"
+      } finally {
+        system.terminate()
+      }
+    }
+    "support api-poll-mode override to watch" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          api-poll-mode = "watch"
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        val settings = Settings(system)
+        settings.apiPollMode shouldBe "watch"
+      } finally {
+        system.terminate()
+      }
+    }
+    "default watch-reconnect-delay to 1s" in {
+      val system = ActorSystem("test")
+      try {
+        val settings = Settings(system)
+        settings.watchReconnectDelay shouldBe 1.second
+      } finally {
+        system.terminate()
+      }
+    }
+    "support watch-reconnect-delay override" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          watch-reconnect-delay = 3s
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        val settings = Settings(system)
+        settings.watchReconnectDelay shouldBe 3.seconds
+      } finally {
+        system.terminate()
+      }
+    }
+    "default watch-on-error-reconnect-delay to 5s" in {
+      val system = ActorSystem("test")
+      try {
+        val settings = Settings(system)
+        settings.watchOnErrorReconnectDelay shouldBe 5.seconds
       } finally {
         system.terminate()
       }
