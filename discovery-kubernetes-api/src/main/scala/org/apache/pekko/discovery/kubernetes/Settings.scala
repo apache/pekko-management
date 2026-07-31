@@ -15,10 +15,12 @@ package org.apache.pekko.discovery.kubernetes
 
 import java.util.Optional
 
+import scala.concurrent.duration._
+import scala.jdk.DurationConverters._
+import scala.jdk.OptionConverters._
+
 import org.apache.pekko.actor._
 import com.typesafe.config.Config
-
-import scala.jdk.OptionConverters._
 
 final class Settings(kubernetesApi: Config) extends Extension {
 
@@ -74,9 +76,21 @@ final class Settings(kubernetesApi: Config) extends Extension {
 
   val httpRequestAcceptEncoding: String = kubernetesApi.getString("http-request-accept-encoding")
 
+  /** The API poll mode: "list" for repeated GET requests (default), "watch" for Kubernetes Watch API streaming. */
+  val apiPollMode: String = kubernetesApi.getString("api-poll-mode")
+
+  /** Delay before reconnecting the watch stream after a normal stream completion. */
+  val watchReconnectDelay: FiniteDuration =
+    kubernetesApi.getDuration("watch-reconnect-delay").toScala
+
+  /** Delay before reconnecting the watch stream after an error. */
+  val watchOnErrorReconnectDelay: FiniteDuration =
+    kubernetesApi.getDuration("watch-on-error-reconnect-delay").toScala
+
   override def toString =
     s"Settings($apiCaPath, $apiTokenPath, $apiServiceHostEnvName, $apiServicePortEnvName, " +
-    s"$podNamespacePath, $podNamespace, $podDomain, httpRequestAcceptEncoding=$httpRequestAcceptEncoding)"
+    s"$podNamespacePath, $podNamespace, $podDomain, httpRequestAcceptEncoding=$httpRequestAcceptEncoding, " +
+    s"apiPollMode=$apiPollMode)"
 }
 
 object Settings extends ExtensionId[Settings] with ExtensionIdProvider {
