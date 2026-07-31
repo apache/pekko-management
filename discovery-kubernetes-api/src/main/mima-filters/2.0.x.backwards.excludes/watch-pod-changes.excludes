@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Issues caused by switch to org.kiwiprojects consul-client
+# Support watching for pod change events
 ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.discovery.kubernetes.PodList#Metadata.copy")
 ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.discovery.kubernetes.PodList#Metadata.this")
 ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.discovery.kubernetes.PodList#Metadata.apply")
