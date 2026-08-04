@@ -32,24 +32,53 @@ final class ConsulSettings(system: ExtendedActorSystem) extends Extension {
   val applicationPekkoManagementPortTagPrefix: String =
     consulConfig.getString("application-pekko-management-port-tag-prefix")
 
+  /**
+   * Connection timeout for the Consul HTTP client.
+   * @since 2.0.0
+   */
   val connectTimeout: FiniteDuration =
     consulConfig.getDuration("connect-timeout").toScala
 
+  /**
+   * Read timeout for the Consul HTTP client.
+   * @since 2.0.0
+   */
   val readTimeout: FiniteDuration =
     consulConfig.getDuration("read-timeout").toScala
 
+  /**
+   * Write timeout for the Consul HTTP client.
+   * @since 2.0.0
+   */
   val writeTimeout: FiniteDuration =
     consulConfig.getDuration("write-timeout").toScala
 
+  /**
+   * Maximum number of concurrent requests when looking up multiple service IDs.
+   * @since 2.0.0
+   */
   val parallelism: Int = consulConfig.getInt("lookup-parallelism")
 
+  /**
+   * ACL token for Consul API authentication. Empty means no authentication.
+   * @since 2.0.0
+   */
   val consulToken: Option[String] = consulConfig.getString("consul-token") match {
     case ""  => None
     case tok => Some(tok)
   }
 
+  /**
+   * Whether to use HTTPS when connecting to Consul.
+   * @since 2.0.0
+   */
   val tlsEnabled: Boolean = consulConfig.getBoolean("tls-enabled")
 
+  /**
+   * Path to a PEM-encoded CA certificate file for TLS verification.
+   * Only used when tls-enabled = true. If empty, the default JVM trust store is used.
+   * @since 2.0.0
+   */
   val caPath: Option[String] = consulConfig.getString("ca-path") match {
     case ""   => None
     case path => Some(path)

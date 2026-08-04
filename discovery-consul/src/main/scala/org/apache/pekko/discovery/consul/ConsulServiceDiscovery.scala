@@ -20,6 +20,7 @@ import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.consul.ConsulServiceDiscovery._
 import pekko.discovery.{ Lookup, ServiceDiscovery }
+import pekko.dispatch.Dispatchers.DefaultBlockingDispatcherId
 import org.kiwiproject.consul.Consul
 import org.kiwiproject.consul.async.ConsulResponseCallback
 import org.kiwiproject.consul.model.ConsulResponse
