@@ -48,18 +48,14 @@ import scala.concurrent.duration._
    * accept blocking on this initialization. If no value is received, the future will fail with
    * a `TimeoutException` and ClusterBootstrap will log an explanatory error to the user.
    *
-   * The result is cached after the first successful resolution to avoid repeated blocking.
+   * The result is cached after the first successful resolution. If the resolution fails,
+   * the next access will retry.
    */
-  @volatile private var cachedSelfContactPoint: Option[(String, Int)] = None
-
-  private[bootstrap] def selfContactPoint: (String, Int) = cachedSelfContactPoint.getOrElse {
-    val result = Await.result(
+  private[bootstrap] lazy val selfContactPoint: (String, Int) =
+    Await.result(
       ClusterBootstrap(system).selfContactPoint
         .map(uri => (uri.authority.host.toString, uri.authority.port))(system.dispatcher),
       15.seconds)
-    cachedSelfContactPoint = Some(result)
-    result
-  }
 
   /**
    * Determines whether it has the need and ability to join self and create a new cluster.
