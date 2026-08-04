@@ -30,8 +30,7 @@ import pekko.stream.scaladsl.{ FileIO, Keep, Sink }
 import pekko.util.ByteString
 
 import java.nio.file.{ Files, Paths }
-import java.security.{ KeyStore, SecureRandom }
-import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
+import javax.net.ssl.SSLContext
 import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.control.NonFatal
@@ -51,20 +50,8 @@ import scala.util.control.NonFatal
   protected val log: LoggingAdapter = Logging(system, getClass: Class[?])
   private val http: HttpExt = Http()(system)
 
-  private lazy val sslContext: SSLContext = {
-    val certificates = PemManagersProvider.loadCertificates(settings.apiCaPath)
-    val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
-    val keyStore = KeyStore.getInstance("PKCS12")
-    keyStore.load(null)
-    factory.init(keyStore, Array.empty)
-    val km: Array[KeyManager] = factory.getKeyManagers
-    val tm: Array[TrustManager] =
-      PemManagersProvider.buildTrustManagers(certificates)
-    val random: SecureRandom = new SecureRandom
-    val sslContext = SSLContext.getInstance(settings.tlsVersion)
-    sslContext.init(km, tm, random)
-    sslContext
-  }
+  private lazy val sslContext: SSLContext =
+    PemManagersProvider.createSslContext(settings.apiCaPath, settings.tlsVersion)
 
   private lazy val clientSslContext: HttpsConnectionContext = ConnectionContext.httpsClient(sslContext)
 

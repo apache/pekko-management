@@ -47,12 +47,6 @@ import pekko.util.ByteString
 
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.security.KeyStore
-import java.security.SecureRandom
-import javax.net.ssl.KeyManager
-import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
 
 /**
  * INTERNAL API
@@ -473,17 +467,7 @@ PUTs must contain resourceVersions. Response:
    */
   private def clientHttpsConnectionContext(k8sSettings: KubernetesSettings): Option[HttpsConnectionContext] = {
     if (k8sSettings.secure) {
-      val certificates = PemManagersProvider.loadCertificates(k8sSettings.apiCaPath)
-      val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
-      val keyStore = KeyStore.getInstance("PKCS12")
-      keyStore.load(null)
-      factory.init(keyStore, Array.empty)
-      val km: Array[KeyManager] = factory.getKeyManagers
-      val tm: Array[TrustManager] =
-        PemManagersProvider.buildTrustManagers(certificates)
-      val random: SecureRandom = new SecureRandom
-      val sslContext = SSLContext.getInstance("TLSv1.2")
-      sslContext.init(km, tm, random)
+      val sslContext = PemManagersProvider.createSslContext(k8sSettings.apiCaPath, "TLSv1.2")
       Some(ConnectionContext.httpsClient(sslContext))
     } else
       None
