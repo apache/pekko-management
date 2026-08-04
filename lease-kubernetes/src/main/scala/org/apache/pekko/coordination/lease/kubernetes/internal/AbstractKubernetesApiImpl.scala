@@ -24,7 +24,7 @@ import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.model.headers.{ Authorization, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.http.scaladsl.{ ConnectionContext, Http, HttpExt, HttpsConnectionContext }
-import pekko.pattern.{ after, RetrySupport }
+import pekko.pattern.RetrySupport
 import pekko.pki.kubernetes.PemManagersProvider
 import pekko.stream.scaladsl.{ FileIO, Keep, Sink }
 import pekko.util.ByteString
@@ -32,7 +32,7 @@ import pekko.util.ByteString
 import java.nio.file.{ Files, Paths }
 import javax.net.ssl.SSLContext
 import scala.collection.immutable
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.util.control.NonFatal
 
 /**
@@ -177,13 +177,25 @@ import scala.util.control.NonFatal
       settings.tokenRetrySettings.randomFactor
     )
 
-    // make sure we always consume response body (in case of timeout)
-    val strictResponse = response.flatMap(_.toStrict(settings.bodyReadTimeout))
-
-    val timeout = after(settings.apiServerRequestTimeout, using = system.scheduler)(
-      Future.failed(new LeaseTimeoutException(s"$timeoutMsg. Is the API server up?")))
-
-    Future.firstCompletedOf(Seq(strictResponse, timeout))
+    // Use a Promise-based pattern instead of Future.firstCompletedOf so that when the
+    // timeout fires first, we properly discard the in-flight response entity to release
+    // the HTTP connection back to the pool.
+    val promise = Promise[HttpResponse]()
+    val timeoutCancellable = system.scheduler.scheduleOnce(settings.apiServerRequestTimeout) {
+      promise.tryFailure(new LeaseTimeoutException(s"$timeoutMsg. Is the API server up?"))
+    }
+    response.onComplete {
+      case scala.util.Success(resp) =>
+        timeoutCancellable.cancel()
+        if (!promise.trySuccess(resp)) {
+          // Timeout already fired — discard the response to release the connection
+          resp.discardEntityBytes()(pekko.stream.Materializer.matFromSystem(system))
+        }
+      case scala.util.Failure(ex) =>
+        timeoutCancellable.cancel()
+        promise.tryFailure(ex)
+    }(system.dispatcher)
+    promise.future.flatMap(_.toStrict(settings.bodyReadTimeout))
   }
 
   protected def readConfigVarFromFilesystem(path: String, name: String): Future[Option[String]] = {
