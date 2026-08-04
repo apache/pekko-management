@@ -55,7 +55,7 @@ import scala.concurrent.duration._
     Await.result(
       ClusterBootstrap(system).selfContactPoint
         .map(uri => (uri.authority.host.toString, uri.authority.port))(system.dispatcher),
-      15.seconds)
+      30.seconds)
 
   /**
    * Determines whether it has the need and ability to join self and create a new cluster.
