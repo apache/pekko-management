@@ -17,7 +17,7 @@ import java.net.InetAddress
 import java.util.Optional
 
 import scala.collection.immutable
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.jdk.CollectionConverters._
 import scala.jdk.DurationConverters._
 import scala.jdk.OptionConverters._
@@ -81,8 +81,13 @@ final class PekkoManagementSettings(val config: Config) {
 
     val RouteProvidersReadOnly: Boolean = cc.getBoolean("route-providers-read-only")
 
-    val GracefulTerminationTimeout: FiniteDuration =
-      cc.getDuration("graceful-termination-timeout").toScala
+    val GracefulTerminationTimeout: FiniteDuration = {
+      val d = cc.getDuration("graceful-termination-timeout").toScala
+      require(
+        d > Duration.Zero,
+        s"pekko.management.http.graceful-termination-timeout must be positive (was $d)")
+      d
+    }
   }
 
   /** Java API */
