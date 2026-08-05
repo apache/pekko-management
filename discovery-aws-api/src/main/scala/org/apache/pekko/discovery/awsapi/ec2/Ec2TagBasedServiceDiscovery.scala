@@ -100,7 +100,10 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
       }
   }
 
+  @volatile private var ec2ClientUsed = false
+
   private lazy val ec2Client: AmazonEC2 = {
+    ec2ClientUsed = true
     val clientConfiguration = clientConfigFqcn match {
       case Some(fqcn) =>
         getCustomClientConfigurationInstance(fqcn) match {
@@ -131,10 +134,14 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
   }
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ec2-client-close") { () =>
-    Future {
-      ec2Client.shutdown()
-      pekko.Done
-    }(ec)
+    if (ec2ClientUsed) {
+      Future {
+        ec2Client.shutdown()
+        pekko.Done
+      }(ec)
+    } else {
+      Future.successful(pekko.Done)
+    }
   }
 
   @tailrec

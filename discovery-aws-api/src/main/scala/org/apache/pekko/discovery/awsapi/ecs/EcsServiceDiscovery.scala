@@ -48,7 +48,10 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs")
   private val cluster = config.getString("cluster")
 
+  @volatile private var ecsClientUsed = false
+
   private lazy val ecsClient = {
+    ecsClientUsed = true
     // we have our own retry/backoff mechanism, so we don't need EC2Client's in addition
     val clientConfiguration = new ClientConfiguration()
     clientConfiguration.setRetryPolicy(PredefinedRetryPolicies.NO_RETRY_POLICY)
@@ -67,10 +70,14 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-client-close") { () =>
-    Future {
-      ecsClient.shutdown()
-      pekko.Done
-    }(ec)
+    if (ecsClientUsed) {
+      Future {
+        ecsClient.shutdown()
+        pekko.Done
+      }(ec)
+    } else {
+      Future.successful(pekko.Done)
+    }
   }
 
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
