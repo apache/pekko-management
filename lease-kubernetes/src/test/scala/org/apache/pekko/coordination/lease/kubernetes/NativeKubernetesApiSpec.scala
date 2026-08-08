@@ -199,7 +199,7 @@ class NativeKubernetesApiSpec
       response shouldEqual Done
     }
 
-    "timeout on read lease" in {
+    "timeout on readOrCreateLeaseResource" in {
       val owner = "client1"
       val lease = "lease-1"
       val version = "2"
