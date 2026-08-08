@@ -92,7 +92,7 @@ class LeaseActorSpec
       senderProbe.expectMsg(Failure(k8sApiFailure))
     }
 
-    "allow acquire after initial failure on rad" in new Test {
+    "allow acquire after initial failure on read" in new Test {
       k8sApiFailureDuringRead()
       acquireLease()
     }
@@ -103,7 +103,7 @@ class LeaseActorSpec
       senderProbe.expectMsg(LeaseAcquired)
     }
 
-    "fail if grating takes longer than the heartbeat timeout" in new Test {
+    "fail if granting takes longer than the heartbeat timeout" in new Test {
       underTest ! LeaseActor.Acquire()
       leaseProbe.expectMsg(leaseName)
       leaseProbe.reply(LeaseResource(None, currentVersion, System.currentTimeMillis()))
@@ -200,7 +200,7 @@ class LeaseActorSpec
       }
     }
 
-    "released lock should be acquireable" in new Test {
+    "released lock should be acquirable" in new Test {
       acquireLease()
       releaseLease()
       // Version from the previous lock so can skip the read of the resource unless the CAS fails
@@ -279,14 +279,14 @@ class LeaseActorSpec
       }
     }
 
-    "lock should be acquireable after heart beat conflict" in new Test {
+    "lock should be acquirable after heart beat conflict" in new Test {
       acquireLease()
       expectHeartBeat()
       heartBeatConflict()
       acquireLease()
     }
 
-    "lock should be acquireable after heart beat fail" in new Test {
+    "lock should be acquirable after heart beat fail" in new Test {
       acquireLease()
       expectHeartBeat()
       heartBeatFailure()
