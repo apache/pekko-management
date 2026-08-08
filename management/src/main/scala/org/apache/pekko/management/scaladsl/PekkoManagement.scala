@@ -238,7 +238,9 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
     if (binding == null) {
       Future.successful(Done)
     } else if (bindingFuture.compareAndSet(binding, null)) {
-      binding._2.flatMap(_.unbind()).map((_: Any) => Done)
+      binding._2
+        .flatMap(_.terminate(settings.Http.GracefulTerminationTimeout))
+        .map((_: Any) => Done)
     } else stop() // retry, CAS was not successful, someone else completed the stop()
   }
 
