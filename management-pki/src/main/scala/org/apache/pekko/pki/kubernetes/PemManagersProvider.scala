@@ -16,7 +16,7 @@ package org.apache.pekko.pki.kubernetes
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.security.{ KeyStore, PrivateKey }
+import java.security.{ KeyStore, PrivateKey, SecureRandom }
 import java.security.cert.{ Certificate, CertificateFactory }
 
 import scala.concurrent.blocking
@@ -27,7 +27,7 @@ import org.apache.pekko
 import pekko.annotation.InternalApi
 import pekko.pki.pem.{ DERPrivateKeyLoader, PEMDecoder }
 
-import javax.net.ssl.{ TrustManager, TrustManagerFactory }
+import javax.net.ssl.{ KeyManagerFactory, SSLContext, TrustManager, TrustManagerFactory }
 
 /**
  * INTERNAL API
@@ -66,6 +66,24 @@ private[pekko] object PemManagersProvider {
    */
   @InternalApi def loadCertificates(filename: String): Iterable[Certificate] = blocking {
     certFactory.generateCertificates(Files.newInputStream(new File(filename).toPath)).asScala
+  }
+
+  /**
+   * INTERNAL API
+   *
+   * Creates an SSLContext that trusts the given CA certificate file, with no client key material.
+   */
+  @InternalApi def createSslContext(caCertPath: String, tlsVersion: String): SSLContext = {
+    val certificates = loadCertificates(caCertPath)
+    val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
+    val ks = KeyStore.getInstance("PKCS12")
+    ks.load(null)
+    factory.init(ks, Array.empty)
+    val km = factory.getKeyManagers
+    val tm = buildTrustManagers(certificates)
+    val sslContext = SSLContext.getInstance(tlsVersion)
+    sslContext.init(km, tm, new SecureRandom)
+    sslContext
   }
 
 }

@@ -71,7 +71,7 @@ class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec",
 
   "A lease under contention" should {
 
-    "only allow one client to get acquire lease" in {
+    "only allow one client to acquire lease" in {
       val underTest = LeaseProvider(system)
       val nrClients = 30
       implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(nrClients)) // too many = HTTP request queue of pool fills up
