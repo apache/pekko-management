@@ -28,7 +28,7 @@ class HealthCheckRoutesSpec extends AnyWordSpec with Matchers with ScalatestRout
 
   private val eas = system.asInstanceOf[ExtendedActorSystem]
 
-  private def testRoute(
+  private def testRouteWithProviderSettings(
       startupResultValue: Future[Either[String, Unit]] = Future.successful(Right(())),
       readyResultValue: Future[Either[String, Unit]] = Future.successful(Right(())),
       aliveResultValue: Future[Either[String, Unit]] = Future.successful(Right(()))): Route = {
@@ -44,12 +44,33 @@ class HealthCheckRoutesSpec extends AnyWordSpec with Matchers with ScalatestRout
     }.routes(ManagementRouteProviderSettings(Uri("http://whocares"), readOnly = false))
   }
 
+  private def testRoute(
+      startupResultValue: Future[Either[String, Unit]] = Future.successful(Right(())),
+      readyResultValue: Future[Either[String, Unit]] = Future.successful(Right(())),
+      aliveResultValue: Future[Either[String, Unit]] = Future.successful(Right(()))): Route = {
+    new HealthCheckRoutes(eas) {
+      override protected val healthChecks: HealthChecks = new HealthChecks {
+        override def startupResult(): Future[Either[String, Unit]] = startupResultValue
+        override def startup(): Future[Boolean] = startupResultValue.map(_.isRight)
+        override def readyResult(): Future[Either[String, Unit]] = readyResultValue
+        override def ready(): Future[Boolean] = readyResultValue.map(_.isRight)
+        override def aliveResult(): Future[Either[String, Unit]] = aliveResultValue
+        override def alive(): Future[Boolean] = aliveResultValue.map(_.isRight)
+      }
+    }.routes()
+  }
+
   tests("/startup", result => testRoute(startupResultValue = result))
   tests("/ready", result => testRoute(readyResultValue = result))
   tests("/alive", result => testRoute(aliveResultValue = result))
 
-  def tests(endpoint: String, route: Future[Either[String, Unit]] => Route) = {
-    s"Health check $endpoint endpoint" should {
+  // testRoutes with provider settings
+  tests("/startup", result => testRouteWithProviderSettings(startupResultValue = result), withSettings = true)
+  tests("/ready", result => testRouteWithProviderSettings(readyResultValue = result), withSettings = true)
+  tests("/alive", result => testRouteWithProviderSettings(aliveResultValue = result), withSettings = true)
+
+  def tests(endpoint: String, route: Future[Either[String, Unit]] => Route, withSettings: Boolean = false) = {
+    s"Health check $endpoint endpoint - withSettingsProvided: $withSettings" should {
       "return 200 for Right" in {
         Get(endpoint) ~> route(Future.successful(Right(()))) ~> check {
           status shouldEqual StatusCodes.OK
