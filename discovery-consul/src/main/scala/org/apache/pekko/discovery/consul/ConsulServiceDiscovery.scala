@@ -15,21 +15,25 @@ package org.apache.pekko.discovery.consul
 
 import com.google.common.net.HostAndPort
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.consul.ConsulServiceDiscovery._
 import pekko.discovery.{ Lookup, ServiceDiscovery }
-import pekko.pattern.after
+import pekko.dispatch.Dispatchers.DefaultBlockingDispatcherId
 import org.kiwiproject.consul.Consul
 import org.kiwiproject.consul.async.ConsulResponseCallback
 import org.kiwiproject.consul.model.ConsulResponse
 import org.kiwiproject.consul.model.catalog.CatalogService
 import org.kiwiproject.consul.option.Options
 
+import java.io.FileInputStream
 import java.net.InetAddress
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
 import java.util
 import java.util.concurrent.TimeoutException
+import javax.net.ssl.{ SSLContext, TrustManagerFactory }
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
@@ -40,29 +44,68 @@ import scala.util.Try
 class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private val settings = ConsulSettings.get(system)
-  private val consul =
-    Consul.builder().withHostAndPort(HostAndPort.fromParts(settings.consulHost, settings.consulPort)).build()
+  private val consul = {
+    val builder = Consul
+      .builder()
+      .withHostAndPort(HostAndPort.fromParts(settings.consulHost, settings.consulPort))
+      .withConnectTimeoutMillis(settings.connectTimeout.toMillis)
+      .withReadTimeoutMillis(settings.readTimeout.toMillis)
+      .withWriteTimeoutMillis(settings.writeTimeout.toMillis)
+    settings.consulToken.foreach(builder.withTokenAuth)
+    if (settings.tlsEnabled) {
+      builder.withHttps(true)
+      settings.caPath.foreach { caPath =>
+        val cf = CertificateFactory.getInstance("X.509")
+        val caCert = cf.generateCertificate(new FileInputStream(caPath))
+        val ks = KeyStore.getInstance(KeyStore.getDefaultType)
+        ks.load(null)
+        ks.setCertificateEntry("ca", caCert)
+        val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
+        tmf.init(ks)
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, tmf.getTrustManagers, null)
+        builder.withSslContext(sslContext)
+      }
+    }
+    builder.build()
+  }
+  private val blockingEc: ExecutionContext = system.dispatchers.lookup(DefaultBlockingDispatcherId)
+
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "consul-close") { () =>
+    Future {
+      consul.destroy()
+      pekko.Done
+    }(system.dispatcher)
+  }
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     implicit val ec: ExecutionContext = system.dispatcher
-    Future.firstCompletedOf(
-      Seq(
-        after(resolveTimeout, using = system.scheduler)(
-          Future.failed(new TimeoutException(s"Lookup for [$lookup] timed-out, within [$resolveTimeout]!"))),
-        lookupInConsul(lookup.serviceName)))
+    // Use a Promise-based pattern instead of Future.firstCompletedOf to avoid leaking
+    // the underlying Consul HTTP connections when the timeout fires first.
+    val promise = Promise[Resolved]()
+    val timeoutCancellable = system.scheduler.scheduleOnce(resolveTimeout) {
+      promise.tryFailure(new TimeoutException(s"Lookup for [$lookup] timed-out, within [$resolveTimeout]!"))
+    }
+    lookupInConsul(lookup.serviceName).onComplete { result =>
+      timeoutCancellable.cancel()
+      promise.tryComplete(result)
+    }
+    promise.future
   }
 
   private def lookupInConsul(name: String)(implicit executionContext: ExecutionContext): Future[Resolved] = {
     val consulResult = for {
       servicesWithTags <- getServicesWithTags
+      nameTag = settings.applicationNameTagPrefix + name
       serviceIds = servicesWithTags.getResponse
         .entrySet()
         .asScala
-        .filter(e => e.getValue.contains(settings.applicationNameTagPrefix + name))
+        .filter(e => e.getValue.contains(nameTag))
         .map(_.getKey)
-      catalogServices <- Future.sequence(serviceIds.map(id => getService(id).map(_.getResponse.asScala.toList)))
-      resolvedTargets = catalogServices.flatten.toSeq.map(catalogService =>
-        extractResolvedTargetFromCatalogService(catalogService))
+      catalogServices <- boundedTraverse(serviceIds.toSeq)(id => getService(id).map(_.getResponse.asScala.toList))
+      resolvedTargets <- Future.traverse(catalogServices.flatten.toSeq) { catalogService =>
+        Future(extractResolvedTargetFromCatalogService(catalogService))(blockingEc)
+      }
     } yield resolvedTargets
     consulResult.map(targets => Resolved(name, scala.collection.immutable.Seq(targets: _*)))
   }
@@ -79,6 +122,18 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
       host = address,
       port = Some(port.getOrElse(catalogService.getServicePort)),
       address = Try(InetAddress.getByName(address)).toOption)
+  }
+
+  private def boundedTraverse[A, B](items: Seq[A])(f: A => Future[B])(
+      implicit ec: ExecutionContext): Future[Seq[B]] = {
+    def loop(remaining: Seq[A], acc: Seq[B]): Future[Seq[B]] = {
+      if (remaining.isEmpty) Future.successful(acc.reverse)
+      else {
+        val (batch, rest) = remaining.splitAt(settings.parallelism)
+        Future.traverse(batch)(f).flatMap(results => loop(rest, results.reverse ++ acc))
+      }
+    }
+    loop(items, Seq.empty)
   }
 
   private def getServicesWithTags: Future[ConsulResponse[util.Map[String, util.List[String]]]] = {

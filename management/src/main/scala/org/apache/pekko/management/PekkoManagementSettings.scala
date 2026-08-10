@@ -17,7 +17,9 @@ import java.net.InetAddress
 import java.util.Optional
 
 import scala.collection.immutable
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.jdk.CollectionConverters._
+import scala.jdk.DurationConverters._
 import scala.jdk.OptionConverters._
 
 import org.apache.pekko
@@ -31,7 +33,7 @@ final class PekkoManagementSettings(val config: Config) {
   object Http {
     private val cc = managementConfig.getConfig("http")
 
-    val Hostname: String = {
+    lazy val Hostname: String = {
       val hostname = cc.getString("hostname")
       if (hostname == "<hostname>") InetAddress.getLocalHost.getHostAddress
       else if (hostname.trim() == "") InetAddress.getLocalHost.getHostAddress
@@ -78,6 +80,14 @@ final class PekkoManagementSettings(val config: Config) {
     }
 
     val RouteProvidersReadOnly: Boolean = cc.getBoolean("route-providers-read-only")
+
+    val GracefulTerminationTimeout: FiniteDuration = {
+      val d = cc.getDuration("graceful-termination-timeout").toScala
+      require(
+        d > Duration.Zero,
+        s"pekko.management.http.graceful-termination-timeout must be positive (was $d)")
+      d
+    }
   }
 
   /** Java API */

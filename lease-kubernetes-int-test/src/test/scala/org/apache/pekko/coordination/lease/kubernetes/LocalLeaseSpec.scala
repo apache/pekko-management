@@ -11,7 +11,7 @@
  * Copyright (C) 2017-2021 Lightbend Inc. <https://www.lightbend.com>
  */
 
-package org.apache.pekko.lease.kubernetes
+package org.apache.pekko.coordination.lease.kubernetes
 
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko

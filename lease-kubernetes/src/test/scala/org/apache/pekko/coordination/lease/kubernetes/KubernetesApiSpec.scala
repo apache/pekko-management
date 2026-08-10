@@ -218,7 +218,7 @@ class KubernetesApiSpec
       response shouldEqual Done
     }
 
-    "timeout on readLease" in {
+    "timeout on readOrCreateLeaseResource" in {
       val owner = "client1"
       val lease = "lease-1"
       val version = "2"
@@ -290,7 +290,7 @@ class KubernetesApiSpec
       s"Timed out updating lease [$lease] to owner [$owner]. It is not known if the update happened. Is the API server up?"
     }
 
-    "timeout on remove lease " in {
+    "timeout on remove lease" in {
       val lease = "lease-1"
       stubFor(
         delete(urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/lease/leases/$lease")).willReturn(

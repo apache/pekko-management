@@ -15,16 +15,16 @@ package org.apache.pekko.discovery.kubernetes
 
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.TimeoutException
 import java.nio.file.{ Files, Paths }
-import java.security.{ KeyStore, SecureRandom }
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
-import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
 
 import scala.collection.immutable
 import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 import scala.util.control.{ NoStackTrace, NonFatal }
@@ -175,7 +175,24 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         )
       }
 
-      response <- http.singleRequest(request, setup.clientHttpsConnectionContext).map(decodeResponse)
+      response <- {
+        val rawResponse = http.singleRequest(request, setup.clientHttpsConnectionContext)
+        val promise = Promise[HttpResponse]()
+        val timeoutCancellable = system.scheduler.scheduleOnce(resolveTimeout) {
+          promise.tryFailure(new TimeoutException(s"Kubernetes API request timed out after $resolveTimeout"))
+        }
+        rawResponse.onComplete {
+          case scala.util.Success(resp) =>
+            timeoutCancellable.cancel()
+            if (!promise.trySuccess(resp)) {
+              resp.discardEntityBytes()
+            }
+          case scala.util.Failure(ex) =>
+            timeoutCancellable.cancel()
+            promise.tryFailure(ex)
+        }(system.dispatcher)
+        promise.future.map(decodeResponse)
+      }
 
       entity <- response.entity.toStrict(resolveTimeout)
 
@@ -252,18 +269,7 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
    * This uses blocking IO, and so should only be used at startup from blocking dispatcher.
    */
   private def clientHttpsConnectionContext(): HttpsConnectionContext = {
-    val certificates = PemManagersProvider.loadCertificates(settings.apiCaPath)
-
-    val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
-    val keyStore = KeyStore.getInstance("PKCS12")
-    keyStore.load(null)
-    factory.init(keyStore, Array.empty)
-    val km: Array[KeyManager] = factory.getKeyManagers
-    val tm: Array[TrustManager] =
-      PemManagersProvider.buildTrustManagers(certificates)
-    val random: SecureRandom = new SecureRandom
-    val sslContext = SSLContext.getInstance(settings.tlsVersion)
-    sslContext.init(km, tm, random)
+    val sslContext = PemManagersProvider.createSslContext(settings.apiCaPath, settings.tlsVersion)
     ConnectionContext.httpsClient(sslContext)
   }
 
