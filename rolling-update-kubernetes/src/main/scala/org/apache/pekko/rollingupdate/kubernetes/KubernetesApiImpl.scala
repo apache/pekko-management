@@ -42,18 +42,12 @@ import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.model.headers.Authorization
 import pekko.http.scaladsl.model.headers.OAuth2BearerToken
 import pekko.http.scaladsl.unmarshalling.Unmarshal
-import pekko.pattern.after
+
 import pekko.pki.kubernetes.PemManagersProvider
 import pekko.util.ByteString
 
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.security.KeyStore
-import java.security.SecureRandom
-import javax.net.ssl.KeyManager
-import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
 
 /**
  * INTERNAL API
@@ -281,20 +275,25 @@ PUTs must contain resourceVersions. Response:
       }
     }
 
-    // make sure we always consume response body (in case of timeout)
-    val strictResponse = response.flatMap(_.toStrict(settings.bodyReadTimeout))
-
-    val result = Promise[HttpResponse]()
-    strictResponse.foreach(result.trySuccess)
-    strictResponse.failed.foreach(result.tryFailure)
-
-    after(settings.apiServiceRequestTimeout, using = system.scheduler)(Future.successful(())).foreach { _ =>
-      // timeout fired; discard the response entity if one arrives to avoid leaking the connection
-      response.foreach(_.discardEntityBytes())
-      result.tryFailure(new PodCostTimeoutException(s"$timeoutMsg. Is the API server up?"))
+    // Use a Promise-based pattern instead of Future.firstCompletedOf so that when the
+    // timeout fires first, we properly discard the in-flight response entity to release
+    // the HTTP connection back to the pool.
+    val promise = Promise[HttpResponse]()
+    val timeoutCancellable = system.scheduler.scheduleOnce(settings.apiServiceRequestTimeout) {
+      promise.tryFailure(new PodCostTimeoutException(s"$timeoutMsg. Is the API server up?"))
     }
-
-    result.future
+    response.onComplete {
+      case scala.util.Success(resp) =>
+        timeoutCancellable.cancel()
+        if (!promise.trySuccess(resp)) {
+          // Timeout already fired — discard the response to release the connection
+          resp.discardEntityBytes()(pekko.stream.Materializer.matFromSystem(system))
+        }
+      case scala.util.Failure(ex) =>
+        timeoutCancellable.cancel()
+        promise.tryFailure(ex)
+    }(system.dispatcher)
+    promise.future.flatMap(_.toStrict(settings.bodyReadTimeout))
   }
 
   private def toPodCostResource(cr: PodCostCustomResource) = {
@@ -319,8 +318,7 @@ PUTs must contain resourceVersions. Response:
           Unmarshal(responseEntity).to[PodCostCustomResource].map(cr => Some(toPodCostResource(cr)))
         case StatusCodes.Conflict =>
           log.debug("creation of PodCost resource failed as already exists. Will attempt to read again")
-          entity.discardBytes()
-          // someone else has created it
+          // response entity already consumed by toStrict above; someone else has created it
           Future.successful(None)
         case StatusCodes.Unauthorized =>
           handleUnauthorized(response)
@@ -480,17 +478,7 @@ PUTs must contain resourceVersions. Response:
    */
   private def clientHttpsConnectionContext(k8sSettings: KubernetesSettings): Option[HttpsConnectionContext] = {
     if (k8sSettings.secure) {
-      val certificates = PemManagersProvider.loadCertificates(k8sSettings.apiCaPath)
-      val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
-      val keyStore = KeyStore.getInstance("PKCS12")
-      keyStore.load(null)
-      factory.init(keyStore, Array.empty)
-      val km: Array[KeyManager] = factory.getKeyManagers
-      val tm: Array[TrustManager] =
-        PemManagersProvider.buildTrustManagers(certificates)
-      val random: SecureRandom = new SecureRandom
-      val sslContext = SSLContext.getInstance("TLSv1.2")
-      sslContext.init(km, tm, random)
+      val sslContext = PemManagersProvider.createSslContext(k8sSettings.apiCaPath, "TLSv1.2")
       Some(ConnectionContext.httpsClient(sslContext))
     } else
       None

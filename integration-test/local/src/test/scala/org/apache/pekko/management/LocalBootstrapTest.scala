@@ -88,8 +88,10 @@ class LocalBootstrapTest extends AnyWordSpec with ScalaFutures with Matchers wit
        """.stripMargin).withFallback(config))
 
   override def afterAll(): Unit = {
-    // TODO: shutdown Pekko HTTP connection pools. Requires Pekko HTTP 10.2
     systems.reverse.foreach { sys =>
+      // Shutdown connection pools if the Http extension was used during the test.
+      // Http() creates the extension if absent — acceptable in test cleanup.
+      Http()(sys).shutdownAllConnectionPools()
       TestKit.shutdownActorSystem(sys, 3.seconds)
     }
     super.afterAll()

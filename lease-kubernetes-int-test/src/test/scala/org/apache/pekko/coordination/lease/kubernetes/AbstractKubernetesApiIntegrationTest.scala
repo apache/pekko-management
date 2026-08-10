@@ -114,7 +114,7 @@ abstract class AbstractKubernetesApiIntegrationTest extends TestKit(ActorSystem(
       success.time shouldEqual timeUpdate
     }
 
-    "not be able to update a lease if resource version is correct" in {
+    "not be able to update a lease if resource version is incorrect" in {
       val timeUpdate = System.currentTimeMillis()
       val leaseRecord = underTest.updateLeaseResource(leaseName, client1, "10", time = timeUpdate).futureValue
       val failure: LeaseResource = leaseRecord match {

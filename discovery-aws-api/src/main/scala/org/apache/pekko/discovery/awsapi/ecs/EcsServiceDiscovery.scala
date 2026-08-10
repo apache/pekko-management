@@ -17,7 +17,7 @@ import java.net.{ InetAddress, NetworkInterface }
 import java.util.concurrent.TimeoutException
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.EcsServiceDiscovery.resolveTasks
@@ -48,7 +48,10 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs")
   private val cluster = config.getString("cluster")
 
+  @volatile private var ecsClientUsed = false
+
   private lazy val ecsClient = {
+    ecsClientUsed = true
     // we have our own retry/backoff mechanism, so we don't need EC2Client's in addition
     val clientConfiguration = new ClientConfiguration()
     clientConfiguration.setRetryPolicy(PredefinedRetryPolicies.NO_RETRY_POLICY)
@@ -63,7 +66,19 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     builder.build()
   }
 
-  private implicit val ec: ExecutionContext = system.dispatcher
+  private implicit val ec: ExecutionContext =
+    system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
+
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-client-close") { () =>
+    if (ecsClientUsed) {
+      Future {
+        ecsClient.shutdown()
+        pekko.Done
+      }(ec)
+    } else {
+      Future.successful(pekko.Done)
+    }
+  }
 
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     Future.firstCompletedOf(
@@ -144,7 +159,7 @@ object EcsServiceDiscovery {
   private def describeTasks(ecsClient: AmazonECS, cluster: String, taskArns: Seq[String]): Seq[Task] =
     for {
       // Each DescribeTasksRequest can contain at most 100 task ARNs.
-      group <- taskArns.grouped(100).toList
+      group <- taskArns.grouped(100).toSeq
       tasks = ecsClient.describeTasks(
         new DescribeTasksRequest().withCluster(cluster).withTasks(group.asJava))
       task <- tasks.getTasks.asScala

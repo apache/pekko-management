@@ -203,19 +203,16 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
   }
 
   private def check(checks: immutable.Seq[HealthCheck]): Future[Either[String, Unit]] = {
-    val timeout = pekko.pattern.after(settings.checkTimeout, system.scheduler)(
-      Future.failed(new RuntimeException) // will be enriched with which check timed out below
-    )
-
     val spawnedChecks: Seq[Future[Either[String, Unit]]] = checks.map { check =>
       val checkName = check.getClass.getName
+      // Create a per-check timeout so each check gets its own timer,
+      // avoiding the shared timeout that leaks scheduler resources.
+      val timeout = pekko.pattern.after(settings.checkTimeout, system.scheduler)(
+        Future.failed(CheckTimeoutException(s"Check [$checkName] timed out after ${settings.checkTimeout}"))
+      )
       Future.firstCompletedOf(
         Seq(
-          timeout.recoverWith {
-            case _: Throwable =>
-              Future.failed(
-                CheckTimeoutException(s"Check [$checkName] timed out after ${settings.checkTimeout}"))
-          },
+          timeout,
           runCheck(check)
             .map {
               case true  => Right(())
