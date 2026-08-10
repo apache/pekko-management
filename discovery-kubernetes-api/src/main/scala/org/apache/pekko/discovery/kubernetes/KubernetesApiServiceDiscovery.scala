@@ -15,12 +15,14 @@ package org.apache.pekko.discovery.kubernetes
 
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.TimeoutException
 import java.nio.file.{ Files, Paths }
 
 import scala.collection.immutable
 import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.concurrent.Promise
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 import scala.util.control.{ NoStackTrace, NonFatal }
@@ -154,7 +156,24 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         )
       }
 
-      response <- http.singleRequest(request, setup.clientHttpsConnectionContext).map(decodeResponse)
+      response <- {
+        val rawResponse = http.singleRequest(request, setup.clientHttpsConnectionContext)
+        val promise = Promise[HttpResponse]()
+        val timeoutCancellable = system.scheduler.scheduleOnce(resolveTimeout) {
+          promise.tryFailure(new TimeoutException(s"Kubernetes API request timed out after $resolveTimeout"))
+        }
+        rawResponse.onComplete {
+          case scala.util.Success(resp) =>
+            timeoutCancellable.cancel()
+            if (!promise.trySuccess(resp)) {
+              resp.discardEntityBytes()
+            }
+          case scala.util.Failure(ex) =>
+            timeoutCancellable.cancel()
+            promise.tryFailure(ex)
+        }(system.dispatcher)
+        promise.future.map(decodeResponse)
+      }
 
       entity <- response.entity.toStrict(resolveTimeout)
 
