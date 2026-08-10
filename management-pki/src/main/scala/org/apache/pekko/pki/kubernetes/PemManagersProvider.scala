@@ -68,21 +68,49 @@ private[pekko] object PemManagersProvider {
     certFactory.generateCertificates(Files.newInputStream(new File(filename).toPath)).asScala
   }
 
+  private val TlsVersionOrder = Map("TLSv1" -> 1, "TLSv1.1" -> 2, "TLSv1.2" -> 3, "TLSv1.3" -> 4)
+
   /**
    * INTERNAL API
    *
    * Creates an SSLContext that trusts the given CA certificate file, with no client key material.
+   * Only TLS protocol versions at or above the given `minTlsVersion` are enabled.
    */
-  @InternalApi def createSslContext(caCertPath: String, tlsVersion: String): SSLContext = {
-    val certificates = loadCertificates(caCertPath)
+  @InternalApi def createSslContext(caCertPath: String, minTlsVersion: String): SSLContext = {
+    createSslContext(Some(caCertPath), minTlsVersion)
+  }
+
+  /**
+   * INTERNAL API
+   *
+   * Creates an SSLContext with no client key material.
+   * If `caCertPath` is `Some(path)`, trusts the CA certificates in that file.
+   * If `caCertPath` is `None`, uses the default JVM trust store.
+   * Only TLS protocol versions at or above the given `minTlsVersion` are enabled.
+   */
+  @InternalApi def createSslContext(caCertPath: Option[String], minTlsVersion: String): SSLContext = {
+    val tm = caCertPath match {
+      case Some(path) => buildTrustManagers(loadCertificates(path))
+      case None       => null // use default JVM trust store
+    }
     val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
     val ks = KeyStore.getInstance("PKCS12")
     ks.load(null)
     factory.init(ks, Array.empty)
     val km = factory.getKeyManagers
-    val tm = buildTrustManagers(certificates)
-    val sslContext = SSLContext.getInstance(tlsVersion)
+    val sslContext = SSLContext.getInstance("TLS")
     sslContext.init(km, tm, new SecureRandom)
+    val minOrder = TlsVersionOrder.getOrElse(minTlsVersion,
+      throw new IllegalArgumentException(s"Unknown TLS version: $minTlsVersion. " +
+        s"Supported values: ${TlsVersionOrder.keys.mkString(", ")}"))
+    val defaultParams = sslContext.getDefaultSSLParameters
+    val filteredProtocols = defaultParams.getProtocols.filter { protocol =>
+      TlsVersionOrder.get(protocol).exists(_ >= minOrder)
+    }
+    require(filteredProtocols.nonEmpty,
+      s"No supported TLS protocols at or above $minTlsVersion. " +
+      s"Supported protocols: ${defaultParams.getProtocols.mkString(", ")}")
+    defaultParams.setProtocols(filteredProtocols)
     sslContext
   }
 

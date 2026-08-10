@@ -51,7 +51,7 @@ import scala.util.control.NonFatal
   private val http: HttpExt = Http()(system)
 
   private lazy val sslContext: SSLContext =
-    PemManagersProvider.createSslContext(settings.apiCaPath, settings.tlsVersion)
+    PemManagersProvider.createSslContext(settings.apiCaPath, settings.minTlsVersion)
 
   private lazy val clientSslContext: HttpsConnectionContext = ConnectionContext.httpsClient(sslContext)
 
