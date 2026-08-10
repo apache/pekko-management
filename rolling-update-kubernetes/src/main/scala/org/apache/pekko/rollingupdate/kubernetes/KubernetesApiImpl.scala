@@ -396,9 +396,8 @@ PUTs must contain resourceVersions. Response:
         case StatusCodes.Unauthorized =>
           handleUnauthorized(response)
         case unexpected =>
-          responseEntity
-            .toStrict(settings.bodyReadTimeout)
-            .flatMap(e => Unmarshal(e).to[String])
+          Unmarshal(responseEntity)
+            .to[String]
             .map(body =>
               throw new ReplicaSetException(
                 s"Unexpected response from API server when retrieving ReplicaSet: $unexpected. Body: $body"))
