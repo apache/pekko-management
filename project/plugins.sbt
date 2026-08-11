@@ -25,7 +25,7 @@ addSbtPlugin("com.lightbend.sbt" % "sbt-bill-of-materials" % "1.1.1")
 addSbtPlugin("com.github.sbt.junit" % "sbt-jupiter-interface" % "0.19.0")
 
 addSbtPlugin("org.apache.pekko" % "pekko-sbt-paradox" % "1.0.1")
-addSbtPlugin("com.github.sbt" % "sbt-site-paradox" % "1.7.0")
+addSbtPlugin("com.github.sbt" % "sbt-site-paradox" % "1.8.0")
 addSbtPlugin("com.lightbend.paradox" % "sbt-paradox-theme" % "0.11.0")
 addSbtPlugin("com.lightbend.paradox" % "sbt-paradox" % "0.11.0")
 
