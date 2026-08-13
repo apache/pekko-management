@@ -89,24 +89,6 @@ object HealthCheckSettings {
       livenessPath,
       checkDuration.toScala)
 
-  /**
-   * Java API
-   */
-  @deprecated("Use create that takes `startupChecks` and `startupPath` parameters instead", "1.1.0")
-  def create(
-      readinessChecks: java.util.List[NamedHealthCheck],
-      livenessChecks: java.util.List[NamedHealthCheck],
-      readinessPath: String,
-      livenessPath: String,
-      checkDuration: java.time.Duration) =
-    new HealthCheckSettings(
-      Nil,
-      readinessChecks.asScala.toList,
-      livenessChecks.asScala.toList,
-      "",
-      readinessPath,
-      livenessPath,
-      checkDuration.toScala)
 }
 
 /**
@@ -126,25 +108,6 @@ final class HealthCheckSettings(
     val readinessPath: String,
     val livenessPath: String,
     val checkTimeout: FiniteDuration) {
-
-  @deprecated("Use constructor that takes `startupChecks` and `startupPath` parameters instead", "1.1.0")
-  def this(
-      readinessChecks: immutable.Seq[NamedHealthCheck],
-      livenessChecks: immutable.Seq[NamedHealthCheck],
-      readinessPath: String,
-      livenessPath: String,
-      checkTimeout: FiniteDuration
-  ) = {
-    this(
-      Nil,
-      readinessChecks,
-      livenessChecks,
-      "",
-      readinessPath,
-      livenessPath,
-      checkTimeout
-    )
-  }
 
   /**
    * Java API
