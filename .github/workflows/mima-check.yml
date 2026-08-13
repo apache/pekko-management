@@ -38,4 +38,7 @@ jobs:
         uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d # v8.1.1
 
       - name: Check code formatted
-        run: sbt +mimaReportBinaryIssues
+        run: |-
+          scala_2_13="$(bash .github/scripts/resolve-scala-version.sh "2.13")"
+          scala_3="$(bash .github/scripts/resolve-scala-version.sh "3.3")"
+          sbt "++${scala_2_13}! mimaReportBinaryIssues" "++${scala_3}! mimaReportBinaryIssues"
