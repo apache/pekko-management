@@ -103,6 +103,35 @@ class PekkoManagementHttpEndpointSpec extends AnyWordSpecLike with Matchers {
         finally system.terminate()
       }
 
+      "log a warning when no authenticator is configured" in {
+        val httpPort = SocketUtil.temporaryLocalPort()
+        val configClusterHttpManager = ConfigFactory.parseString(
+          s"""
+            pekko.management.http.hostname = "127.0.0.1"
+            pekko.management.http.port = $httpPort
+            pekko.management.http.routes {
+              testNoAuth = "org.apache.pekko.management.HttpManagementEndpointSpecRoutesScaladsl"
+            }
+          """)
+
+        implicit val system: ActorSystem = ActorSystem("test", config.withFallback(configClusterHttpManager).resolve())
+
+        val management = PekkoManagement(system)
+
+        // Verify that management routes are accessible without authentication.
+        // When no authenticator is configured, a warning is logged:
+        // "No authenticator is configured for Pekko Management HTTP endpoints..."
+        Await.result(management.start(), 10.seconds)
+
+        val response = Await.result(
+          Http().singleRequest(HttpRequest(uri = s"http://127.0.0.1:$httpPort/scaladsl")),
+          5.seconds)
+        response.status shouldEqual StatusCodes.OK
+
+        try Await.ready(management.stop(), 5.seconds)
+        finally system.terminate()
+      }
+
       "setting basic authentication" in {
         val httpPort = SocketUtil.temporaryLocalPort()
         val configClusterHttpManager = ConfigFactory.parseString(

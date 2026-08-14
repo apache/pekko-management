@@ -198,6 +198,10 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
       val providerSettingsImpl = providerSettings.asInstanceOf[ManagementRouteProviderSettingsImpl]
       (providerSettingsImpl.scaladslAuth, providerSettingsImpl.javadslAuth) match {
         case (None, None) =>
+          log.warning(
+            "No authenticator is configured for Pekko Management HTTP endpoints. " +
+            "All management routes are accessible without authentication. " +
+            "Consider configuring an authenticator via ManagementRouteProviderSettings.withAuth().")
           inner
 
         case (Some(asyncAuthenticator), None) =>
