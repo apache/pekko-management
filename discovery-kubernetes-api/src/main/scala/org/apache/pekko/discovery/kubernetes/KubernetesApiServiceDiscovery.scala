@@ -250,7 +250,7 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
    * This uses blocking IO, and so should only be used at startup from blocking dispatcher.
    */
   private def clientHttpsConnectionContext(): HttpsConnectionContext = {
-    val sslContext = PemManagersProvider.createSslContext(settings.apiCaPath, settings.tlsVersion)
+    val sslContext = PemManagersProvider.createSslContext(settings.apiCaPath, settings.minTlsVersion)
     ConnectionContext.httpsClient(sslContext)
   }
 

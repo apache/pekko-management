@@ -83,10 +83,10 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
             tls-version = "BAD_VERSION"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
-        val noSuchAlgorithmException = intercept[java.security.NoSuchAlgorithmException] {
+        val illegalArgumentException = intercept[IllegalArgumentException] {
           HttpContactPointBootstrap.generateSSLContext(settings)
         }
-        noSuchAlgorithmException.getMessage.contains("BAD_VERSION") should be(true)
+        illegalArgumentException.getMessage.contains("BAD_VERSION") should be(true)
       } finally {
         sys.terminate()
       }
