@@ -22,6 +22,7 @@ import pekko.discovery.kubernetes.PodList.{
   ContainerStatus,
   Deleted,
   Error,
+  ListMeta,
   Metadata,
   Modified,
   Pod,
@@ -44,7 +45,8 @@ import spray.json._
   implicit val podStatusFormat: JsonFormat[PodStatus] = jsonFormat3(PodStatus.apply)
   implicit val metadataFormat: JsonFormat[Metadata] = jsonFormat4(Metadata.apply)
   implicit val podFormat: JsonFormat[Pod] = jsonFormat3(Pod.apply)
-  implicit val podListFormat: RootJsonFormat[PodList] = jsonFormat1(PodList.apply)
+  implicit val listMetaFormat: JsonFormat[ListMeta] = jsonFormat1(ListMeta.apply)
+  implicit val podListFormat: RootJsonFormat[PodList] = jsonFormat2(PodList.apply)
 
   implicit val watchEventTypeFormat: JsonFormat[WatchEventType] = new JsonFormat[WatchEventType] {
     def write(obj: WatchEventType): JsValue = obj match {

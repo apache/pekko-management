@@ -90,7 +90,10 @@ class JsonFormatSpec extends AnyWordSpec with Matchers {
               deletionTimestamp = None,
               name = Some("pekko-cluster-tooling-example-job-mt4qt"),
               uid = Some("01b49788-4f17-11e9-b630-0262c2d3ba30"),
-              resourceVersion = Some("7406832"))))))
+              resourceVersion = Some("7406832"))))),
+        // the list's own resourceVersion, which is what a watch has to resume from. Note it differs
+        // from every item's resourceVersion, including the last one.
+        Some(ListMeta(Some("16042"))))
     }
 
     "parse watch events" in {
