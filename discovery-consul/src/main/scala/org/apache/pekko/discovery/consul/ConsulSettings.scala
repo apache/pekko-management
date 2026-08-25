@@ -55,9 +55,16 @@ final class ConsulSettings(system: ExtendedActorSystem) extends Extension {
 
   /**
    * Maximum number of concurrent requests when looking up multiple service IDs.
+   * Must be greater than 0.
    * @since 2.0.0
    */
-  val parallelism: Int = consulConfig.getInt("lookup-parallelism")
+  val parallelism: Int = {
+    val configured = consulConfig.getInt("lookup-parallelism")
+    require(
+      configured > 0,
+      s"pekko.discovery.pekko-consul.lookup-parallelism must be greater than 0, was [$configured]")
+    configured
+  }
 
   /**
    * ACL token for Consul API authentication. Empty means no authentication.
