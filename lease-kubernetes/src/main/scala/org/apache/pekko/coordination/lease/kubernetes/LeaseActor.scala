@@ -186,12 +186,28 @@ private[pekko] class LeaseActor(
       }
 
     case Event(WriteResponse(Left(LeaseResource(None, version, _))),
-          OperationInProgress(who, oldVersion, leaseLost, startTime, _)) =>
+          op @ OperationInProgress(who, oldVersion, _, startTime, _)) =>
       require(oldVersion != version)
-      // Try again as lock version has moved on but is not taken
-      // Do not reply yet — wait for the retry to succeed
-      pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(r => WriteResponse(r))).to(self)
-      stay().using(OperationInProgress(who, oldVersion, leaseLost, startTime))
+      val operationDuration = (System.nanoTime() - startTime).nanos
+      if (operationDuration > settings.timeoutSettings.operationTimeout) {
+        // The lease version keeps moving on. Give up rather than retrying for longer than the
+        // caller is prepared to wait, otherwise the lease could be granted after the caller has
+        // already been told the acquire failed.
+        log.warning(
+          "Failed to acquire lease {} for owner {} after {}: lease version kept moving on.",
+          leaseName,
+          ownerName,
+          operationDuration.pretty)
+        who ! Failure(new LeaseTimeoutException(
+          s"Timed out trying to acquire lease [$leaseName, $ownerName] after ${operationDuration.pretty}"))
+        goto(Idle).using(ReadRequired)
+      } else {
+        // Try again as lock version has moved on but is not taken.
+        // Do not reply yet — wait for the retry to succeed. Record the version being attempted so
+        // that a subsequent conflict is compared against it rather than against the original version.
+        pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(r => WriteResponse(r))).to(self)
+        stay().using(op.copy(version = version))
+      }
     case Event(WriteResponse(Left(LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _, _)) =>
       // The audacity, someone else has taken the lease :(
       who ! LeaseTaken
@@ -270,14 +286,20 @@ private[pekko] class LeaseActor(
         lr)
       who ! LeaseReleased
       goto(Idle).using(ReadRequired)
-    case Event(Failure(t), op @ OperationInProgress(who, version, _, _, retries)) =>
-      if (retries < heartbeatMaxRetries) {
+    case Event(Failure(t), op @ OperationInProgress(who, _, _, startTime, retries)) =>
+      // Pace release retries off the lease operation timeout rather than the heartbeat interval:
+      // the caller is waiting on an ask that uses the operation timeout, so retries that run past
+      // it would leave the caller with an ask timeout and the reply in dead letters.
+      val operationTimeout = settings.timeoutSettings.operationTimeout
+      val retryDelay = operationTimeout / (heartbeatMaxRetries + 1)
+      val elapsed = (System.nanoTime() - startTime).nanos
+      if (retries < heartbeatMaxRetries && (elapsed + retryDelay) < operationTimeout) {
         log.warning(
-          "Failure releasing lease: [{}]. Retrying (attempt {}/{}).",
+          "Failure releasing lease: [{}]. Retrying in {} (attempt {}/{}).",
           t.getMessage,
+          retryDelay.pretty,
           retries + 1,
           heartbeatMaxRetries)
-        val retryDelay = settings.timeoutSettings.heartbeatInterval / (heartbeatMaxRetries + 1)
         startSingleTimer("release-retry", ReleaseRetry, retryDelay)
         stay().using(op.copy(releaseRetries = retries + 1))
       } else {

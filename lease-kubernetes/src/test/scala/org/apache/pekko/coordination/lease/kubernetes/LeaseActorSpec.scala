@@ -19,9 +19,9 @@ import org.apache.pekko
 import pekko.actor.Status.Failure
 import pekko.actor.{ ActorRef, ActorSystem }
 import pekko.coordination.lease.kubernetes.LeaseActor._
-import pekko.coordination.lease.{ LeaseException, LeaseSettings, TimeoutSettings }
+import pekko.coordination.lease.{ LeaseException, LeaseSettings, LeaseTimeoutException, TimeoutSettings }
 import pekko.pattern.ask
-import pekko.testkit.{ TestKit, TestProbe }
+import pekko.testkit.{ TestDuration, TestKit, TestProbe }
 import pekko.util.{ ConstantFun, Timeout }
 import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
@@ -219,9 +219,10 @@ class LeaseActorSpec
       // Fail due to cas, version has moved on by 6 but no one owns the lock
       val failedVersion = currentVersionCount + 6
       updateProbe.reply(Left(LeaseResource(None, failedVersion.toString, System.currentTimeMillis())))
-      // Try again
+      // Try again, a successful update moves the version on again
       updateProbe.expectMsg((ownerName, failedVersion.toString))
-      updateProbe.reply(Right(LeaseResource(Some(ownerName), failedVersion.toString, System.currentTimeMillis())))
+      currentVersionCount = failedVersion + 1
+      updateProbe.reply(Right(LeaseResource(Some(ownerName), currentVersion, System.currentTimeMillis())))
       senderProbe.expectMsg(LeaseAcquired)
     }
 
@@ -422,10 +423,11 @@ class LeaseActorSpec
 
   trait Test {
     val ownerName = "owner1"
+    def timeoutSettings: TimeoutSettings = new TimeoutSettings(25.millis, 250.millis, 1.second)
     val leaseSettings: LeaseSettings = new LeaseSettings(
       leaseName,
       ownerName,
-      new TimeoutSettings(25.millis, 250.millis, 1.second),
+      timeoutSettings,
       ConfigFactory.empty())
 
     var currentVersionCount = 1
@@ -582,9 +584,10 @@ class LeaseActorSpec
       // Conflict: version moved on, no owner
       val conflictVersion = currentVersionCount + 6
       updateProbe.reply(Left(LeaseResource(None, conflictVersion.toString, System.currentTimeMillis())))
-      // Retry uses the version from the conflict response
+      // Retry uses the version from the conflict response, and success moves the version on again
       updateProbe.expectMsg((ownerName, conflictVersion.toString))
-      updateProbe.reply(Right(LeaseResource(Some(ownerName), conflictVersion.toString, System.currentTimeMillis())))
+      currentVersionCount = conflictVersion + 1
+      updateProbe.reply(Right(LeaseResource(Some(ownerName), currentVersion, System.currentTimeMillis())))
       senderProbe.expectMsg(LeaseAcquired)
     }
 
@@ -608,7 +611,66 @@ class LeaseActorSpec
 
   }
 
+  trait ShortOperationTimeoutTest extends Test {
+    // an operation timeout that is already spent by the time the first conflict is handled
+    override def timeoutSettings: TimeoutSettings = new TimeoutSettings(25.millis, 250.millis, 1.nano)
+  }
+
+  trait ReleaseRetryTimingTest extends Test {
+    // heartbeat-interval is deliberately far larger than the operation timeout: if release retries
+    // were paced off the heartbeat interval they would be 5s apart and the probe would never see them
+    override def timeoutSettings: TimeoutSettings = new TimeoutSettings(20.seconds, 60.seconds, 1.second)
+  }
+
+  "LeaseActor acquire conflict retry" should {
+
+    "give up and fail the caller once the lease operation timeout is spent" in new ShortOperationTimeoutTest {
+      underTest ! LeaseActor.Acquire()
+      leaseProbe.expectMsg(leaseName)
+      leaseProbe.reply(LeaseResource(None, currentVersion, System.currentTimeMillis()))
+      updateProbe.expectMsg((ownerName, currentVersion))
+      incrementVersion()
+      // version has moved on but the lease is not taken, so this would normally be retried
+      updateProbe.reply(Left(LeaseResource(None, currentVersion, System.currentTimeMillis())))
+
+      senderProbe.expectMsgType[Failure].cause shouldBe a[LeaseTimeoutException]
+      // no further retry is issued, the lease is not granted behind the caller's back
+      updateProbe.expectNoMessage(200.millis)
+      granted.get() shouldEqual false
+    }
+
+    "be able to acquire again after giving up on conflict retries" in new ShortOperationTimeoutTest {
+      underTest ! LeaseActor.Acquire()
+      leaseProbe.expectMsg(leaseName)
+      leaseProbe.reply(LeaseResource(None, currentVersion, System.currentTimeMillis()))
+      updateProbe.expectMsg((ownerName, currentVersion))
+      incrementVersion()
+      updateProbe.reply(Left(LeaseResource(None, currentVersion, System.currentTimeMillis())))
+      senderProbe.expectMsgType[Failure].cause shouldBe a[LeaseTimeoutException]
+
+      acquireLease()
+    }
+
+  }
+
   "LeaseActor release retry" should {
+
+    "pace retries off the lease operation timeout, not the heartbeat interval" in new ReleaseRetryTimingTest {
+      val k8sApiFailure = new LeaseException("Failed to communicate with API server")
+      acquireLease()
+      val operationTimeout = leaseSettings.timeoutSettings.operationTimeout
+      val start = System.nanoTime()
+      underTest ! Release()
+      // Initial attempt + 3 retries. Paced off the operation timeout these are 250ms apart; paced
+      // off the heartbeat interval they would be 5s apart and the probe would time out.
+      for (_ <- 1 to 4) {
+        updateProbe.expectMsg(("", currentVersion))
+        updateProbe.reply(Failure(k8sApiFailure))
+      }
+      senderProbe.expectMsg(Failure(k8sApiFailure))
+      // the caller is told the outcome before the ask it is waiting on would have timed out
+      (System.nanoTime() - start).nanos should be < operationTimeout.dilated
+    }
 
     "retry release on failure and succeed" in new Test {
       acquireLease()
