@@ -199,6 +199,10 @@ pekko.discovery {
 This uses AWS SDK v2. The advantage here is that the SDK does
 non-blocking IO, which you probably want.
 
+Both of the discovery methods below create their `EcsAsyncClient` lazily, on the first lookup, and close it
+again during the `service-unbind` phase of Coordinated Shutdown. If discovery is never used, no client is
+created and nothing needs to be closed.
+
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
   value1=$project.version$
