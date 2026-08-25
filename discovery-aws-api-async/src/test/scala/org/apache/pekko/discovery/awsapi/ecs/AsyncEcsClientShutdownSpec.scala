@@ -85,19 +85,19 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
     }
 
     "not create an ECS client during shutdown when discovery was never used" in
-      withSystem("AsyncEcsServiceDiscoveryUnusedSpec") { system =>
-        val created = new AtomicInteger(0)
-        new AsyncEcsServiceDiscovery(system) {
-          override private[ecs] def createEcsClient(): EcsAsyncClient = {
-            created.incrementAndGet()
-            new StubEcsAsyncClient
-          }
+    withSystem("AsyncEcsServiceDiscoveryUnusedSpec") { system =>
+      val created = new AtomicInteger(0)
+      new AsyncEcsServiceDiscovery(system) {
+        override private[ecs] def createEcsClient(): EcsAsyncClient = {
+          created.incrementAndGet()
+          new StubEcsAsyncClient
         }
-
-        shutdown(system)
-
-        created.get() should ===(0)
       }
+
+      shutdown(system)
+
+      created.get() should ===(0)
+    }
 
   }
 
@@ -120,19 +120,19 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
     }
 
     "not create an ECS client during shutdown when discovery was never used" in
-      withSystem("AsyncEcsTaskSetDiscoveryUnusedSpec") { system =>
-        val created = new AtomicInteger(0)
-        new AsyncEcsTaskSetDiscovery(system) {
-          override private[ecs] def createEcsClient(): EcsAsyncClient = {
-            created.incrementAndGet()
-            new StubEcsAsyncClient
-          }
+    withSystem("AsyncEcsTaskSetDiscoveryUnusedSpec") { system =>
+      val created = new AtomicInteger(0)
+      new AsyncEcsTaskSetDiscovery(system) {
+        override private[ecs] def createEcsClient(): EcsAsyncClient = {
+          created.incrementAndGet()
+          new StubEcsAsyncClient
         }
-
-        shutdown(system)
-
-        created.get() should ===(0)
       }
+
+      shutdown(system)
+
+      created.get() should ===(0)
+    }
 
   }
 
