@@ -48,7 +48,7 @@ import scala.concurrent.duration._
 
   /**
    * How long to block waiting for the self contact point to be set. `ClusterBootstrap` fails the
-   * promise itself after [[ClusterBootstrap.SelfContactPointTimeout]], so this only has to outlast
+   * promise itself after `ClusterBootstrap.SelfContactPointTimeout`, so this only has to outlast
    * that; it is derived from it rather than restated so that the two cannot drift apart. Overridable
    * for tests, which cannot afford to wait this long.
    */
@@ -65,7 +65,7 @@ import scala.concurrent.duration._
    *
    * A resolved value is cached. A failure is not, so that a contact point set later is still picked
    * up, but the blocking wait is only ever paid once: once `ClusterBootstrap.start()` has run, the
-   * promise is always completed within [[ClusterBootstrap.SelfContactPointTimeout]], so reaching
+   * promise is always completed within `ClusterBootstrap.SelfContactPointTimeout`, so reaching
    * the timeout at all means it never ran and no amount of further waiting will help.
    */
   private[bootstrap] def selfContactPoint: (String, Int) = {
