@@ -83,28 +83,6 @@ pekko.discovery {
 
 This configuration complements the following Deployment specification:
 
-### Watch Mode
-
-For large clusters or deployments with frequent lookups, the default `list` poll mode can put significant load on the Kubernetes API server because it fetches the full pod list on every lookup call. The `watch` poll mode uses the Kubernetes Watch API to maintain a long-lived streaming connection that receives incremental pod change events, eliminating repeated full list requests.
-
-To enable watch mode, set `api-poll-mode = "watch"` in your configuration:
-
-```
-pekko.discovery {
-  kubernetes-api {
-    api-poll-mode = "watch"
-
-    # Optional: delay before reconnecting after stream completion (default: 1s)
-    watch-reconnect-delay = 1s
-
-    # Optional: delay before reconnecting after stream error (default: 5s)
-    watch-on-error-reconnect-delay = 5s
-  }
-}
-```
-
-When watch mode is enabled, the first `lookup` call performs an initial pod list to populate a local cache, then starts a persistent watch stream. Subsequent lookups read directly from the cache without making API calls. The watch stream automatically reconnects on errors or stream completion, using the Kubernetes `resourceVersion` mechanism to resume from where it left off.
-
 ```
 apiVersion: apps/v1
 kind: Deployment
@@ -138,6 +116,34 @@ spec:
           containerPort: 7626
           protocol: TCP
 ```
+
+### Watch Mode
+
+For large clusters or deployments with frequent lookups, the default `list` poll mode can put significant load on the Kubernetes API server because it fetches the full pod list on every lookup call. The `watch` poll mode uses the Kubernetes Watch API to maintain a long-lived streaming connection that receives incremental pod change events, eliminating repeated full list requests.
+
+To enable watch mode, set `api-poll-mode = "watch"` in your configuration:
+
+```
+pekko.discovery {
+  kubernetes-api {
+    api-poll-mode = "watch"
+
+    # Optional: delay before reconnecting after stream completion (default: 1s)
+    watch-reconnect-delay = 1s
+
+    # Optional: delay before reconnecting after stream error (default: 5s)
+    watch-on-error-reconnect-delay = 5s
+
+    # Optional: largest single watch event the stream will accept (default: 1 MiB)
+    watch-max-frame-length = 1 MiB
+  }
+}
+```
+
+When watch mode is enabled, the first `lookup` call performs an initial pod list to populate a local cache, then starts a persistent watch stream. Subsequent lookups read directly from the cache without making API calls. The watch stream automatically reconnects on errors or stream completion, using the Kubernetes `resourceVersion` mechanism to resume from where it left off. If the resume point is no longer valid - the server answers `410 Gone`, or sends an `ERROR` event - the cache is rebuilt from a fresh list rather than resumed, so that pods deleted while disconnected do not linger.
+
+Each service name is watched separately, with its own cache, so one discovery instance can be used to look up more than one service. The watch streams are shut down during the `service-unbind` phase of Coordinated Shutdown.
+
 
 ### Role-Based Access Control
 

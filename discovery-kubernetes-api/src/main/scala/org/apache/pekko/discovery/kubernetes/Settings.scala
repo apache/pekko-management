@@ -77,7 +77,17 @@ final class Settings(kubernetesApi: Config) extends Extension {
   val httpRequestAcceptEncoding: String = kubernetesApi.getString("http-request-accept-encoding")
 
   /** The API poll mode: "list" for repeated GET requests (default), "watch" for Kubernetes Watch API streaming. */
-  val apiPollMode: String = kubernetesApi.getString("api-poll-mode")
+  val apiPollMode: String = {
+    val configured = kubernetesApi.getString("api-poll-mode")
+    require(
+      configured == Settings.ListPollMode || configured == Settings.WatchPollMode,
+      s"pekko.discovery.kubernetes-api.api-poll-mode must be " +
+      s"'${Settings.ListPollMode}' or '${Settings.WatchPollMode}', was [$configured]")
+    configured
+  }
+
+  /** Whether the Kubernetes Watch API is used instead of repeated pod list requests. */
+  val watchMode: Boolean = apiPollMode == Settings.WatchPollMode
 
   /** Delay before reconnecting the watch stream after a normal stream completion. */
   val watchReconnectDelay: FiniteDuration =
@@ -87,6 +97,16 @@ final class Settings(kubernetesApi: Config) extends Extension {
   val watchOnErrorReconnectDelay: FiniteDuration =
     kubernetesApi.getDuration("watch-on-error-reconnect-delay").toScala
 
+  /** Maximum size of a single newline-delimited event in the watch stream. */
+  val watchMaxFrameLength: Int = {
+    val configured = kubernetesApi.getBytes("watch-max-frame-length")
+    require(
+      configured > 0 && configured <= Int.MaxValue,
+      s"pekko.discovery.kubernetes-api.watch-max-frame-length must be between 1 and ${Int.MaxValue} bytes, " +
+      s"was [$configured]")
+    configured.toInt
+  }
+
   override def toString =
     s"Settings($apiCaPath, $apiTokenPath, $apiServiceHostEnvName, $apiServicePortEnvName, " +
     s"$podNamespacePath, $podNamespace, $podDomain, httpRequestAcceptEncoding=$httpRequestAcceptEncoding, " +
@@ -94,6 +114,13 @@ final class Settings(kubernetesApi: Config) extends Extension {
 }
 
 object Settings extends ExtensionId[Settings] with ExtensionIdProvider {
+
+  /** Poll the Kubernetes API with a full pod list request on every lookup. */
+  val ListPollMode = "list"
+
+  /** Track pods with a long-lived Kubernetes Watch API stream. */
+  val WatchPollMode = "watch"
+
   override def get(system: ActorSystem): Settings = super.get(system)
 
   override def get(system: ClassicActorSystemProvider): Settings = super.get(system)

@@ -106,5 +106,41 @@ class SettingsSpec extends AnyWordSpec with Matchers {
         system.terminate()
       }
     }
+    "default watch-max-frame-length to 1 MiB" in {
+      val system = ActorSystem("test")
+      try {
+        val settings = Settings(system)
+        settings.watchMaxFrameLength shouldBe 1024 * 1024
+      } finally {
+        system.terminate()
+      }
+    }
+    "reject an unknown api-poll-mode rather than silently polling" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          api-poll-mode = "Watch"
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        val ex = intercept[IllegalArgumentException](Settings(system).apiPollMode)
+        ex.getMessage should include("api-poll-mode must be")
+      } finally {
+        system.terminate()
+      }
+    }
+    "reject a non-positive watch-max-frame-length" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          watch-max-frame-length = 0
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        intercept[IllegalArgumentException](Settings(system).watchMaxFrameLength)
+      } finally {
+        system.terminate()
+      }
+    }
   }
 }

@@ -21,3 +21,10 @@ ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.discovery.k
 ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.discovery.kubernetes.PodList#Metadata.apply")
 ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.discovery.kubernetes.PodList#Metadata.unapply")
 ProblemFilters.exclude[MissingTypesProblem]("org.apache.pekko.discovery.kubernetes.PodList$Metadata$")
+
+# PodList gained the collection-level metadata that a watch must resume from
+ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.discovery.kubernetes.PodList.copy")
+ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.discovery.kubernetes.PodList.this")
+ProblemFilters.exclude[DirectMissingMethodProblem]("org.apache.pekko.discovery.kubernetes.PodList.apply")
+ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.discovery.kubernetes.PodList.unapply")
+ProblemFilters.exclude[MissingTypesProblem]("org.apache.pekko.discovery.kubernetes.PodList$")

@@ -43,6 +43,14 @@ import org.apache.pekko.annotation.InternalApi
   /**
    * INTERNAL API
    *
+   * Collection-level metadata. Its `resourceVersion` is the point a watch must be started from for the
+   * watch to be consistent with the list it follows; an individual pod's `resourceVersion` is not.
+   */
+  @InternalApi private[kubernetes] final case class ListMeta(resourceVersion: Option[String] = None)
+
+  /**
+   * INTERNAL API
+   *
    * Type of event from the Kubernetes Watch API.
    */
   @InternalApi private[kubernetes] sealed trait WatchEventType
@@ -62,4 +70,6 @@ import org.apache.pekko.annotation.InternalApi
 /**
  * INTERNAL API
  */
-@InternalApi private[kubernetes] final case class PodList(items: Seq[PodList.Pod])
+@InternalApi private[kubernetes] final case class PodList(
+    items: Seq[PodList.Pod],
+    metadata: Option[PodList.ListMeta] = None)
