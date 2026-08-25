@@ -68,6 +68,10 @@ class LeaseActorSpec
 
   val leaseName = "sbr"
 
+  // How far the lease version is moved on by other clients when simulating a conflict. Any value
+  // greater than zero works: the test only needs a version ahead of the one the actor sent.
+  val otherClientUpdates = 6
+
   "LeaseActor" should {
 
     // TODO what if the same client asks for the lease when granting? respond to both or ignore?
@@ -174,11 +178,7 @@ class LeaseActorSpec
       val k8sApiFailure = new LeaseException("Failed to communicate with API server")
       acquireLease()
       underTest ! Release()
-      // Initial attempt + 3 retries = 4 total failures
-      for (_ <- 1 to 4) {
-        updateProbe.expectMsg(("", currentVersion))
-        updateProbe.reply(Failure(k8sApiFailure))
-      }
+      failAllReleaseAttempts(k8sApiFailure)
       senderProbe.expectMsg(Failure(k8sApiFailure))
     }
 
@@ -216,8 +216,8 @@ class LeaseActorSpec
       // Version from the previous lock so can skip the read of the resource unless the CAS fails
       underTest ! LeaseActor.Acquire()
       updateProbe.expectMsg((ownerName, currentVersion))
-      // Fail due to cas, version has moved on by 6 but no one owns the lock
-      val failedVersion = currentVersionCount + 6
+      // Fail due to cas, the version has moved on but no one owns the lock
+      val failedVersion = currentVersionCount + otherClientUpdates
       updateProbe.reply(Left(LeaseResource(None, failedVersion.toString, System.currentTimeMillis())))
       // Try again, a successful update moves the version on again
       updateProbe.expectMsg((ownerName, failedVersion.toString))
@@ -259,12 +259,7 @@ class LeaseActorSpec
       expectHeartBeat()
       granted.get() shouldEqual true
 
-      // Initial heartbeat + 3 retries = 4 total failures
-      // Failures don't change the actor's version, so don't increment
-      for (_ <- 1 to 4) {
-        updateProbe.expectMsg((ownerName, currentVersion))
-        updateProbe.reply(Failure(k8sApiFailure))
-      }
+      failAllHeartbeatAttempts(k8sApiFailure)
       awaitAssert {
         granted.get() shouldEqual false
       }
@@ -277,12 +272,7 @@ class LeaseActorSpec
       expectHeartBeat()
       granted.get() shouldEqual true
 
-      // Initial heartbeat + 3 retries = 4 total failures
-      // Failures don't change the actor's version, so don't increment
-      for (_ <- 1 to 4) {
-        updateProbe.expectMsg((ownerName, currentVersion))
-        updateProbe.reply(Failure(k8sApiFailure))
-      }
+      failAllHeartbeatAttempts(k8sApiFailure)
       awaitAssert {
         callbackCalled shouldEqual Some(k8sApiFailure)
       }
@@ -560,13 +550,25 @@ class LeaseActorSpec
       }
     }
 
-    def heartBeatFailure(): Unit = {
-      // Initial heartbeat + 3 retries = 4 total failures
-      // Failures don't change the actor's version, so don't increment
-      for (_ <- 1 to 4) {
+    /**
+     * Fail the initial heartbeat and every retry of it. A failed heartbeat does not move the lease
+     * version on, so the same version is expected for each attempt.
+     */
+    def failAllHeartbeatAttempts(failure: Throwable): Unit =
+      for (_ <- 0 to heartbeatMaxRetries) {
         updateProbe.expectMsg((ownerName, currentVersion))
-        updateProbe.reply(Failure(new LeaseException("Failed to communicate with API server")))
+        updateProbe.reply(Failure(failure))
       }
+
+    /** Fail the initial release and every retry of it. */
+    def failAllReleaseAttempts(failure: Throwable): Unit =
+      for (_ <- 0 to releaseMaxRetries) {
+        updateProbe.expectMsg(("", currentVersion))
+        updateProbe.reply(Failure(failure))
+      }
+
+    def heartBeatFailure(): Unit = {
+      failAllHeartbeatAttempts(new LeaseException("Failed to communicate with API server"))
       awaitAssert {
         granted.get() shouldEqual false
       }
@@ -577,14 +579,6 @@ class LeaseActorSpec
   trait NoRetryTest extends Test {
     override def heartbeatMaxRetries: Int = 0
     override def releaseMaxRetries: Int = 0
-
-    def heartBeatFailureNoRetry(): Unit = {
-      updateProbe.expectMsg((ownerName, currentVersion))
-      updateProbe.reply(Failure(new LeaseException("Failed to communicate with API server")))
-      awaitAssert {
-        granted.get() shouldEqual false
-      }
-    }
   }
 
   "LeaseActor with retries disabled" should {
@@ -594,7 +588,7 @@ class LeaseActorSpec
       expectHeartBeat()
       granted.get() shouldEqual true
 
-      heartBeatFailureNoRetry()
+      heartBeatFailure()
     }
 
     "call lease lost callback immediately on heartbeat failure" in new NoRetryTest {
@@ -603,8 +597,7 @@ class LeaseActorSpec
       expectHeartBeat()
       granted.get() shouldEqual true
 
-      updateProbe.expectMsg((ownerName, currentVersion))
-      updateProbe.reply(Failure(new LeaseException("Failed to communicate with API server")))
+      failAllHeartbeatAttempts(new LeaseException("Failed to communicate with API server"))
       awaitAssert {
         callbackCalled shouldBe defined
       }
@@ -613,25 +606,8 @@ class LeaseActorSpec
     "allow re-acquire after immediate heartbeat failure" in new NoRetryTest {
       acquireLease()
       expectHeartBeat()
-      heartBeatFailureNoRetry()
+      heartBeatFailure()
       acquireLease()
-    }
-
-    "reply LeaseAcquired only after conflict retry succeeds" in new NoRetryTest {
-      acquireLease()
-      releaseLease()
-
-      // Start acquire — will hit conflict and retry
-      underTest ! LeaseActor.Acquire()
-      updateProbe.expectMsg((ownerName, currentVersion))
-      // Conflict: version moved on, no owner
-      val conflictVersion = currentVersionCount + 6
-      updateProbe.reply(Left(LeaseResource(None, conflictVersion.toString, System.currentTimeMillis())))
-      // Retry uses the version from the conflict response, and success moves the version on again
-      updateProbe.expectMsg((ownerName, conflictVersion.toString))
-      currentVersionCount = conflictVersion + 1
-      updateProbe.reply(Right(LeaseResource(Some(ownerName), currentVersion, System.currentTimeMillis())))
-      senderProbe.expectMsg(LeaseAcquired)
     }
 
     "immediately report release failure with no retries" in new NoRetryTest {
@@ -687,16 +663,70 @@ class LeaseActorSpec
       // release-max-retries is 2, so the release is attempted three times before the caller is told
       acquireLease()
       underTest ! Release()
-      for (_ <- 1 to 3) {
-        updateProbe.expectMsg(("", currentVersion))
-        updateProbe.reply(Failure(k8sApiFailure))
-      }
+      failAllReleaseAttempts(k8sApiFailure)
       senderProbe.expectMsg(Failure(k8sApiFailure))
     }
 
   }
 
   "LeaseActor acquire conflict retry" should {
+
+    "reply LeaseAcquired only once the retry succeeds" in new Test {
+      acquireLease()
+      releaseLease()
+
+      // Start acquire, will hit a conflict and retry
+      underTest ! LeaseActor.Acquire()
+      updateProbe.expectMsg((ownerName, currentVersion))
+      // Conflict: version moved on, no owner
+      val conflictVersion = currentVersionCount + otherClientUpdates
+      updateProbe.reply(Left(LeaseResource(None, conflictVersion.toString, System.currentTimeMillis())))
+      // Nothing is reported to the caller until the retry has been answered
+      senderProbe.expectNoMessage(100.millis)
+      // Retry uses the version from the conflict response, and success moves the version on again
+      updateProbe.expectMsg((ownerName, conflictVersion.toString))
+      currentVersionCount = conflictVersion + 1
+      updateProbe.reply(Right(LeaseResource(Some(ownerName), currentVersion, System.currentTimeMillis())))
+      senderProbe.expectMsg(LeaseAcquired)
+      granted.get() shouldEqual true
+    }
+
+    "keep retrying while the version keeps moving on" in new Test {
+      acquireLease()
+      releaseLease()
+
+      underTest ! LeaseActor.Acquire()
+      updateProbe.expectMsg((ownerName, currentVersion))
+      // the version moves on again between the first conflict and the retry landing
+      val firstConflict = currentVersionCount + otherClientUpdates
+      updateProbe.reply(Left(LeaseResource(None, firstConflict.toString, System.currentTimeMillis())))
+      updateProbe.expectMsg((ownerName, firstConflict.toString))
+      val secondConflict = firstConflict + otherClientUpdates
+      updateProbe.reply(Left(LeaseResource(None, secondConflict.toString, System.currentTimeMillis())))
+
+      // the third attempt uses the version from the second conflict, not the original one
+      updateProbe.expectMsg((ownerName, secondConflict.toString))
+      currentVersionCount = secondConflict + 1
+      updateProbe.reply(Right(LeaseResource(Some(ownerName), currentVersion, System.currentTimeMillis())))
+      senderProbe.expectMsg(LeaseAcquired)
+      granted.get() shouldEqual true
+    }
+
+    "reply LeaseTaken if another owner has the lease by the time the retry lands" in new Test {
+      acquireLease()
+      releaseLease()
+
+      underTest ! LeaseActor.Acquire()
+      updateProbe.expectMsg((ownerName, currentVersion))
+      val conflictVersion = currentVersionCount + otherClientUpdates
+      updateProbe.reply(Left(LeaseResource(None, conflictVersion.toString, System.currentTimeMillis())))
+
+      updateProbe.expectMsg((ownerName, conflictVersion.toString))
+      updateProbe.reply(
+        Left(LeaseResource(Some("i got there first"), (conflictVersion + 1).toString, System.currentTimeMillis())))
+      senderProbe.expectMsg(LeaseTaken)
+      granted.get() shouldEqual false
+    }
 
     "give up and fail the caller once the lease operation timeout is spent" in new ShortOperationTimeoutTest {
       underTest ! LeaseActor.Acquire()
@@ -734,13 +764,10 @@ class LeaseActorSpec
       acquireLease()
       val operationTimeout = leaseSettings.timeoutSettings.operationTimeout
       val start = System.nanoTime()
+      // Paced off the operation timeout these attempts are 250ms apart; paced off the heartbeat
+      // interval they would be 5s apart and the probe would time out waiting for them.
       underTest ! Release()
-      // Initial attempt + 3 retries. Paced off the operation timeout these are 250ms apart; paced
-      // off the heartbeat interval they would be 5s apart and the probe would time out.
-      for (_ <- 1 to 4) {
-        updateProbe.expectMsg(("", currentVersion))
-        updateProbe.reply(Failure(k8sApiFailure))
-      }
+      failAllReleaseAttempts(k8sApiFailure)
       senderProbe.expectMsg(Failure(k8sApiFailure))
       // the caller is told the outcome before the ask it is waiting on would have timed out
       (System.nanoTime() - start).nanos should be < operationTimeout.dilated
@@ -763,11 +790,7 @@ class LeaseActorSpec
       val k8sApiFailure = new LeaseException("Failed to communicate with API server")
       acquireLease()
       underTest ! Release()
-      // Initial attempt + 3 retries = 4 total failures
-      for (_ <- 1 to 4) {
-        updateProbe.expectMsg(("", currentVersion))
-        updateProbe.reply(Failure(k8sApiFailure))
-      }
+      failAllReleaseAttempts(k8sApiFailure)
       senderProbe.expectMsg(Failure(k8sApiFailure))
     }
 
