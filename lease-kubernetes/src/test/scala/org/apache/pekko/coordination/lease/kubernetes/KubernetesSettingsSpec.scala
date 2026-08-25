@@ -59,6 +59,28 @@ class KubernetesSettingsSpec extends AnyWordSpec with Matchers {
     "support on-truncate-add-hash-length override" in {
       conf("on-truncate-add-hash-length=12").onTruncateAddHashLength shouldEqual 12
     }
+    "default heartbeat-max-retries to 3" in {
+      conf("").heartbeatMaxRetries shouldEqual 3
+    }
+    "support heartbeat-max-retries override" in {
+      conf("heartbeat-max-retries=5").heartbeatMaxRetries shouldEqual 5
+    }
+    "default release-max-retries to 3" in {
+      conf("").releaseMaxRetries shouldEqual 3
+    }
+    "support release-max-retries override" in {
+      conf("release-max-retries=1").releaseMaxRetries shouldEqual 1
+    }
+    "not allow a negative heartbeat-max-retries" in {
+      intercept[IllegalArgumentException] {
+        conf("heartbeat-max-retries=-1")
+      }.getMessage shouldEqual "requirement failed: 'heartbeat-max-retries' must not be negative"
+    }
+    "not allow a negative release-max-retries" in {
+      intercept[IllegalArgumentException] {
+        conf("release-max-retries=-1")
+      }.getMessage shouldEqual "requirement failed: 'release-max-retries' must not be negative"
+    }
     "not allow server request timeout greater than operation timeout" in {
       intercept[IllegalArgumentException] {
         conf("""

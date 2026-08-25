@@ -48,9 +48,20 @@ private[pekko] object LeaseActor {
 
   sealed trait ReplyRequired {
     def replyTo: ActorRef
+
+    /**
+     * Callers that asked to acquire the same lease while this operation was already in flight.
+     * They get the same response as [[replyTo]] once the operation completes.
+     */
+    def alsoReplyTo: Set[ActorRef]
+
+    def allReplyTo: Set[ActorRef] = alsoReplyTo + replyTo
   }
   // Awaiting a read to try and get the lease
-  case class PendingReadData(replyTo: ActorRef, leaseLostCallback: Option[Throwable] => Unit)
+  case class PendingReadData(
+      replyTo: ActorRef,
+      leaseLostCallback: Option[Throwable] => Unit,
+      alsoReplyTo: Set[ActorRef] = Set.empty)
       extends Data
       with ReplyRequired
   case class OperationInProgress(
@@ -58,7 +69,8 @@ private[pekko] object LeaseActor {
       version: String,
       leaseLostCallback: Option[Throwable] => Unit,
       operationStartTime: Long = System.nanoTime(),
-      releaseRetries: Int = 0)
+      releaseRetries: Int = 0,
+      alsoReplyTo: Set[ActorRef] = Set.empty)
       extends Data
       with ReplyRequired
   case class GrantedVersion(
@@ -89,8 +101,9 @@ private[pekko] object LeaseActor {
       settings: LeaseSettings,
       leaseName: String,
       granted: AtomicBoolean,
-      heartbeatMaxRetries: Int = 3): Props = {
-    Props(new LeaseActor(k8sApi, settings, leaseName, granted, heartbeatMaxRetries))
+      heartbeatMaxRetries: Int,
+      releaseMaxRetries: Int): Props = {
+    Props(new LeaseActor(k8sApi, settings, leaseName, granted, heartbeatMaxRetries, releaseMaxRetries))
   }
 
 }
@@ -104,7 +117,8 @@ private[pekko] class LeaseActor(
     settings: LeaseSettings,
     leaseName: String,
     granted: AtomicBoolean,
-    heartbeatMaxRetries: Int)
+    heartbeatMaxRetries: Int,
+    releaseMaxRetries: Int)
     extends LoggingFSM[LeaseActor.State, LeaseActor.Data] {
 
   import pekko.pattern.pipe
@@ -129,10 +143,11 @@ private[pekko] class LeaseActor(
 
   when(PendingRead) {
     // Lock not taken
-    case Event(ReadResponse(LeaseResource(None, version, _)), PendingReadData(who, leaseLost)) =>
-      tryGetLease(version, who, leaseLost)
-    case Event(ReadResponse(LeaseResource(Some(currentOwner), version, time)), PendingReadData(who, leaseLost))
-        if currentOwner == ownerName =>
+    case Event(ReadResponse(LeaseResource(None, version, _)), prd @ PendingReadData(who, leaseLost, _)) =>
+      tryGetLease(version, who, leaseLost, prd.alsoReplyTo)
+    case Event(
+          ReadResponse(LeaseResource(Some(currentOwner), version, time)),
+          prd @ PendingReadData(who, leaseLost, _)) if currentOwner == ownerName =>
       // We have the lock from a different incarnation
       if (hasLeaseTimedOut(time)) {
         log.warning(
@@ -141,26 +156,27 @@ private[pekko] class LeaseActor(
           leaseName,
           ownerName,
           time)
-        tryGetLease(version, who, leaseLost)
+        tryGetLease(version, who, leaseLost, prd.alsoReplyTo)
       } else {
         log.warning(
           "Lease {} requested by client {} is already owned by client. Previous lease was not released due to ungraceful shutdown. " +
           "Lease is still within timeout so granting immediately",
           leaseName,
           ownerName)
-        who ! LeaseAcquired
+        replyToAll(prd, LeaseAcquired)
         goto(Granted).using(GrantedVersion(version, leaseLost))
       }
-    case Event(ReadResponse(LeaseResource(Some(currentOwner), version, time)), PendingReadData(who, leaseLost)) =>
+    case Event(ReadResponse(LeaseResource(Some(currentOwner), version, time)),
+          prd @ PendingReadData(who, leaseLost, _)) =>
       if (hasLeaseTimedOut(time)) {
         log.warning(
           "Lease {} has reached TTL. Owner {} has failed to heartbeat, have they crashed?. Allowing {} to try and take lease",
           leaseName,
           currentOwner,
           ownerName)
-        tryGetLease(version, who, leaseLost)
+        tryGetLease(version, who, leaseLost, prd.alsoReplyTo)
       } else {
-        who ! LeaseTaken
+        replyToAll(prd, LeaseTaken)
         // Even though we have a version there is no benefit to storing it as we can't update a lease that has a client
         goto(Idle).using(ReadRequired)
       }
@@ -169,24 +185,24 @@ private[pekko] class LeaseActor(
   when(Granting) {
     case Event(
           WriteResponse(Right(response)),
-          cc @ OperationInProgress(who, oldVersion, leaseLost, operationStartTime, _)) =>
+          cc @ OperationInProgress(_, oldVersion, leaseLost, operationStartTime, _, _)) =>
       require(
         oldVersion != response.version,
         s"Update response from Kubernetes API should not return the same version: Response: $response. Client: $cc")
       val operationDuration = System.nanoTime() - operationStartTime
       if (operationDuration > (settings.timeoutSettings.heartbeatTimeout.toNanos / 2)) {
         log.warning("API server took too long to respond to update: {}. ", operationDuration.nanos.pretty)
-        who ! Failure(
-          new LeaseTimeoutException(s"API server took too long to respond: ${operationDuration.nanos.pretty}"))
+        replyToAll(cc,
+          Failure(new LeaseTimeoutException(s"API server took too long to respond: ${operationDuration.nanos.pretty}")))
         goto(Idle).using(ReadRequired)
       } else {
         granted.set(true)
-        who ! LeaseAcquired
+        replyToAll(cc, LeaseAcquired)
         goto(Granted).using(GrantedVersion(response.version, leaseLost))
       }
 
     case Event(WriteResponse(Left(LeaseResource(None, version, _))),
-          op @ OperationInProgress(who, oldVersion, _, startTime, _)) =>
+          op @ OperationInProgress(_, oldVersion, _, startTime, _, _)) =>
       require(oldVersion != version)
       val operationDuration = (System.nanoTime() - startTime).nanos
       if (operationDuration > settings.timeoutSettings.operationTimeout) {
@@ -198,8 +214,9 @@ private[pekko] class LeaseActor(
           leaseName,
           ownerName,
           operationDuration.pretty)
-        who ! Failure(new LeaseTimeoutException(
-          s"Timed out trying to acquire lease [$leaseName, $ownerName] after ${operationDuration.pretty}"))
+        replyToAll(op,
+          Failure(new LeaseTimeoutException(
+            s"Timed out trying to acquire lease [$leaseName, $ownerName] after ${operationDuration.pretty}")))
         goto(Idle).using(ReadRequired)
       } else {
         // Try again as lock version has moved on but is not taken.
@@ -208,9 +225,9 @@ private[pekko] class LeaseActor(
         pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(r => WriteResponse(r))).to(self)
         stay().using(op.copy(version = version))
       }
-    case Event(WriteResponse(Left(LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _, _)) =>
+    case Event(WriteResponse(Left(LeaseResource(Some(_), _, _))), op: OperationInProgress) =>
       // The audacity, someone else has taken the lease :(
-      who ! LeaseTaken
+      replyToAll(op, LeaseTaken)
       goto(Idle).using(ReadRequired) // can't use version as another owner has the lock
   }
 
@@ -270,36 +287,36 @@ private[pekko] class LeaseActor(
     }
 
   when(Releasing) {
-    case Event(WriteResponse(Right(lr)), OperationInProgress(who, _, _, _, _)) =>
+    case Event(WriteResponse(Right(lr)), OperationInProgress(who, _, _, _, _, _)) =>
       require(lr.owner.isEmpty, "Released lease has unexpected owner: " + lr)
       who ! LeaseReleased
       goto(Idle).using(LeaseCleared(lr.version))
-    case Event(WriteResponse(Left(lr @ LeaseResource(None, _, _))), OperationInProgress(who, _, _, _, _)) =>
+    case Event(WriteResponse(Left(lr @ LeaseResource(None, _, _))), OperationInProgress(who, _, _, _, _, _)) =>
       log.warning(
         "Release conflict and owner has been removed: {}. Lease will continue to work but TTL must have been reached to allow another node to remove lease.",
         lr)
       who ! LeaseReleased
       goto(Idle).using(ReadRequired)
-    case Event(WriteResponse(Left(lr @ LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _, _)) =>
+    case Event(WriteResponse(Left(lr @ LeaseResource(Some(_), _, _))), OperationInProgress(who, _, _, _, _, _)) =>
       log.warning(
         "Release conflict and owner has changed: {}. Lease will continue to work but TTL must have been reached to allow another node to update the lease.",
         lr)
       who ! LeaseReleased
       goto(Idle).using(ReadRequired)
-    case Event(Failure(t), op @ OperationInProgress(who, _, _, startTime, retries)) =>
+    case Event(Failure(t), op @ OperationInProgress(who, _, _, startTime, retries, _)) =>
       // Pace release retries off the lease operation timeout rather than the heartbeat interval:
       // the caller is waiting on an ask that uses the operation timeout, so retries that run past
       // it would leave the caller with an ask timeout and the reply in dead letters.
       val operationTimeout = settings.timeoutSettings.operationTimeout
-      val retryDelay = operationTimeout / (heartbeatMaxRetries + 1)
+      val retryDelay = operationTimeout / (releaseMaxRetries + 1)
       val elapsed = (System.nanoTime() - startTime).nanos
-      if (retries < heartbeatMaxRetries && (elapsed + retryDelay) < operationTimeout) {
+      if (retries < releaseMaxRetries && (elapsed + retryDelay) < operationTimeout) {
         log.warning(
           "Failure releasing lease: [{}]. Retrying in {} (attempt {}/{}).",
           t.getMessage,
           retryDelay.pretty,
           retries + 1,
-          heartbeatMaxRetries)
+          releaseMaxRetries)
         startSingleTimer("release-retry", ReleaseRetry, retryDelay)
         stay().using(op.copy(releaseRetries = retries + 1))
       } else {
@@ -307,21 +324,32 @@ private[pekko] class LeaseActor(
         who ! Failure(t)
         goto(Idle).using(ReadRequired)
       }
-    case Event(ReleaseRetry, OperationInProgress(who, version, leaseLost, startTime, retries)) =>
+    case Event(ReleaseRetry, OperationInProgress(_, version, _, _, _, _)) =>
       log.debug("Release retry: releasing lease. Version {}", version)
       pipe(k8sApi.updateLeaseResource(leaseName, "", version).map(WriteResponse.apply)).to(self)
-      stay().using(OperationInProgress(who, version, leaseLost, startTime, retries))
+      stay()
+    case Event(Acquire(_), _) =>
+      // Acquiring while a release of the same lease is in flight is contradictory, so unlike an
+      // acquire during an in-flight acquire this is rejected rather than queued.
+      log.info(
+        "Acquire request for owner {} lease {} while a release is in progress.",
+        ownerName,
+        leaseName)
+      sender() ! InvalidRequest("Tried to acquire a lease while a release is in progress")
+      stay()
   }
 
   whenUnhandled {
-    case Event(Acquire(_), data @ _) =>
+    case Event(Acquire(leaseLostCallback), data: ReplyRequired) =>
+      // An acquire for the same lease is already in flight. Queue this caller rather than
+      // rejecting it: they all want the same outcome and will get the same response.
       log.info(
-        "Acquire request for owner {} lease {} while previous acquire/release still in progress. Current state: {}",
+        "Acquire request for owner {} lease {} while a previous acquire is still in progress, " +
+        "the caller will get the result of that acquire. Current state: {}",
         ownerName,
         leaseName,
         stateName)
-      sender() ! InvalidRequest("Tried to acquire a lease while previous acquire/release still in progress")
-      stay().using(data)
+      stay().using(addAcquirer(data, sender(), leaseLostCallback))
     case Event(Release(), data @ _) =>
       log.info(
         "Release request for owner {} lease {} while previous acquire/release still in progress. Current state: {}",
@@ -337,9 +365,24 @@ private[pekko] class LeaseActor(
         leaseName,
         t.getMessage,
         stateName)
-      replyRequired.replyTo ! Failure(t)
+      replyToAll(replyRequired, Failure(t))
       goto(Idle).using(ReadRequired)
   }
+
+  private def replyToAll(data: ReplyRequired, response: Any): Unit =
+    data.allReplyTo.foreach(_ ! response)
+
+  /**
+   * Add a caller that asked to acquire the lease while an acquire was already in flight. The most
+   * recently supplied lease lost callback wins, matching the re-acquire behaviour in `Granted`.
+   */
+  private def addAcquirer(data: ReplyRequired, who: ActorRef, leaseLost: Option[Throwable] => Unit): Data =
+    data match {
+      case prd: PendingReadData =>
+        prd.copy(leaseLostCallback = leaseLost, alsoReplyTo = prd.alsoReplyTo + who)
+      case op: OperationInProgress =>
+        op.copy(leaseLostCallback = leaseLost, alsoReplyTo = op.alsoReplyTo + who)
+    }
 
   onTransition {
     case _ -> Granted =>
@@ -355,9 +398,10 @@ private[pekko] class LeaseActor(
   private def tryGetLease(
       version: String,
       reply: ActorRef,
-      leaseLost: Option[Throwable] => Unit): FSM.State[LeaseActor.State, Data] = {
+      leaseLost: Option[Throwable] => Unit,
+      alsoReplyTo: Set[ActorRef]): FSM.State[LeaseActor.State, Data] = {
     pipe(k8sApi.updateLeaseResource(leaseName, ownerName, version).map(r => WriteResponse(r))).to(self)
-    goto(Granting).using(OperationInProgress(reply, version, leaseLost))
+    goto(Granting).using(OperationInProgress(reply, version, leaseLost, alsoReplyTo = alsoReplyTo))
   }
 
   private def hasLeaseTimedOut(leaseTime: Long): Boolean = {
