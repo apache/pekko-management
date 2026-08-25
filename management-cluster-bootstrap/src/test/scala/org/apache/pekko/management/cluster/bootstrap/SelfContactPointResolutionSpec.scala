@@ -95,7 +95,7 @@ class SelfContactPointResolutionSpec extends AnyWordSpec with Matchers with Befo
 
       second should ===(first)
       // the cache holds the same instance, not just an equal one
-      second.asInstanceOf[AnyRef] should be theSameInstanceAs first.asInstanceOf[AnyRef]
+      assert(second eq first)
     }
 
     "time out instead of blocking forever when the contact point is never set" in {
