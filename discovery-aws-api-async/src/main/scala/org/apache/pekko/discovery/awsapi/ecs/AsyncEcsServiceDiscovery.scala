@@ -15,6 +15,7 @@ package org.apache.pekko.discovery.awsapi.ecs
 
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicReference
 
 import scala.collection.immutable.Seq
 import scala.concurrent.duration._
@@ -24,7 +25,8 @@ import scala.jdk.FutureConverters._
 import scala.util.Try
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.Done
+import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.AsyncEcsServiceDiscovery.{ resolveTasks, Tag }
@@ -51,13 +53,40 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     }
     .toList
 
-  private lazy val ecsClient = {
+  // `httpClientBuilder` (rather than `httpClient`) hands ownership of the Netty client to the
+  // SDK, so that closing the ECS client also shuts down its event loop threads.
+  private[ecs] def createEcsClient(): EcsAsyncClient = {
     val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
-    val httpClient = NettyNioAsyncHttpClient.create()
-    EcsAsyncClient.builder().overrideConfiguration(conf).httpClient(httpClient).build()
+    EcsAsyncClient
+      .builder()
+      .overrideConfiguration(conf)
+      .httpClientBuilder(NettyNioAsyncHttpClient.builder())
+      .build()
+  }
+
+  // holds the client once it has been successfully built, so that shutdown never forces
+  // (or re-attempts) the lazy initialisation
+  private val builtEcsClient = new AtomicReference[EcsAsyncClient]()
+
+  private lazy val ecsClient: EcsAsyncClient = {
+    val client = createEcsClient()
+    builtEcsClient.set(client)
+    client
   }
 
   private implicit val ec: ExecutionContext = system.dispatcher
+
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-async-client-close") { () =>
+    builtEcsClient.getAndSet(null) match {
+      case null   => Future.successful(Done)
+      case client =>
+        // closing a Netty-backed client blocks until its event loops have shut down
+        Future {
+          client.close()
+          Done
+        }(system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher"))
+    }
+  }
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     Future.firstCompletedOf(

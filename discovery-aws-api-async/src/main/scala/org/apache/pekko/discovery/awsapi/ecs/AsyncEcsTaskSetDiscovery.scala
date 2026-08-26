@@ -15,6 +15,7 @@ package org.apache.pekko.discovery.awsapi.ecs
 
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicReference
 
 import scala.collection.immutable.Seq
 import scala.concurrent.duration._
@@ -24,7 +25,8 @@ import scala.jdk.FutureConverters._
 import scala.util.Try
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.Done
+import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.AsyncEcsTaskSetDiscovery.resolveTasks
@@ -55,15 +57,38 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs-task-set-async")
   private val cluster = config.getString("cluster")
 
-  private lazy val ecsClient = {
+  private[ecs] def createEcsClient(): EcsAsyncClient = {
     val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
     EcsAsyncClient.builder().overrideConfiguration(conf).build()
+  }
+
+  // holds the client once it has been successfully built, so that shutdown never forces
+  // (or re-attempts) the lazy initialisation
+  private val builtEcsClient = new AtomicReference[EcsAsyncClient]()
+
+  private lazy val ecsClient: EcsAsyncClient = {
+    val client = createEcsClient()
+    builtEcsClient.set(client)
+    client
   }
 
   private implicit val actorSystem: ActorSystem = system
   private implicit val ec: ExecutionContext = system.dispatcher
 
   private val httpClient: HttpExt = Http()
+
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-task-set-async-client-close") {
+    () =>
+      builtEcsClient.getAndSet(null) match {
+        case null   => Future.successful(Done)
+        case client =>
+          // closing the client blocks until the underlying HTTP client has shut down
+          Future {
+            client.close()
+            Done
+          }(system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher"))
+      }
+  }
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     Future.firstCompletedOf(
