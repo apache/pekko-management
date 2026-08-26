@@ -15,8 +15,10 @@ package org.apache.pekko.discovery.awsapi.ecs
 
 import java.net.{ InetAddress, NetworkInterface }
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.pekko
+import pekko.Done
 import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
@@ -48,10 +50,11 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs")
   private val cluster = config.getString("cluster")
 
-  @volatile private var ecsClientUsed = false
+  // holds the client once it has been successfully built, so that shutdown never forces
+  // (or re-attempts) the lazy initialisation
+  private val builtEcsClient = new AtomicReference[AmazonECS]()
 
-  private lazy val ecsClient = {
-    ecsClientUsed = true
+  private lazy val ecsClient: AmazonECS = {
     // we have our own retry/backoff mechanism, so we don't need EC2Client's in addition
     val clientConfiguration = new ClientConfiguration()
     clientConfiguration.setRetryPolicy(PredefinedRetryPolicies.NO_RETRY_POLICY)
@@ -63,20 +66,22 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
       builder.withEndpointConfiguration(new EndpointConfiguration(endpoint, region))
     }
 
-    builder.build()
+    val client = builder.build()
+    builtEcsClient.set(client)
+    client
   }
 
   private implicit val ec: ExecutionContext =
     system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-client-close") { () =>
-    if (ecsClientUsed) {
-      Future {
-        ecsClient.shutdown()
-        pekko.Done
-      }(ec)
-    } else {
-      Future.successful(pekko.Done)
+    builtEcsClient.getAndSet(null) match {
+      case null   => Future.successful(Done)
+      case client =>
+        Future {
+          client.shutdown()
+          Done
+        }(ec)
     }
   }
 
@@ -123,7 +128,7 @@ object EcsServiceDiscovery {
         Left(s"Exactly one private address must be configured (found: $other).")
     }
 
-  private def resolveTasks(ecsClient: AmazonECS, cluster: String, serviceName: String): Seq[Task] = {
+  private[ecs] def resolveTasks(ecsClient: AmazonECS, cluster: String, serviceName: String): Seq[Task] = {
     val taskArns = listTaskArns(ecsClient, cluster, serviceName)
     val tasks = describeTasks(ecsClient, cluster, taskArns)
     tasks
@@ -134,7 +139,7 @@ object EcsServiceDiscovery {
       cluster: String,
       serviceName: String,
       pageTaken: Option[String] = None,
-      accumulator: Seq[String] = Seq.empty): Seq[String] = {
+      accumulator: Vector[String] = Vector.empty): Vector[String] = {
     val listTasksResult = ecsClient.listTasks(
       new ListTasksRequest()
         .withCluster(cluster)
@@ -157,12 +162,15 @@ object EcsServiceDiscovery {
   }
 
   private def describeTasks(ecsClient: AmazonECS, cluster: String, taskArns: Seq[String]): Seq[Task] =
-    for {
+    taskArns
       // Each DescribeTasksRequest can contain at most 100 task ARNs.
-      group <- taskArns.grouped(100).toSeq
-      tasks = ecsClient.describeTasks(
-        new DescribeTasksRequest().withCluster(cluster).withTasks(group.asJava))
-      task <- tasks.getTasks.asScala
-    } yield task
+      .grouped(100)
+      .flatMap { group =>
+        ecsClient
+          .describeTasks(new DescribeTasksRequest().withCluster(cluster).withTasks(group.asJava))
+          .getTasks
+          .asScala
+      }
+      .toList
 
 }
