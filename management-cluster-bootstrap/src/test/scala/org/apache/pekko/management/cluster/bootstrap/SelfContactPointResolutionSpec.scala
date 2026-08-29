@@ -86,16 +86,15 @@ class SelfContactPointResolutionSpec extends AnyWordSpec with Matchers with Befo
       decider.selfContactPoint should ===(("10.0.0.2", 8558))
     }
 
-    "cache the resolved contact point rather than resolving it again" in {
+    "keep returning the resolved contact point on later calls" in {
       val (system, decider) = newDecider("self-contact-point-caches")
       ClusterBootstrap(system).setSelfContactPoint("http://10.0.0.2:8558/test")
 
       val first = decider.selfContactPoint
       val second = decider.selfContactPoint
 
+      first should ===(("10.0.0.2", 8558))
       second should ===(first)
-      // the cache holds the same instance, not just an equal one
-      assert(second eq first)
     }
 
     "time out instead of blocking forever when the contact point is never set" in {

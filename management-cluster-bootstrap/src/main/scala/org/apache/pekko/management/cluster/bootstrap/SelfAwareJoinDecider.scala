@@ -54,7 +54,15 @@ import scala.concurrent.duration._
    */
   protected def selfContactPointTimeout: FiniteDuration = ClusterBootstrap.SelfContactPointTimeout * 3
 
+  // `decide` is called from the BootstrapCoordinator actor and guarded by its `decisionInProgress`
+  // flag, so in-tree callers are already serialised. `JoinDecider` is a user-pluggable interface
+  // though, and a custom one is free to resolve the contact point inside the Future it returns, so
+  // these stay atomic rather than plain vars.
+  //
+  // `cachedSelfContactPoint` holds the resolved value, `null` until there is one. Failures are not
+  // cached, so a contact point set later is still picked up.
   private val cachedSelfContactPoint = new AtomicReference[(String, Int)]()
+  // Set by whichever caller takes the one permitted blocking wait; everyone else fails fast.
   private val hasBlockedForSelfContactPoint = new AtomicBoolean(false)
 
   /**
