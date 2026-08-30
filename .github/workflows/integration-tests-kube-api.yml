@@ -66,3 +66,51 @@ jobs:
       - name: Print logs on failure
         if: ${{ failure() }}
         run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
+
+  integration-test-watch:
+    name: Integration Tests for Kubernetes API (watch mode)
+    runs-on: ubuntu-22.04
+    if: github.repository == 'apache/pekko-management'
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Checkout GitHub merge
+        if: github.event.pull_request
+        run: |-
+          git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
+          git checkout scratch
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+
+      - name: Install sbt
+        uses: sbt/setup-sbt@bfea3c5f48abd221b04a6df4798aa5eb8b6a2baf # v1.5.6
+
+      - name: Cache Coursier cache
+        uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d # v8.1.1
+
+      - name: Setup Minikube
+        uses: manusa/actions-setup-minikube@b65276017fdec6f1e6498129fb740e34e260dc55 # v2.18.0
+        with:
+          minikube version: 'v1.36.0'
+          kubernetes version: 'v1.29.15'
+          driver: docker
+          github token: ${{ secrets.GITHUB_TOKEN }}
+          start args: '--addons=ingress'
+
+      - name: Run Integration Tests
+        run: |-
+          ./integration-test/kubernetes-api/test-watch.sh
+
+      - name: Print logs on failure
+        if: ${{ failure() }}
+        run: find . -name "*.log" -exec ./scripts/cat-log.sh {} \;
