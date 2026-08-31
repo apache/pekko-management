@@ -13,7 +13,8 @@
 
 package org.apache.pekko.management.cluster.bootstrap.internal
 
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.{ AtomicInteger, AtomicReference }
 
 import org.apache.pekko
 import pekko.actor.{ ActorRef, ActorSystem, Props }
@@ -21,7 +22,12 @@ import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.{ Lookup, MockDiscovery }
 import pekko.http.scaladsl.model.Uri
 import pekko.management.cluster.bootstrap.internal.BootstrapCoordinator.Protocol.InitiateBootstrapping
-import pekko.management.cluster.bootstrap.{ ClusterBootstrapSettings, LowestAddressJoinDecider }
+import pekko.management.cluster.bootstrap.{
+  ClusterBootstrapSettings,
+  JoinDecision,
+  LowestAddressJoinDecider,
+  SeedNodesInformation
+}
 import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
@@ -174,6 +180,48 @@ class BootstrapCoordinatorSpec extends AnyWordSpec with Matchers with BeforeAndA
       BootstrapCoordinator
         .selectHosts(Lookup.create("service"), 7626, filterOnFallbackPort = true, beforeFiltering)
         .toSet shouldEqual beforeFiltering.toSet
+    }
+  }
+
+  "The bootstrap coordinator, when a JoinDecider throws synchronously" should {
+
+    // SelfAwareJoinDecider.selfContactPoint resolves eagerly and can throw before `decide` ever
+    // builds a Future, so the failure never reaches `recover`. If that escapes, `decisionInProgress`
+    // is left true and the coordinator stops deciding for the rest of its life.
+    "keep making decisions instead of wedging" in {
+      val decideServiceName = "bootstrap-coordinator-throwing-decider"
+      val decideSettings = ClusterBootstrapSettings(
+        ConfigFactory.parseString(s"""
+          |pekko.management.cluster.bootstrap {
+          | contact-point-discovery.service-name = $decideServiceName
+          | contact-point-discovery.required-contact-point-nr = 1
+          | contact-point-discovery.contact-with-all-contact-points = false
+          |}
+        """.stripMargin).withFallback(system.settings.config),
+        system.log)
+
+      MockDiscovery.set(
+        Lookup(decideServiceName, portName = None, protocol = Some("tcp")),
+        () => Future.successful(Resolved(decideServiceName, List(ResolvedTarget("host1", Some(7626), None)))))
+
+      val decideCalls = new AtomicInteger(0)
+      val throwingDecider = new LowestAddressJoinDecider(system, decideSettings) {
+        override def decide(info: SeedNodesInformation): Future[JoinDecision] = {
+          decideCalls.incrementAndGet()
+          throw new TimeoutException("'Bootstrap.selfContactPoint' was never set")
+        }
+      }
+
+      val coordinator = system.actorOf(Props(new BootstrapCoordinator(discovery, throwingDecider, decideSettings) {
+        override def ensureProbing(selfContactPointScheme: String, contactPoint: ResolvedTarget): Option[ActorRef] =
+          None
+      }))
+      coordinator ! InitiateBootstrapping(selfUri)
+
+      // more than one call proves decisionInProgress was reset after the throw
+      eventually {
+        decideCalls.get should be >= 2
+      }
     }
   }
 

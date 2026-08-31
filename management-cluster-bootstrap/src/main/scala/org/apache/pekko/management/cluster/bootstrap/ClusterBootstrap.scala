@@ -126,14 +126,15 @@ final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Exten
    *
    * We give the required selfContactPoint some time to be set asynchronously, or else log an error.
    */
-  @InternalApi private[bootstrap] def ensureSelfContactPoint(): Unit = system.scheduler.scheduleOnce(10.seconds) {
-    if (!selfContactPoint.isCompleted) {
-      _selfContactPointUri.failure(new TimeoutException("Awaiting Bootstrap.selfContactPoint timed out."))
-      log.error(
-        "'Bootstrap.selfContactPoint' was NOT set, but is required for the bootstrap to work " +
-        "if binding bootstrap routes manually and not via pekko-management.")
+  @InternalApi private[bootstrap] def ensureSelfContactPoint(): Unit =
+    system.scheduler.scheduleOnce(ClusterBootstrap.SelfContactPointTimeout) {
+      if (!selfContactPoint.isCompleted) {
+        _selfContactPointUri.failure(new TimeoutException("Awaiting Bootstrap.selfContactPoint timed out."))
+        log.error(
+          "'Bootstrap.selfContactPoint' was NOT set, but is required for the bootstrap to work " +
+          "if binding bootstrap routes manually and not via pekko-management.")
+      }
     }
-  }
 
   /**
    * INTERNAL API
@@ -152,6 +153,15 @@ final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Exten
 }
 
 object ClusterBootstrap extends ExtensionId[ClusterBootstrap] with ExtensionIdProvider {
+
+  /**
+   * INTERNAL API
+   *
+   * How long `selfContactPoint` is given to be set before the promise behind it is failed. Anything
+   * waiting on that promise has to outlast this, so it is shared rather than restated - see
+   * `SelfAwareJoinDecider.selfContactPointTimeout`.
+   */
+  @InternalApi private[bootstrap] val SelfContactPointTimeout: FiniteDuration = 10.seconds
 
   override def lookup: ClusterBootstrap.type = ClusterBootstrap
 
