@@ -437,6 +437,10 @@ PUTs must contain resourceVersions. Response:
  * INTERNAL API
  */
 @InternalApi private[pekko] object KubernetesApiImpl {
+
+  // this module has no tls-version setting of its own; keep in sync with the other Kubernetes modules
+  private val DefaultMinTlsVersion = "TLSv1.2"
+
   def apply(log: LoggingAdapter, k8sSettings: KubernetesSettings)(implicit system: ActorSystem) = {
     implicit val blockingDispatcher: ExecutionContext = system.dispatchers.lookup(DefaultBlockingDispatcherId)
     for {
@@ -478,8 +482,9 @@ PUTs must contain resourceVersions. Response:
    */
   private def clientHttpsConnectionContext(k8sSettings: KubernetesSettings): Option[HttpsConnectionContext] = {
     if (k8sSettings.secure) {
-      val sslContext = PemManagersProvider.createSslContext(k8sSettings.apiCaPath, "TLSv1.2")
-      Some(ConnectionContext.httpsClient(sslContext))
+      val sslContext = PemManagersProvider.createSslContext(k8sSettings.apiCaPath)
+      Some(ConnectionContext.httpsClient((host, port) =>
+        PemManagersProvider.configureClientEngine(sslContext.createSSLEngine(host, port), DefaultMinTlsVersion)))
     } else
       None
   }

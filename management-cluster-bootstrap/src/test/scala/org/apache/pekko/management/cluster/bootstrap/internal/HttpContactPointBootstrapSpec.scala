@@ -19,6 +19,7 @@ import org.apache.pekko
 import pekko.actor.{ ActorPath, ActorSystem }
 import pekko.event.Logging
 import pekko.management.cluster.bootstrap.ClusterBootstrapSettings
+import pekko.pki.kubernetes.PemManagersProvider
 import pekko.http.scaladsl.model.Uri.Host
 import com.typesafe.config.ConfigFactory
 import org.scalatest.matchers.should.Matchers
@@ -73,7 +74,7 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
         sys.terminate()
       }
     }
-    "fail to generate SSLContext with bad tls-version" in {
+    "fail with bad tls-version when a connection engine is created" in {
       val sys = ActorSystem("HttpContactPointBootstrapSpec")
       val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
       try {
@@ -83,10 +84,37 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
             tls-version = "BAD_VERSION"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
-        val noSuchAlgorithmException = intercept[java.security.NoSuchAlgorithmException] {
-          HttpContactPointBootstrap.generateSSLContext(settings)
+        // the context builds fine; the version is validated per connection engine
+        HttpContactPointBootstrap.generateClientConnectionContext(settings) should not be null
+        val sslContext = HttpContactPointBootstrap.generateSSLContext(settings)
+        val illegalArgumentException = intercept[IllegalArgumentException] {
+          PemManagersProvider.configureClientEngine(
+            sslContext.createSSLEngine("example.com", 443),
+            settings.contactPoint.httpClient.minTlsVersion.trim)
         }
-        noSuchAlgorithmException.getMessage.contains("BAD_VERSION") should be(true)
+        illegalArgumentException.getMessage.contains("BAD_VERSION") should be(true)
+      } finally {
+        sys.terminate()
+      }
+    }
+
+    "restrict the enabled protocols to the configured minimum" in {
+      val sys = ActorSystem("HttpContactPointBootstrapSpec")
+      val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
+      try {
+        val cfg = ConfigFactory.parseString(s"""
+          pekko.management.cluster.bootstrap.contact-point.http-client {
+            ca-path = "${userDir}/src/test/files/ca.crt"
+            tls-version = "TLSv1.3"
+          }""").withFallback(sys.settings.config)
+        val settings = new ClusterBootstrapSettings(cfg, log)
+        HttpContactPointBootstrap.generateClientConnectionContext(settings) should not be null
+        val sslContext = HttpContactPointBootstrap.generateSSLContext(settings)
+        val engine = PemManagersProvider.configureClientEngine(
+          sslContext.createSSLEngine("example.com", 443),
+          settings.contactPoint.httpClient.minTlsVersion.trim)
+        engine.getEnabledProtocols.toSeq shouldEqual Seq("TLSv1.3")
+        engine.getSSLParameters.getEndpointIdentificationAlgorithm shouldEqual "https"
       } finally {
         sys.terminate()
       }
