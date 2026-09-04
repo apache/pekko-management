@@ -20,7 +20,7 @@ jobs:
         include:
           - { javaVersion: 17,  scalaVersion: 2.13, sbtOpts: '' }
           - { javaVersion: 17,  scalaVersion: 3.3,  sbtOpts: '' }
-          - { javaVersion: 17,  scalaVersion: 3.8,  sbtOpts: '' }
+          - { javaVersion: 17,  scalaVersion: 3.9,  sbtOpts: '' }
     steps:
       - name: Checkout
         uses: actions/checkout@v7
