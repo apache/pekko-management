@@ -75,8 +75,13 @@ lazy val root = project
   .enablePlugins(NoPublish)
 
 val mimaCompareVersion = "1.0.0"
-lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := Set(
-  organization.value %% name.value % mimaCompareVersion)
+lazy val mimaPreviousArtifactsSet = mimaPreviousArtifacts := {
+  // no MiMa check for the next Scala 3 version, there are no released artifacts built with it
+  if (scalaVersion.value == Dependencies.scala3NextVersion)
+    Set.empty
+  else
+    Set(organization.value %% name.value % mimaCompareVersion)
+}
 
 lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
