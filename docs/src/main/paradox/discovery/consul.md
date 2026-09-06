@@ -57,6 +57,25 @@ pekko.discovery {
     # Prefix for tag containing port number where pekko management is set up so that
     # the seed nodes can be found, an example value for the tag would be `pekko-management-port:19999`
     application-pekko-management-port-tag-prefix = "pekko-management-port:"
+
+    # Timeouts for the Consul HTTP client.
+    connect-timeout = 10s
+    read-timeout = 10s
+    write-timeout = 10s
+
+    # Maximum number of concurrent requests when looking up multiple service IDs.
+    # Must be greater than 0.
+    lookup-parallelism = 8
+
+    # ACL token for Consul API authentication. Empty means no authentication.
+    consul-token = ""
+
+    # Whether to use HTTPS when connecting to Consul.
+    tls-enabled = false
+
+    # Path to a PEM-encoded CA certificate file for TLS verification.
+    # Only used when tls-enabled = true. If empty, the default JVM trust store is used.
+    ca-path = ""
   }
 }
 ```
@@ -66,5 +85,8 @@ Notes:
 * Since tags in Consul services are simple strings, prefixes are necessary to ensure that proper values are read.
 
 * If Pekko management port tag is not found on service in Consul the implementation defaults to catalog service port.
+
+* The Consul client is created on the first lookup and closed during the `service-unbind` phase of Coordinated
+Shutdown. If discovery is never used, no client is created.
 
 

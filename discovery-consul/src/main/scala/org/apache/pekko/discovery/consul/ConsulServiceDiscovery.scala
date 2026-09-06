@@ -15,6 +15,7 @@ package org.apache.pekko.discovery.consul
 
 import com.google.common.net.HostAndPort
 import org.apache.pekko
+import pekko.Done
 import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
@@ -33,18 +34,20 @@ import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.util
 import java.util.concurrent.TimeoutException
-import javax.net.ssl.{ SSLContext, TrustManagerFactory }
+import java.util.concurrent.atomic.AtomicReference
+import javax.net.ssl.{ SSLContext, TrustManagerFactory, X509TrustManager }
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.jdk.CollectionConverters._
-import scala.util.Try
+import scala.util.{ Try, Using }
 
 @ApiMayChange
 class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private val settings = ConsulSettings.get(system)
-  private val consul = {
+
+  private[consul] def createConsulClient(): Consul = {
     val builder = Consul
       .builder()
       .withHostAndPort(HostAndPort.fromParts(settings.consulHost, settings.consulPort))
@@ -55,33 +58,55 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     if (settings.tlsEnabled) {
       builder.withHttps(true)
       settings.caPath.foreach { caPath =>
-        val cf = CertificateFactory.getInstance("X.509")
-        val caCert = cf.generateCertificate(new FileInputStream(caPath))
+        val caCert = Using.resource(new FileInputStream(caPath)) { in =>
+          CertificateFactory.getInstance("X.509").generateCertificate(in)
+        }
         val ks = KeyStore.getInstance(KeyStore.getDefaultType)
         ks.load(null)
         ks.setCertificateEntry("ca", caCert)
         val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
         tmf.init(ks)
+        val trustManagers = tmf.getTrustManagers
         val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(null, tmf.getTrustManagers, null)
+        sslContext.init(null, trustManagers, null)
         builder.withSslContext(sslContext)
+        // without this the client falls back to the default JVM trust manager for chain cleaning,
+        // even though the handshake uses the CA configured above
+        trustManagers.collectFirst { case tm: X509TrustManager => tm }.foreach(builder.withTrustManager)
       }
     }
     builder.build()
   }
+
+  // holds the client once it has been built, so that shutdown never forces the lazy initialisation
+  private val builtConsul = new AtomicReference[Consul]()
+
+  private lazy val consul: Consul = {
+    val client = createConsulClient()
+    builtConsul.set(client)
+    client
+  }
+
   private val blockingEc: ExecutionContext = system.dispatchers.lookup(DefaultBlockingDispatcherId)
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "consul-close") { () =>
-    Future {
-      consul.destroy()
-      pekko.Done
-    }(system.dispatcher)
+    builtConsul.getAndSet(null) match {
+      case null   => Future.successful(Done)
+      case client =>
+        // destroy() shuts down the OkHttp connection pool and executor service, which blocks
+        Future {
+          client.destroy()
+          Done
+        }(blockingEc)
+    }
   }
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     implicit val ec: ExecutionContext = system.dispatcher
-    // Use a Promise-based pattern instead of Future.firstCompletedOf to avoid leaking
-    // the underlying Consul HTTP connections when the timeout fires first.
+    // A Promise, rather than Future.firstCompletedOf, so that the scheduled timeout can be
+    // cancelled once the lookup completes instead of being left on the scheduler until it fires.
+    // Note that a timeout does not cancel the Consul requests already in flight; those are bounded
+    // by the connect/read/write timeouts the client is built with.
     val promise = Promise[Resolved]()
     val timeoutCancellable = system.scheduler.scheduleOnce(resolveTimeout) {
       promise.tryFailure(new TimeoutException(s"Lookup for [$lookup] timed-out, within [$resolveTimeout]!"))
@@ -102,12 +127,13 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
         .asScala
         .filter(e => e.getValue.contains(nameTag))
         .map(_.getKey)
-      catalogServices <- boundedTraverse(serviceIds.toSeq)(id => getService(id).map(_.getResponse.asScala.toList))
+      catalogServices <- boundedTraverse(serviceIds.toSeq, settings.parallelism)(id =>
+        getService(id).map(_.getResponse.asScala.toList))
       resolvedTargets <- Future.traverse(catalogServices.flatten.toSeq) { catalogService =>
         Future(extractResolvedTargetFromCatalogService(catalogService))(blockingEc)
       }
     } yield resolvedTargets
-    consulResult.map(targets => Resolved(name, scala.collection.immutable.Seq(targets: _*)))
+    consulResult.map(targets => Resolved(name, targets))
   }
 
   private def extractResolvedTargetFromCatalogService(catalogService: CatalogService) = {
@@ -124,12 +150,13 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
       address = Try(InetAddress.getByName(address)).toOption)
   }
 
-  private def boundedTraverse[A, B](items: Seq[A])(f: A => Future[B])(
+  private[consul] def boundedTraverse[A, B](items: Seq[A], parallelism: Int)(f: A => Future[B])(
       implicit ec: ExecutionContext): Future[Seq[B]] = {
+    require(parallelism > 0, s"parallelism must be greater than 0, was [$parallelism]")
     def loop(remaining: Seq[A], acc: Seq[B]): Future[Seq[B]] = {
       if (remaining.isEmpty) Future.successful(acc.reverse)
       else {
-        val (batch, rest) = remaining.splitAt(settings.parallelism)
+        val (batch, rest) = remaining.splitAt(parallelism)
         Future.traverse(batch)(f).flatMap(results => loop(rest, results.reverse ++ acc))
       }
     }
