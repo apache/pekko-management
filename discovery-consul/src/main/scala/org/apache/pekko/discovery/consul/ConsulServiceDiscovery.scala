@@ -16,7 +16,7 @@ package org.apache.pekko.discovery.consul
 import com.google.common.net.HostAndPort
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, CoordinatedShutdown }
-import pekko.annotation.ApiMayChange
+import pekko.annotation.{ ApiMayChange, InternalApi }
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.consul.ConsulServiceDiscovery._
 import pekko.discovery.{ Lookup, ServiceDiscovery }
@@ -27,13 +27,13 @@ import org.kiwiproject.consul.model.ConsulResponse
 import org.kiwiproject.consul.model.catalog.CatalogService
 import org.kiwiproject.consul.option.Options
 
-import java.io.FileInputStream
 import java.net.InetAddress
+import java.nio.file.{ Files, Paths }
 import java.security.KeyStore
-import java.security.cert.CertificateFactory
+import java.security.cert.{ Certificate, CertificateFactory }
 import java.util
 import java.util.concurrent.TimeoutException
-import javax.net.ssl.{ SSLContext, TrustManagerFactory }
+import javax.net.ssl.{ SSLContext, TrustManager, TrustManagerFactory }
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
@@ -55,15 +55,8 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     if (settings.tlsEnabled) {
       builder.withHttps(true)
       settings.caPath.foreach { caPath =>
-        val cf = CertificateFactory.getInstance("X.509")
-        val caCert = cf.generateCertificate(new FileInputStream(caPath))
-        val ks = KeyStore.getInstance(KeyStore.getDefaultType)
-        ks.load(null)
-        ks.setCertificateEntry("ca", caCert)
-        val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
-        tmf.init(ks)
         val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(null, tmf.getTrustManagers, null)
+        sslContext.init(null, buildTrustManagers(loadCertificates(caPath)), null)
         builder.withSslContext(sslContext)
       }
     }
@@ -149,6 +142,39 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
 @ApiMayChange
 object ConsulServiceDiscovery {
+
+  /**
+   * INTERNAL API
+   *
+   * Loads every certificate held in the given PEM file. The file may bundle more than one
+   * certificate (a root plus intermediates, or several roots while a CA is being rotated).
+   */
+  @InternalApi
+  private[consul] def loadCertificates(caPath: String): Seq[Certificate] = {
+    val in = Files.newInputStream(Paths.get(caPath))
+    val certificates =
+      try CertificateFactory.getInstance("X.509").generateCertificates(in).asScala.toSeq
+      finally in.close()
+    if (certificates.isEmpty)
+      throw new IllegalArgumentException(s"No certificates found in Consul CA file [$caPath]")
+    certificates
+  }
+
+  /**
+   * INTERNAL API
+   *
+   * Builds trust managers that trust every one of the given certificates, each held under its
+   * own alias so that no certificate hides another.
+   */
+  @InternalApi
+  private[consul] def buildTrustManagers(certificates: Seq[Certificate]): Array[TrustManager] = {
+    val ks = KeyStore.getInstance(KeyStore.getDefaultType)
+    ks.load(null)
+    certificates.zipWithIndex.foreach { case (cert, idx) => ks.setCertificateEntry(s"ca-$idx", cert) }
+    val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
+    tmf.init(ks)
+    tmf.getTrustManagers
+  }
 
   implicit class ConsulResponseFutureDecorator[T](f: ConsulResponseCallback[T] => Unit) {
     def asFuture: Future[ConsulResponse[T]] = {
