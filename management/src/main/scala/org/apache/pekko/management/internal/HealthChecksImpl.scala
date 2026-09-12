@@ -28,7 +28,6 @@ import pekko.management.javadsl.{ ReadinessCheckSetup => JReadinessCheckSetup }
 import pekko.management.javadsl.{ StartupCheckSetup => JStartupCheckSetup }
 import pekko.management.scaladsl.{ HealthChecks, LivenessCheckSetup, ReadinessCheckSetup, StartupCheckSetup }
 
-import scala.collection.immutable
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 import scala.jdk.FutureConverters._
@@ -59,7 +58,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
     "Loading liveness checks [{}]",
     settings.livenessChecks.map(a => a.name -> a.fullyQualifiedClassName).mkString(", "))
 
-  private val startupChecks: immutable.Seq[HealthCheck] = {
+  private val startupChecks: Seq[HealthCheck] = {
     val fromScaladslSetup = system.settings.setup.get[StartupCheckSetup] match {
       case None        => Nil
       case Some(setup) => setup.createHealthChecks(system)
@@ -72,7 +71,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
     fromConfig ++ fromScaladslSetup ++ fromJavadslSetup
   }
 
-  private val readiness: immutable.Seq[HealthCheck] = {
+  private val readiness: Seq[HealthCheck] = {
     val fromScaladslSetup = system.settings.setup.get[ReadinessCheckSetup] match {
       case None        => Nil
       case Some(setup) => setup.createHealthChecks(system)
@@ -85,7 +84,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
     fromConfig ++ fromScaladslSetup ++ fromJavadslSetup
   }
 
-  private val liveness: immutable.Seq[HealthCheck] = {
+  private val liveness: Seq[HealthCheck] = {
     val fromScaladslSetup = system.settings.setup.get[LivenessCheckSetup] match {
       case None        => Nil
       case Some(setup) => setup.createHealthChecks(system)
@@ -99,7 +98,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
   }
 
   private def convertSuppliersToScala(
-      suppliers: JList[Supplier[CompletionStage[JBoolean]]]): immutable.Seq[HealthCheck] = {
+      suppliers: JList[Supplier[CompletionStage[JBoolean]]]): Seq[HealthCheck] = {
     suppliers.asScala.toList.map(convertSupplierToScala)
   }
 
@@ -111,7 +110,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
     system.dynamicAccess
       .createInstanceFor[HealthCheck](
         fqcn,
-        immutable.Seq((classOf[ActorSystem], system)))
+        Seq((classOf[ActorSystem], system)))
       .recoverWith {
         case _: NoSuchMethodException =>
           system.dynamicAccess.createInstanceFor[HealthCheck](fqcn, Nil)
@@ -122,7 +121,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
     system.dynamicAccess
       .createInstanceFor[Supplier[CompletionStage[JBoolean]]](
         fqcn,
-        immutable.Seq((classOf[ActorSystem], system)))
+        Seq((classOf[ActorSystem], system)))
       .recoverWith {
         case _: NoSuchMethodException =>
           system.dynamicAccess.createInstanceFor[Supplier[CompletionStage[JBoolean]]](fqcn, Nil)
@@ -131,7 +130,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
   }
 
   private def load(
-      checks: immutable.Seq[NamedHealthCheck]): immutable.Seq[HealthCheck] = {
+      checks: Seq[NamedHealthCheck]): Seq[HealthCheck] = {
     checks
       .map(namedHealthCheck =>
         tryLoadScalaHealthCheck(namedHealthCheck.fullyQualifiedClassName).recoverWith {
@@ -202,7 +201,7 @@ final private[pekko] class HealthChecksImpl(system: ExtendedActorSystem, setting
     Future.fromTry(Try(check())).flatMap(identity)
   }
 
-  private def check(checks: immutable.Seq[HealthCheck]): Future[Either[String, Unit]] = {
+  private def check(checks: Seq[HealthCheck]): Future[Either[String, Unit]] = {
     val spawnedChecks: Seq[Future[Either[String, Unit]]] = checks.map { check =>
       val checkName = check.getClass.getName
       // Create a per-check timeout so each check gets its own timer,

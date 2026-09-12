@@ -15,7 +15,6 @@ package org.apache.pekko.management
 
 import com.typesafe.config.Config
 
-import scala.collection.immutable
 import scala.concurrent.duration.FiniteDuration
 import scala.jdk.CollectionConverters._
 import scala.jdk.DurationConverters._
@@ -119,9 +118,9 @@ object HealthCheckSettings {
  * @param checkTimeout how long to wait for all health checks to complete
  */
 final class HealthCheckSettings(
-    val startupChecks: immutable.Seq[NamedHealthCheck],
-    val readinessChecks: immutable.Seq[NamedHealthCheck],
-    val livenessChecks: immutable.Seq[NamedHealthCheck],
+    val startupChecks: Seq[NamedHealthCheck],
+    val readinessChecks: Seq[NamedHealthCheck],
+    val livenessChecks: Seq[NamedHealthCheck],
     val startupPath: String,
     val readinessPath: String,
     val livenessPath: String,
@@ -129,8 +128,8 @@ final class HealthCheckSettings(
 
   @deprecated("Use constructor that takes `startupChecks` and `startupPath` parameters instead", "1.1.0")
   def this(
-      readinessChecks: immutable.Seq[NamedHealthCheck],
-      livenessChecks: immutable.Seq[NamedHealthCheck],
+      readinessChecks: Seq[NamedHealthCheck],
+      livenessChecks: Seq[NamedHealthCheck],
       readinessPath: String,
       livenessPath: String,
       checkTimeout: FiniteDuration

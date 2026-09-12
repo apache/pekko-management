@@ -11,7 +11,6 @@ package org.apache.pekko.coordination.lease.kubernetes
 
 import java.util.concurrent.Executors
 
-import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -76,7 +75,7 @@ class LeaseContentionSpec extends TestKit(ActorSystem("LeaseContentionSpec",
       val nrClients = 30
       implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(nrClients)) // too many = HTTP request queue of pool fills up
       // could make this more contended with a countdown latch so they all start at the same time
-      val leases: immutable.Seq[(String, Boolean)] = Future.sequence((0 until nrClients).map(i => {
+      val leases: Seq[(String, Boolean)] = Future.sequence((0 until nrClients).map(i => {
         val clientName = s"client$i"
         val lease = underTest.getLease(lease1, KubernetesLease.configPath, clientName)
         Future {

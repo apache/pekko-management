@@ -15,7 +15,6 @@ package org.apache.pekko.rollingupdate.kubernetes
 
 import java.util.Locale
 import java.nio.charset.StandardCharsets
-import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
@@ -68,7 +67,7 @@ import java.nio.file.Paths
   private val http = Http()(system)
 
   private val scheme = if (settings.secure) "https" else "http"
-  private lazy val headers = if (settings.secure) immutable.Seq(Authorization(OAuth2BearerToken(apiToken))) else Nil
+  private lazy val headers = if (settings.secure) Seq(Authorization(OAuth2BearerToken(apiToken))) else Nil
 
   log.debug("kubernetes access namespace: {}. Secure: {}", namespace, settings.secure)
 
@@ -152,7 +151,7 @@ PUTs must contain resourceVersions. Response:
   override def updatePodCostResource(
       crName: String,
       version: String,
-      pods: immutable.Seq[PodCost]): Future[Either[PodCostResource, PodCostResource]] = {
+      pods: Seq[PodCost]): Future[Either[PodCostResource, PodCostResource]] = {
     val cr = PodCostCustomResource(Metadata(crName, Some(version)), Spec(pods))
     for {
       entity <- Marshal(cr).to[RequestEntity]

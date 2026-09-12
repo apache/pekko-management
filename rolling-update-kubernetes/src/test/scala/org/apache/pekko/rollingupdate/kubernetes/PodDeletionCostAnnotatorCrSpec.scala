@@ -15,7 +15,6 @@ package org.apache.pekko.rollingupdate.kubernetes
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -79,7 +78,7 @@ object PodDeletionCostAnnotatorCrSpec {
     override def updatePodCostResource(
         crName: String,
         v: String,
-        pods: immutable.Seq[PodCost]): Future[Either[PodCostResource, PodCostResource]] = this.synchronized {
+        pods: Seq[PodCost]): Future[Either[PodCostResource, PodCostResource]] = this.synchronized {
 
       podCosts = pods.toVector
       version = v.toInt + 1

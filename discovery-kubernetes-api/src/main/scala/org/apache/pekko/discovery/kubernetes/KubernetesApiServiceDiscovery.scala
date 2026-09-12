@@ -18,8 +18,6 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeoutException
 import java.nio.file.{ Files, Paths }
 
-import scala.collection.immutable
-import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
@@ -59,7 +57,7 @@ object KubernetesApiServiceDiscovery {
       podNamespace: String,
       podDomain: String,
       rawIp: Boolean,
-      containerName: Option[String]): immutable.Seq[ResolvedTarget] =
+      containerName: Option[String]): Seq[ResolvedTarget] =
     for {
       item <- podList.items
       if item.metadata.flatMap(_.deletionTimestamp).isEmpty
@@ -240,7 +238,7 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
       val query = Uri.Query("labelSelector" -> labelSelector)
       val uri = Uri.from(scheme = "https", host = host, port = port).withPath(path).withQuery(query)
 
-      val authHeaders = immutable.Seq(Authorization(OAuth2BearerToken(token)))
+      val authHeaders = Seq(Authorization(OAuth2BearerToken(token)))
       val acceptEncodingHeader = HttpEncodings.getForKey(settings.httpRequestAcceptEncoding)
         .map(httpEncoding => AcceptEncoding.create(httpEncoding))
       HttpRequest(uri = uri, headers = authHeaders ++ acceptEncodingHeader)

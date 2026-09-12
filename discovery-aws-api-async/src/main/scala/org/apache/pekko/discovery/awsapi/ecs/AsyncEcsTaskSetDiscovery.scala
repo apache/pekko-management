@@ -16,7 +16,6 @@ package org.apache.pekko.discovery.awsapi.ecs
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
 
-import scala.collection.immutable.Seq
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.jdk.CollectionConverters._

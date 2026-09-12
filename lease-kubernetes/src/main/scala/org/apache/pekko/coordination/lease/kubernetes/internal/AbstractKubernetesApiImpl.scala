@@ -31,7 +31,6 @@ import pekko.util.ByteString
 
 import java.nio.file.{ Files, Paths }
 import javax.net.ssl.SSLContext
-import scala.collection.immutable
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.util.control.NonFatal
 
@@ -69,7 +68,7 @@ import scala.util.control.NonFatal
     _.getOrElse(""))(ExecutionContext.parasitic)
   private def headers() = if (settings.secure) {
     apiToken().map { token =>
-      immutable.Seq(Authorization(OAuth2BearerToken(token)))
+      Seq(Authorization(OAuth2BearerToken(token)))
     }(ExecutionContext.parasitic)
   } else
     Future.successful(Nil)

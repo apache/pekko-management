@@ -13,8 +13,6 @@
 
 package org.apache.pekko.discovery.marathon
 
-import scala.collection.immutable.Seq
-
 object AppList {
   case class App(container: Option[Container], portDefinitions: Option[Seq[PortDefinition]], tasks: Option[Seq[Task]])
   case class Container(portMappings: Option[Seq[PortMapping]], docker: Option[Docker])

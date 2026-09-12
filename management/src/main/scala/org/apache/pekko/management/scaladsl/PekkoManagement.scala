@@ -38,7 +38,6 @@ import java.util.Optional
 import java.util.concurrent.atomic.AtomicReference
 
 import scala.annotation.tailrec
-import scala.collection.immutable
 import scala.concurrent.{ Future, Promise }
 import scala.jdk.FutureConverters._
 import scala.jdk.OptionConverters._
@@ -78,7 +77,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
 
   import system.dispatcher
 
-  private val routeProviders: immutable.Seq[ManagementRouteProvider] = loadRouteProviders()
+  private val routeProviders: Seq[ManagementRouteProvider] = loadRouteProviders()
 
   private val bindingFuture = new AtomicReference[(ManagementRouteProviderSettings, Future[Http.ServerBinding])]()
   private val selfUriPromise = Promise[Uri]()
@@ -248,7 +247,7 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
     } else stop() // retry, CAS was not successful, someone else completed the stop()
   }
 
-  private def loadRouteProviders(): immutable.Seq[ManagementRouteProvider] = {
+  private def loadRouteProviders(): Seq[ManagementRouteProvider] = {
     val dynamicAccess = system.dynamicAccess
 
     // since often the providers are Pekko extensions, we initialize them here as the ActorSystem would otherwise

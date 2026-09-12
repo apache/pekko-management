@@ -34,7 +34,6 @@ import java.security.cert.CertificateFactory
 import java.util
 import java.util.concurrent.TimeoutException
 import javax.net.ssl.{ SSLContext, TrustManagerFactory }
-import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.jdk.CollectionConverters._
@@ -107,7 +106,7 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
         Future(extractResolvedTargetFromCatalogService(catalogService))(blockingEc)
       }
     } yield resolvedTargets
-    consulResult.map(targets => Resolved(name, scala.collection.immutable.Seq(targets: _*)))
+    consulResult.map(targets => Resolved(name, targets))
   }
 
   private def extractResolvedTargetFromCatalogService(catalogService: CatalogService) = {

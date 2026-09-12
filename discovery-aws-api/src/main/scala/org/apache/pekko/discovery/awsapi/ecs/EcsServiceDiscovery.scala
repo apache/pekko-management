@@ -31,7 +31,6 @@ import com.amazonaws.services.ecs.model.{ DescribeTasksRequest, DesiredStatus, L
 import com.amazonaws.services.ecs.{ AmazonECS, AmazonECSClientBuilder }
 
 import scala.annotation.tailrec
-import scala.collection.immutable.Seq
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
