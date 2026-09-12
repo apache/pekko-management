@@ -41,7 +41,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpecLike
 
-import scala.collection.immutable._
+import scala.collection.immutable.SortedSet
 import scala.concurrent.Promise
 
 class ClusterHttpManagementRoutesSpec

@@ -20,7 +20,7 @@ import spray.json.{ DefaultJsonProtocol, RootJsonFormat }
 
 import scala.collection.immutable
 
-final case class ClusterUnreachableMember(node: String, observedBy: immutable.Seq[String])
+final case class ClusterUnreachableMember(node: String, observedBy: Seq[String])
 final case class ClusterMember(node: String, nodeUid: String, status: String, roles: Set[String])
 object ClusterMember {
   implicit val clusterMemberOrdering: Ordering[ClusterMember] = Ordering.by(_.node)
@@ -28,14 +28,14 @@ object ClusterMember {
 final case class ClusterMembers(
     selfNode: String,
     members: Set[ClusterMember],
-    unreachable: immutable.Seq[ClusterUnreachableMember],
+    unreachable: Seq[ClusterUnreachableMember],
     leader: Option[String],
     oldest: Option[String],
     oldestPerRole: Map[String, String])
 final case class ClusterHttpManagementMessage(message: String)
 final case class ShardEntityTypeKeys(entityTypeKeys: immutable.Set[String])
 final case class ShardRegionInfo(shardId: String, numEntities: Int)
-final case class ShardDetails(regions: immutable.Seq[ShardRegionInfo])
+final case class ShardDetails(regions: Seq[ShardRegionInfo])
 
 /** INTERNAL API */
 @InternalApi private[pekko] sealed trait ClusterHttpManagementMemberOperation

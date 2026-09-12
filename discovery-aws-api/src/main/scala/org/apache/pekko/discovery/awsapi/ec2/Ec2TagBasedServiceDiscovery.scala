@@ -30,7 +30,6 @@ import pekko.pattern.after
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
 import scala.annotation.tailrec
-import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.jdk.CollectionConverters._

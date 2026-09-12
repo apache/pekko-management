@@ -13,8 +13,6 @@
 
 package org.apache.pekko.rollingupdate.kubernetes
 
-import scala.collection.immutable
-
 import org.apache.pekko.annotation.InternalApi
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json.DefaultJsonProtocol
@@ -49,7 +47,7 @@ case class PodOwnerRef(name: String, kind: String)
  * INTERNAL API
  */
 @InternalApi
-case class PodMetadata(ownerReferences: immutable.Seq[PodOwnerRef])
+case class PodMetadata(ownerReferences: Seq[PodOwnerRef])
 
 /**
  * INTERNAL API
@@ -77,7 +75,7 @@ case class Metadata(name: String, resourceVersion: Option[String])
  * INTERNAL API
  */
 @InternalApi
-case class Spec(pods: immutable.Seq[PodCost])
+case class Spec(pods: Seq[PodCost])
 
 /**
  * INTERNAL API

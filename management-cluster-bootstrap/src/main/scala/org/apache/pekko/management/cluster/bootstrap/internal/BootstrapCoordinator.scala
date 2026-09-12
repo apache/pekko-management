@@ -85,7 +85,7 @@ private[pekko] object BootstrapCoordinator {
       lookup: Lookup,
       fallbackPort: Int,
       filterOnFallbackPort: Boolean,
-      contactPoints: immutable.Seq[ResolvedTarget]): immutable.Iterable[ResolvedTarget] = {
+      contactPoints: Seq[ResolvedTarget]): immutable.Iterable[ResolvedTarget] = {
 
     // if the user has specified a port name in the search, don't do any filtering and assume it
     // is handled in the service discovery mechanism
@@ -93,8 +93,8 @@ private[pekko] object BootstrapCoordinator {
       contactPoints
     } else {
       contactPoints.groupBy(_.host).flatMap {
-        case (_, immutable.Seq(singleResult)) =>
-          immutable.Seq(singleResult)
+        case (_, Seq(singleResult)) =>
+          Seq(singleResult)
         case (_, multipleResults) =>
           if (multipleResults.exists(_.port.isDefined)) {
             multipleResults.filter(_.port.contains(fallbackPort))

@@ -16,7 +16,6 @@ package org.apache.pekko.rollingupdate.kubernetes
 import java.text.Normalizer
 import java.util.Locale
 
-import scala.collection.immutable
 import scala.concurrent.Future
 
 import org.apache.pekko
@@ -29,7 +28,7 @@ import pekko.cluster.UniqueAddress
  * INTERNAL API
  */
 @InternalApi
-private[pekko] final case class PodCostResource(version: String, pods: immutable.Seq[PodCost])
+private[pekko] final case class PodCostResource(version: String, pods: Seq[PodCost])
 
 /**
  * INTERNAL API
@@ -138,6 +137,6 @@ private[pekko] trait KubernetesApi {
   def updatePodCostResource(
       crName: String,
       version: String,
-      pods: immutable.Seq[PodCost]): Future[Either[PodCostResource, PodCostResource]]
+      pods: Seq[PodCost]): Future[Either[PodCostResource, PodCostResource]]
 
 }

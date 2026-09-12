@@ -12,7 +12,6 @@
  */
 
 package org.apache.pekko.management.scaladsl
-import scala.collection.immutable
 import scala.concurrent.Future
 import org.apache.pekko
 import pekko.actor.ActorSystem
@@ -77,7 +76,7 @@ object StartupCheckSetup {
   /**
    * Programmatic definition of startup checks
    */
-  def apply(createHealthChecks: ActorSystem => immutable.Seq[HealthChecks.HealthCheck]): StartupCheckSetup = {
+  def apply(createHealthChecks: ActorSystem => Seq[HealthChecks.HealthCheck]): StartupCheckSetup = {
     new StartupCheckSetup(createHealthChecks)
   }
 
@@ -87,14 +86,14 @@ object StartupCheckSetup {
  * Setup for startup checks, constructor is *Internal API*, use factories in [[StartupCheckSetup]]
  */
 final class StartupCheckSetup private (
-    val createHealthChecks: ActorSystem => immutable.Seq[HealthChecks.HealthCheck]) extends Setup
+    val createHealthChecks: ActorSystem => Seq[HealthChecks.HealthCheck]) extends Setup
 
 object ReadinessCheckSetup {
 
   /**
    * Programmatic definition of readiness checks
    */
-  def apply(createHealthChecks: ActorSystem => immutable.Seq[HealthChecks.HealthCheck]): ReadinessCheckSetup = {
+  def apply(createHealthChecks: ActorSystem => Seq[HealthChecks.HealthCheck]): ReadinessCheckSetup = {
     new ReadinessCheckSetup(createHealthChecks)
   }
 
@@ -104,14 +103,14 @@ object ReadinessCheckSetup {
  * Setup for readiness checks, constructor is *Internal API*, use factories in [[ReadinessCheckSetup]]
  */
 final class ReadinessCheckSetup private (
-    val createHealthChecks: ActorSystem => immutable.Seq[HealthChecks.HealthCheck]) extends Setup
+    val createHealthChecks: ActorSystem => Seq[HealthChecks.HealthCheck]) extends Setup
 
 object LivenessCheckSetup {
 
   /**
    * Programmatic definition of liveness checks
    */
-  def apply(createHealthChecks: ActorSystem => immutable.Seq[HealthChecks.HealthCheck]): LivenessCheckSetup = {
+  def apply(createHealthChecks: ActorSystem => Seq[HealthChecks.HealthCheck]): LivenessCheckSetup = {
     new LivenessCheckSetup(createHealthChecks)
   }
 
@@ -121,4 +120,4 @@ object LivenessCheckSetup {
  * Setup for liveness checks, constructor is *Internal API*, use factories in [[LivenessCheckSetup]]
  */
 final class LivenessCheckSetup private (
-    val createHealthChecks: ActorSystem => immutable.Seq[HealthChecks.HealthCheck]) extends Setup
+    val createHealthChecks: ActorSystem => Seq[HealthChecks.HealthCheck]) extends Setup

@@ -26,7 +26,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-import scala.collection.{ immutable => im }
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 import scala.util.control.NoStackTrace
@@ -114,8 +113,8 @@ class HealthChecksSpec
   val DoesNotExist = NamedHealthCheck("DoesNotExist", "org.apache.pekko.management.DoesNotExist")
   val CtrExceptionCheck = NamedHealthCheck("CtrExceptionCheck", "org.apache.pekko.management.CtrException")
 
-  def settings(startup: im.Seq[NamedHealthCheck], readiness: im.Seq[NamedHealthCheck],
-      liveness: im.Seq[NamedHealthCheck]) =
+  def settings(startup: Seq[NamedHealthCheck], readiness: Seq[NamedHealthCheck],
+      liveness: Seq[NamedHealthCheck]) =
     new HealthCheckSettings(startup, readiness, liveness, "startup", "ready", "alive", 500.millis)
 
   "HealthCheck" should {
@@ -132,9 +131,9 @@ class HealthChecksSpec
       val checks = HealthChecks(
         eas,
         settings(
-          im.Seq(OkCheck),
-          im.Seq(OkCheck),
-          im.Seq(OkCheck)))
+          Seq(OkCheck),
+          Seq(OkCheck),
+          Seq(OkCheck)))
       checks.startupResult().futureValue shouldEqual Right(())
       checks.aliveResult().futureValue shouldEqual Right(())
       checks.readyResult().futureValue shouldEqual Right(())
@@ -146,9 +145,9 @@ class HealthChecksSpec
       val checks = HealthChecks(
         eas,
         settings(
-          im.Seq(NoArgsCtrCheck),
-          im.Seq(NoArgsCtrCheck),
-          im.Seq(NoArgsCtrCheck)))
+          Seq(NoArgsCtrCheck),
+          Seq(NoArgsCtrCheck),
+          Seq(NoArgsCtrCheck)))
       checks.startupResult().futureValue shouldEqual Right(())
       checks.aliveResult().futureValue shouldEqual Right(())
       checks.readyResult().futureValue shouldEqual Right(())
@@ -160,9 +159,9 @@ class HealthChecksSpec
       val checks = HealthChecks(
         eas,
         settings(
-          im.Seq(FalseCheck),
-          im.Seq(FalseCheck),
-          im.Seq(FalseCheck)))
+          Seq(FalseCheck),
+          Seq(FalseCheck),
+          Seq(FalseCheck)))
       checks.startupResult().futureValue.isRight shouldEqual false
       checks.readyResult().futureValue.isRight shouldEqual false
       checks.aliveResult().futureValue.isRight shouldEqual false
@@ -174,9 +173,9 @@ class HealthChecksSpec
       val checks = HealthChecks(
         eas,
         settings(
-          im.Seq(ThrowsCheck),
-          im.Seq(ThrowsCheck),
-          im.Seq(ThrowsCheck)))
+          Seq(ThrowsCheck),
+          Seq(ThrowsCheck),
+          Seq(ThrowsCheck)))
       checks.startupResult().failed.futureValue shouldEqual
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
       checks.readyResult().failed.futureValue shouldEqual
@@ -191,7 +190,7 @@ class HealthChecksSpec
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
     }
     "return failure if any of the checks fail" in {
-      val checks = im.Seq(
+      val checks = Seq(
         OkCheck,
         ThrowsCheck,
         FalseCheck)
@@ -210,7 +209,7 @@ class HealthChecksSpec
       CheckFailedException("Check [org.apache.pekko.management.Throws] failed: null", failedCause)
     }
     "return failure if check throws" in {
-      val checks = im.Seq(
+      val checks = Seq(
         NaughtyCheck)
       val hc = HealthChecks(eas, settings(checks, checks, checks))
       hc.startupResult().failed.futureValue.getMessage shouldEqual
@@ -224,7 +223,7 @@ class HealthChecksSpec
       hc.alive().failed.futureValue.getMessage shouldEqual "Check [org.apache.pekko.management.Naughty] failed: bad"
     }
     "return failure if checks timeout" in {
-      val checks = im.Seq(
+      val checks = Seq(
         SlowCheck,
         OkCheck)
       val hc = HealthChecks(eas, settings(checks, checks, checks))
@@ -243,14 +242,14 @@ class HealthChecksSpec
     }
     "provide useful error if user's ctr is invalid" in {
       intercept[InvalidHealthCheckException] {
-        val checks = im.Seq(InvalidCtrCheck)
+        val checks = Seq(InvalidCtrCheck)
         HealthChecks(eas, settings(checks, checks, checks))
       }.getMessage shouldEqual
       "Health checks: [NamedHealthCheck(InvalidCtr,org.apache.pekko.management.InvalidCtr)] must have a no args constructor or a single argument constructor that takes an ActorSystem"
     }
     "provide useful error if invalid type" in {
       intercept[InvalidHealthCheckException] {
-        val checks = im.Seq(WrongTypeCheck)
+        val checks = Seq(WrongTypeCheck)
         HealthChecks(eas, settings(checks, checks, checks))
       }.getMessage shouldEqual
       "Health checks: [NamedHealthCheck(WrongType,org.apache.pekko.management.WrongType)] must have type: () => Future[Boolean]"
@@ -258,14 +257,14 @@ class HealthChecksSpec
     "provide useful error if class not found" in {
       intercept[InvalidHealthCheckException] {
         val checks =
-          im.Seq(DoesNotExist, OkCheck)
+          Seq(DoesNotExist, OkCheck)
         HealthChecks(eas, settings(checks, checks, checks))
       }.getMessage shouldEqual "Health check: [org.apache.pekko.management.DoesNotExist] not found"
     }
     "provide useful error if class ctr throws" in {
       intercept[InvalidHealthCheckException] {
         val checks =
-          im.Seq(OkCheck, CtrExceptionCheck)
+          Seq(OkCheck, CtrExceptionCheck)
         HealthChecks(eas, settings(checks, checks, checks))
       }.getCause shouldEqual ctxException
     }

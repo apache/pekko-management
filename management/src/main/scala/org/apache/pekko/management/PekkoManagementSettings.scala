@@ -16,7 +16,6 @@ package org.apache.pekko.management
 import java.net.InetAddress
 import java.util.Optional
 
-import scala.collection.immutable
 import scala.concurrent.duration.{ Duration, FiniteDuration }
 import scala.jdk.CollectionConverters._
 import scala.jdk.DurationConverters._
@@ -62,7 +61,7 @@ final class PekkoManagementSettings(val config: Config) {
     val BasePath: Option[String] =
       Option(cc.getString("base-path")).flatMap(it => if (it.trim == "") None else Some(it))
 
-    val RouteProviders: immutable.Seq[NamedRouteProvider] = {
+    val RouteProviders: Seq[NamedRouteProvider] = {
       def validFQCN(value: Any) = {
         value != null &&
         value != "null" &&
