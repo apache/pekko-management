@@ -77,7 +77,7 @@ private[pekko] object KubernetesSettings {
       config.getString("namespace-path"),
       apiServerRequestTimeout,
       secure = config.getBoolean("secure-api-server"),
-      tlsVersion = config.getString("tls-version"),
+      minTlsVersion = config.getString("tls-version"),
       bodyReadTimeout = apiServerRequestTimeout / 2,
       tokenRetrySettings = tokenRetrySettings,
       leaseLabelMaxLength = config.getInt("lease-name-max-length"),
@@ -110,7 +110,7 @@ private[pekko] class KubernetesSettings(
     val namespacePath: String,
     val apiServerRequestTimeout: FiniteDuration,
     val secure: Boolean = true,
-    val tlsVersion: String = "TLSv1.2",
+    val minTlsVersion: String = "TLSv1.2",
     val bodyReadTimeout: FiniteDuration = 1.second,
     val tokenRetrySettings: TokenRetrySettings = new TokenRetrySettings(
       5,

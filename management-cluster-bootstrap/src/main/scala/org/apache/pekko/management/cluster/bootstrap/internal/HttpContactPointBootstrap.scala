@@ -14,10 +14,9 @@
 package org.apache.pekko.management.cluster.bootstrap.internal
 
 import java.time.LocalDateTime
-import java.security.{ KeyStore, SecureRandom }
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeoutException
-import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
+import javax.net.ssl.SSLContext
 import scala.concurrent.{ Future, Promise }
 import scala.concurrent.duration._
 
@@ -67,24 +66,16 @@ private[bootstrap] object HttpContactPointBootstrap {
   private val DefaultTlsVersion = "TLSv1.2" // keep in sync with default in reference.conf
 
   def generateSSLContext(settings: ClusterBootstrapSettings): SSLContext = {
-    val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
-    val keyStore = KeyStore.getInstance("PKCS12")
-    keyStore.load(null)
-    factory.init(keyStore, Array.empty)
-    val km: Array[KeyManager] = factory.getKeyManagers
     val caPath = settings.contactPoint.httpClient.caPath.trim
-    val tm: Array[TrustManager] = if (caPath.isEmpty) {
-      // null means use the default JVM trust store, which is what we want if no CA path is configured
-      None.orNull
-    } else {
-      val certificates = PemManagersProvider.loadCertificates(caPath)
-      PemManagersProvider.buildTrustManagers(certificates)
-    }
-    val tlsVersion = settings.contactPoint.httpClient.tlsVersion.trim
-    val random: SecureRandom = new SecureRandom
-    val sslContext = SSLContext.getInstance(tlsVersion)
-    sslContext.init(km, tm, random)
-    sslContext
+    // an empty ca-path means use the default JVM trust store
+    PemManagersProvider.createSslContext(if (caPath.nonEmpty) Some(caPath) else None)
+  }
+
+  def generateClientConnectionContext(settings: ClusterBootstrapSettings): HttpsConnectionContext = {
+    val sslContext = generateSSLContext(settings)
+    val minTlsVersion = settings.contactPoint.httpClient.minTlsVersion.trim
+    ConnectionContext.httpsClient((host, port) =>
+      PemManagersProvider.configureClientEngine(sslContext.createSSLEngine(host, port), minTlsVersion))
   }
 }
 
@@ -120,10 +111,10 @@ private[bootstrap] class HttpContactPointBootstrap(
 
   private val useCustomSslContext: Boolean =
     settings.contactPoint.httpClient.caPath.trim.nonEmpty ||
-    settings.contactPoint.httpClient.tlsVersion != DefaultTlsVersion
+    settings.contactPoint.httpClient.minTlsVersion != DefaultTlsVersion
 
   private lazy val clientSslContext: HttpsConnectionContext =
-    ConnectionContext.httpsClient(generateSSLContext(settings))
+    generateClientConnectionContext(settings)
 
   private val http = Http()
 
