@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory
 object AbstractKubernetesLease {
   val configPath = "pekko.coordination.lease.kubernetes"
   private val leaseCounter = new AtomicInteger(1)
+  private val InvalidDNS1039Chars = "[^-a-z0-9]".r
 
   // Base32 alphabet (RFC 4648 §6), **lowercased** so every character is a valid DNS 1039 label
   // character.  '=' padding is intentionally omitted: we stream full 5-bit groups and emit one
@@ -97,11 +98,9 @@ object AbstractKubernetesLease {
    * If hashLength >= maxLength the result consists entirely of the first maxLength hash characters.
    */
   private[kubernetes] def makeDNS1039Compatible(name: String, maxLength: Int = 63, hashLength: Int = 0): String = {
-    val normalized =
-      Normalizer.normalize(name, Normalizer.Form.NFKD)
-        .toLowerCase(Locale.ROOT)
-        .replaceAll("[_.]", "-")
-        .replaceAll("[^-a-z0-9]", "")
+    val lower = Normalizer.normalize(name, Normalizer.Form.NFKD).toLowerCase(Locale.ROOT)
+    val withHyphens = lower.replace('_', '-').replace('.', '-')
+    val normalized = InvalidDNS1039Chars.replaceAllIn(withHyphens, "")
     if (normalized.length <= maxLength || hashLength <= 0) {
       trim(truncateToLength(normalized, maxLength), List('-'))
     } else {

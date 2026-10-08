@@ -254,9 +254,7 @@ PUTs must contain resourceVersions. Response:
 
   private def pathForPodCostResource(crName: String): Uri.Path =
     Uri.Path.Empty / "apis" / "pekko.apache.org" / "v1" / "namespaces" / namespace / "podcosts" /
-    crName
-      .replaceAll("[^\\d\\w\\-\\.]", "")
-      .toLowerCase(Locale.ROOT)
+    KubernetesApi.InvalidResourceNameChars.replaceAllIn(crName, "").toLowerCase(Locale.ROOT)
 
   private def requestForPath(
       path: Uri.Path,

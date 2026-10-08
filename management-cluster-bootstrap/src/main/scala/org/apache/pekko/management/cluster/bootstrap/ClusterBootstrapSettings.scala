@@ -61,7 +61,7 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
     def effectiveName(system: ActorSystem): String =
       discoveryConfig.optDefinedValue("effective-name").getOrElse {
         val service =
-          serviceName.getOrElse(system.name.toLowerCase(Locale.ROOT).replaceAll(" ", "-").replace("_", "-"))
+          serviceName.getOrElse(system.name.toLowerCase(Locale.ROOT).replace(" ", "-").replace("_", "-"))
 
         val namespace = serviceNamespace match {
           case Some(ns) => s".$ns"

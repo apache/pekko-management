@@ -134,9 +134,7 @@ PUTs must contain resourceVersions. Response:
   override def pathForLease(name: String): Future[Uri.Path] = {
     namespace.map { ns =>
       Uri.Path.Empty / "apis" / "pekko.apache.org" / "v1" / "namespaces" / ns / "leases" /
-      name
-        .replaceAll("[^\\d\\w\\-\\.]", "")
-        .toLowerCase(Locale.ROOT)
+      AbstractKubernetesApiImpl.InvalidLeaseNameChars.replaceAllIn(name, "").toLowerCase(Locale.ROOT)
     }(ExecutionContext.parasitic)
   }
 

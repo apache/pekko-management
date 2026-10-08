@@ -79,6 +79,9 @@ private[pekko] final case class PodCost(podName: String, cost: Int, address: Str
  */
 @InternalApi private[pekko] object KubernetesApi {
 
+  private val InvalidDNS1039Chars = "[^-a-z0-9]".r
+  private[kubernetes] val InvalidResourceNameChars = "[^\\d\\w\\-\\.]".r
+
   /**
    * Removes from the leading and trailing positions the specified characters.
    */
@@ -91,11 +94,9 @@ private[pekko] final case class PodCost(podName: String, cost: Int, address: Str
    * Validates the resulting name to be at most 63 characters, otherwise throws `IllegalArgumentException`.
    */
   def makeDNS1039Compatible(name: String): String = {
-    val normalized =
-      Normalizer.normalize(name, Normalizer.Form.NFKD)
-        .toLowerCase(Locale.ROOT)
-        .replaceAll("[_.]", "-")
-        .replaceAll("[^-a-z0-9]", "")
+    val lower = Normalizer.normalize(name, Normalizer.Form.NFKD).toLowerCase(Locale.ROOT)
+    val withHyphens = lower.replace('_', '-').replace('.', '-')
+    val normalized = InvalidDNS1039Chars.replaceAllIn(withHyphens, "")
     if (normalized.length > 63)
       throw new IllegalArgumentException(
         s"Resource name [$normalized] is too long. At most 63 characters are accepted. " +
