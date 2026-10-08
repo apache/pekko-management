@@ -208,9 +208,9 @@ class KubernetesApiSpec
       response shouldEqual Left(LeaseResource(Some(conflictedOwner), updatedVersion, timestamp))
     }
 
-    "strip characters that are not allowed in a resource name from the lease path" in {
+    "strip characters that are not valid in a resource name, including underscores, from the lease path" in {
       underTest.pathForLease("My_Lease.1@host:7355/x").futureValue.toString shouldEqual
-      "/apis/pekko.apache.org/v1/namespaces/lease/leases/my_lease.1host7355x"
+      "/apis/pekko.apache.org/v1/namespaces/lease/leases/mylease.1host7355x"
     }
 
     "remove lease via DELETE" in {

@@ -19,6 +19,8 @@ import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.delete
+import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -27,6 +29,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import com.github.tomakehurst.wiremock.stubbing.Scenario
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
+import pekko.Done
 import pekko.actor.ActorSystem
 import pekko.testkit.EventFilter
 import pekko.testkit.ImplicitSender
@@ -237,6 +240,13 @@ class KubernetesApiSpec
         .intercept {
           kubernetesApi.readRevision().futureValue should be("1")
         }
+    }
+
+    "strip characters that are not valid in a resource name, including underscores, from the PodCost path" in {
+      val path = urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/$namespace/podcosts/myapp-cr.1x")
+      stubFor(delete(path).willReturn(aResponse().withStatus(200)))
+      kubernetesApi.removePodCostResource("My_App-CR.1@x").futureValue shouldEqual Done
+      WireMock.verify(deleteRequestedFor(path))
     }
   }
 }
