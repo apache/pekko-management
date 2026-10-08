@@ -144,9 +144,7 @@ object NativeKubernetesApiImpl {
   override def pathForLease(name: String): Future[Uri.Path] = {
     namespace.map { ns =>
       Uri.Path.Empty / "apis" / "coordination.k8s.io" / "v1" / "namespaces" / ns / "leases" /
-      name
-        .replaceAll("[^\\d\\w\\-\\.]", "")
-        .toLowerCase(Locale.ROOT)
+      AbstractKubernetesApiImpl.InvalidLeaseNameChars.replaceAllIn(name, "").toLowerCase(Locale.ROOT)
     }(ExecutionContext.parasitic)
   }
 

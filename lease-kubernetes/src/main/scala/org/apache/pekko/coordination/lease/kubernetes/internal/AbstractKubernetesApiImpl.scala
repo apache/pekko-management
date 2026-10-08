@@ -33,6 +33,14 @@ import java.nio.file.{ Files, Paths }
 import javax.net.ssl.SSLContext
 import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.util.control.NonFatal
+import scala.util.matching.Regex
+
+/**
+ * INTERNAL API
+ */
+@InternalApi private[kubernetes] object AbstractKubernetesApiImpl {
+  val InvalidLeaseNameChars: Regex = "[^\\d\\w\\-\\.]".r
+}
 
 /**
  * Could be shared between leases: https://github.com/akka/akka-management/issues/680

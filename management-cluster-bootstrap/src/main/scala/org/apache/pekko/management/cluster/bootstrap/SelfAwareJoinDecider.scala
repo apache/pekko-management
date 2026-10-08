@@ -85,7 +85,7 @@ import scala.concurrent.duration._
    * Checks for both host name and IP address for discovery mechanisms that return both.
    */
   protected def hostMatches(host: String, target: ResolvedTarget): Boolean = {
-    val hostWithoutBracket = host.replaceAll("[\\[\\]]", "")
+    val hostWithoutBracket = host.replace("[", "").replace("]", "")
     host == target.host || hostWithoutBracket == target.host ||
     target.address
       .map(_.getHostAddress)
