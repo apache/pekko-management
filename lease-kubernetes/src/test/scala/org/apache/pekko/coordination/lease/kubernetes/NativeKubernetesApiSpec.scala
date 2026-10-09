@@ -189,9 +189,9 @@ class NativeKubernetesApiSpec
         fromRFC3339MicroString(timestamp)))
     }
 
-    "strip characters that are not allowed in a resource name from the lease path" in {
+    "strip characters that are not valid in a resource name from the lease path" in {
       underTest.pathForLease("My_Lease.1@host:7355/x").futureValue.toString shouldEqual
-      "/apis/coordination.k8s.io/v1/namespaces/lease/leases/my_lease.1host7355x"
+      "/apis/coordination.k8s.io/v1/namespaces/lease/leases/mylease.1host7355x"
     }
 
     "remove lease via DELETE" in {

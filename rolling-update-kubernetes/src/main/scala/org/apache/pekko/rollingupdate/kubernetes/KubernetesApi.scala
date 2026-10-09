@@ -17,6 +17,7 @@ import java.text.Normalizer
 import java.util.Locale
 
 import scala.concurrent.Future
+import scala.util.matching.Regex
 
 import org.apache.pekko
 import pekko.Done
@@ -80,7 +81,7 @@ private[pekko] final case class PodCost(podName: String, cost: Int, address: Str
 @InternalApi private[pekko] object KubernetesApi {
 
   private val InvalidDNS1039Chars = "[^-a-z0-9]".r
-  private[kubernetes] val InvalidResourceNameChars = "[^\\d\\w\\-\\.]".r
+  private[kubernetes] val InvalidResourceNameChars: Regex = """[^\da-zA-Z\-\.]""".r
 
   /**
    * Removes from the leading and trailing positions the specified characters.

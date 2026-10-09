@@ -39,7 +39,7 @@ import scala.util.matching.Regex
  * INTERNAL API
  */
 @InternalApi private[kubernetes] object AbstractKubernetesApiImpl {
-  val InvalidLeaseNameChars: Regex = "[^\\d\\w\\-\\.]".r
+  val InvalidLeaseNameChars: Regex = """[^\da-zA-Z\-\.]""".r
 }
 
 /**
