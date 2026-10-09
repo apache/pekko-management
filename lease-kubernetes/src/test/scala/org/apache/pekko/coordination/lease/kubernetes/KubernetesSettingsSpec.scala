@@ -41,11 +41,11 @@ class KubernetesSettingsSpec extends AnyWordSpec with Matchers {
            api-server-request-timeout=4s
         """.stripMargin).apiServerRequestTimeout shouldEqual 4.seconds
     }
-    "default tls-version to v1.2" in {
-      conf("").tlsVersion shouldEqual "TLSv1.2"
+    "default min-tls-version to v1.2" in {
+      conf("").minTlsVersion shouldEqual "TLSv1.2"
     }
     "support tls-version override" in {
-      conf("tls-version=TLSv1.3").tlsVersion shouldEqual "TLSv1.3"
+      conf("tls-version=TLSv1.3").minTlsVersion shouldEqual "TLSv1.3"
     }
     "default lease-name-max-length to 63" in {
       conf("").leaseLabelMaxLength shouldEqual 63
