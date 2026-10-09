@@ -242,7 +242,7 @@ class KubernetesApiSpec
         }
     }
 
-    "strip characters that are not valid in a resource name, including underscores, from the PodCost path" in {
+    "strip characters that are not valid in a resource name from the PodCost path" in {
       val path = urlEqualTo(s"/apis/pekko.apache.org/v1/namespaces/$namespace/podcosts/myapp-cr.1x")
       stubFor(delete(path).willReturn(aResponse().withStatus(200)))
       kubernetesApi.removePodCostResource("My_App-CR.1@x").futureValue shouldEqual Done
