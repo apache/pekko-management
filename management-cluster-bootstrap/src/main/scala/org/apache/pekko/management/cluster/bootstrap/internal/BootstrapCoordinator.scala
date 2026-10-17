@@ -183,11 +183,19 @@ private[pekko] class BootstrapCoordinator(
     }
   }
   def startSingleDiscoveryTimer(): Unit = {
-    val interval = backedOffInterval(
+    val baseInterval = backedOffInterval(
       discoveryFailedBackoffCounter,
       settings.contactPointDiscovery.interval,
       settings.contactPointDiscovery.exponentialBackoffMax,
       settings.contactPointDiscovery.exponentialBackoffRandomFactor)
+    // Apply symmetric jitter to the base interval to prevent thundering herd
+    // even during normal (non-backoff) operation.
+    val jitterFactor = settings.contactPointDiscovery.exponentialBackoffRandomFactor
+    val jitter = 1.0 + (ThreadLocalRandom.current().nextDouble() * 2 - 1) * jitterFactor
+    val interval = baseInterval * jitter match {
+      case f: FiniteDuration if f > Duration.Zero => f
+      case _                                      => baseInterval
+    }
     timers.startSingleTimer(DiscoverTimerKey, DiscoverTick, interval)
   }
 
