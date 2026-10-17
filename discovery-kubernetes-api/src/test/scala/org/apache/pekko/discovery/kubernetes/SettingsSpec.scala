@@ -26,11 +26,11 @@ import org.scalatest.wordspec.AnyWordSpec
 class SettingsSpec extends AnyWordSpec with Matchers {
 
   "Settings" should {
-    "default tls-version to v1.2" in {
+    "default min-tls-version to v1.2" in {
       val system = ActorSystem("test")
       try {
         val settings = Settings(system)
-        settings.tlsVersion shouldBe "TLSv1.2"
+        settings.minTlsVersion shouldBe "TLSv1.2"
       } finally {
         system.terminate()
       }
@@ -44,7 +44,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
       val system = ActorSystem("test", config)
       try {
         val settings = Settings(system)
-        settings.tlsVersion shouldBe "TLSv1.3"
+        settings.minTlsVersion shouldBe "TLSv1.3"
       } finally {
         system.terminate()
       }

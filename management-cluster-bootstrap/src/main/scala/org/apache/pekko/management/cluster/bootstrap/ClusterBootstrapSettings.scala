@@ -139,7 +139,7 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
       private val httpClientConfig = contactPointConfig.getConfig("http-client")
 
       val caPath: String = httpClientConfig.getString("ca-path")
-      val tlsVersion: String = httpClientConfig.getString("tls-version")
+      val minTlsVersion: String = httpClientConfig.getString("tls-version")
     }
 
     val fallbackPort: Int =
