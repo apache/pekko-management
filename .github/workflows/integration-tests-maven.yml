@@ -46,7 +46,7 @@ jobs:
         uses: sbt/setup-sbt@c7d2d6258b4bd0d3ec5129e6b3453199d3c79729 # v1.5.8
 
       - name: Cache Coursier cache
-        uses: coursier/cache-action@95e5b1029b6b86e7bac033ee44a0697d8a527d2d # v8.1.1
+        uses: coursier/cache-action@057d08c2f9a2c4e7a4d33df3aae657b7db88b8cc # v8.2.0
 
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@001b9f30165b2a875b835ec5183ced75b94bc269 # v2.19.0
