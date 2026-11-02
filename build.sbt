@@ -23,6 +23,7 @@ commands := commands.value.filterNot { command =>
 
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / reproducibleBuildsCheckResolver := Resolver.ApacheMavenStagingRepo
+ThisBuild / resolvers += Resolver.ApacheMavenStagingRepo
 
 ThisBuild / javafmtFormatterCompatibleJavaVersion := 17
 
