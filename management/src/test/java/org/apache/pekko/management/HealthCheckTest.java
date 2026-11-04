@@ -15,6 +15,8 @@ package org.apache.pekko.management;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.typesafe.config.ConfigFactory;
@@ -263,6 +265,27 @@ public class HealthCheckTest {
       assertEquals(false, checks.ready().toCompletableFuture().get());
     } finally {
       TestKit.shutdownActorSystem(sys2);
+    }
+  }
+
+  @Test
+  public void setupsReturnReadOnlyCopyOfHealthChecks() {
+    NotOkFuture check = new NotOkFuture();
+    ArrayList<NotOkFuture> source = new ArrayList<>(List.of(check));
+    Function<ActorSystem, ArrayList<NotOkFuture>> createHealthChecks = system -> source;
+    List<Function<ActorSystem, List<Supplier<CompletionStage<Boolean>>>>> setups =
+        List.of(
+            StartupCheckSetup.create(createHealthChecks).createHealthChecks(),
+            ReadinessCheckSetup.create(createHealthChecks).createHealthChecks(),
+            LivenessCheckSetup.create(createHealthChecks).createHealthChecks());
+    for (Function<ActorSystem, List<Supplier<CompletionStage<Boolean>>>> setup : setups) {
+      source.clear();
+      source.add(check);
+      List<Supplier<CompletionStage<Boolean>>> healthChecks = setup.apply(system);
+      assertThrows(UnsupportedOperationException.class, () -> healthChecks.add(new Ok()));
+      source.clear();
+      assertEquals(1, healthChecks.size());
+      assertSame(check, healthChecks.get(0));
     }
   }
 
