@@ -14,6 +14,8 @@
 package org.apache.pekko.management;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.typesafe.config.ConfigFactory;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.actor.BootstrapSetup;
 import org.apache.pekko.actor.ExtendedActorSystem;
 import org.apache.pekko.actor.setup.ActorSystemSetup;
+import org.apache.pekko.management.javadsl.CheckResult;
 import org.apache.pekko.management.javadsl.HealthChecks;
 import org.apache.pekko.management.javadsl.LivenessCheckSetup;
 import org.apache.pekko.management.javadsl.ReadinessCheckSetup;
@@ -94,7 +97,7 @@ public class HealthCheckTest {
   @Test
   public void notOkayReturnsFalse() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        List.of(new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
+        List.of(new NamedHealthCheck("NotOk", "org.apache.pekko.management.HealthCheckTest$NotOk"));
     HealthChecks checks =
         new HealthChecks(
             system,
@@ -106,12 +109,36 @@ public class HealthCheckTest {
                 "ready",
                 "alive",
                 java.time.Duration.ofSeconds(1)));
-    assertEquals(true, checks.startupResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.aliveResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.readyResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.startup().toCompletableFuture().get());
-    assertEquals(true, checks.alive().toCompletableFuture().get());
-    assertEquals(true, checks.ready().toCompletableFuture().get());
+    assertEquals(false, checks.startupResult().toCompletableFuture().get().isSuccess());
+    assertEquals(false, checks.aliveResult().toCompletableFuture().get().isSuccess());
+    assertEquals(false, checks.readyResult().toCompletableFuture().get().isSuccess());
+    assertEquals(false, checks.startup().toCompletableFuture().get());
+    assertEquals(false, checks.alive().toCompletableFuture().get());
+    assertEquals(false, checks.ready().toCompletableFuture().get());
+  }
+
+  @Test
+  public void checkResultReflectsSuccess() throws Exception {
+    CheckResult result =
+        checksFor("Ok", "org.apache.pekko.management.HealthCheckTest$Ok")
+            .readyResult()
+            .toCompletableFuture()
+            .get();
+    assertEquals(true, result.isSuccess());
+    assertTrue(result.success().isPresent());
+    assertFalse(result.failure().isPresent());
+  }
+
+  @Test
+  public void checkResultReflectsFailure() throws Exception {
+    CheckResult result =
+        checksFor("NotOk", "org.apache.pekko.management.HealthCheckTest$NotOk")
+            .readyResult()
+            .toCompletableFuture()
+            .get();
+    assertEquals(false, result.isSuccess());
+    assertFalse(result.success().isPresent());
+    assertTrue(result.failure().isPresent());
   }
 
   @SuppressWarnings("deprecation")
@@ -196,6 +223,20 @@ public class HealthCheckTest {
   @AfterAll
   public static void cleanup() {
     TestKit.shutdownActorSystem(system);
+  }
+
+  private static HealthChecks checksFor(String name, String fqcn) {
+    List<NamedHealthCheck> healthChecks = List.of(new NamedHealthCheck(name, fqcn));
+    return new HealthChecks(
+        system,
+        HealthCheckSettings.create(
+            healthChecks,
+            healthChecks,
+            healthChecks,
+            "startup",
+            "ready",
+            "alive",
+            java.time.Duration.ofSeconds(1)));
   }
 
   private static <R> CompletableFuture<R> failed(Throwable error) {
