@@ -27,6 +27,7 @@ import pekko.management.internal.HealthChecksImpl
 
 import scala.jdk.FunctionConverters._
 import scala.jdk.FutureConverters._
+import scala.jdk.OptionConverters._
 
 /**
  * Can be used to instantiate health checks directly rather than rely on the
@@ -141,5 +142,5 @@ final class CheckResult private[javadsl] (private val result: Either[String, Uni
   def isSuccess: java.lang.Boolean = result.isRight
 
   def success: Optional[Unit] =
-    Optional.ofNullable(result.toOption.orNull)
+    result.toOption.toJava
 }
