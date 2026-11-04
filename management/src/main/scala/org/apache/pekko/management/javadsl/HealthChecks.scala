@@ -22,9 +22,11 @@ import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.actor.ExtendedActorSystem
 import pekko.actor.setup.Setup
+import pekko.annotation.InternalApi
 import pekko.management.HealthCheckSettings
 import pekko.management.internal.HealthChecksImpl
 
+import scala.jdk.CollectionConverters._
 import scala.jdk.FunctionConverters._
 import scala.jdk.FutureConverters._
 import scala.jdk.OptionConverters._
@@ -77,14 +79,35 @@ final class HealthChecks(system: ExtendedActorSystem, settings: HealthCheckSetti
     aliveResult().thenApply(((r: CheckResult) => r.isSuccess).asJava)
 }
 
+/**
+ * INTERNAL API
+ */
+@InternalApi private[javadsl] object HealthCheckSetups {
+
+  /**
+   * Adapts a function with wildcard types so that the resulting list is a read-only copy that can't be
+   * used to add elements of the wrong type to the list returned by the original function.
+   */
+  def readOnlyCopy(
+      createHealthChecks: JFunction[? >: ActorSystem,
+        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
+      : JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]] = { system =>
+    val healthChecks: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]] = createHealthChecks.apply(system)
+    // the cast is safe because a Supplier only produces values
+    healthChecks.asScala.toList.map(_.asInstanceOf[Supplier[CompletionStage[java.lang.Boolean]]]).asJava
+  }
+}
+
 object StartupCheckSetup {
 
   /**
    * Programmatic definition of startup checks
    */
-  def create(createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]])
+  def create(
+      createHealthChecks: JFunction[? >: ActorSystem,
+        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : StartupCheckSetup = {
-    new StartupCheckSetup(createHealthChecks)
+    new StartupCheckSetup(HealthCheckSetups.readOnlyCopy(createHealthChecks))
   }
 }
 
@@ -99,9 +122,11 @@ object ReadinessCheckSetup {
   /**
    * Programmatic definition of readiness checks
    */
-  def create(createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]])
+  def create(
+      createHealthChecks: JFunction[? >: ActorSystem,
+        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : ReadinessCheckSetup = {
-    new ReadinessCheckSetup(createHealthChecks)
+    new ReadinessCheckSetup(HealthCheckSetups.readOnlyCopy(createHealthChecks))
   }
 
 }
@@ -117,9 +142,11 @@ object LivenessCheckSetup {
   /**
    * Programmatic definition of liveness checks
    */
-  def create(createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]])
+  def create(
+      createHealthChecks: JFunction[? >: ActorSystem,
+        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : LivenessCheckSetup = {
-    new LivenessCheckSetup(createHealthChecks)
+    new LivenessCheckSetup(HealthCheckSetups.readOnlyCopy(createHealthChecks))
   }
 
 }

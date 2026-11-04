@@ -50,7 +50,7 @@ sealed abstract class ManagementRouteProviderSettings {
   /**
    * The async authenticator to be used for management routes.
    */
-  def withAuth(newAuth: JFunction[Optional[ProvidedCredentials], CompletionStage[Optional[String]]])
+  def withAuth(newAuth: JFunction[? >: Optional[ProvidedCredentials], ? <: CompletionStage[Optional[String]]])
       : ManagementRouteProviderSettings
 
   def httpsConnectionContext: Optional[HttpsConnectionContext]
@@ -82,9 +82,11 @@ sealed abstract class ManagementRouteProviderSettings {
   // There is no public API for defining both so it should not be possible
   require(!(javadslAuth.isDefined && scaladslAuth.isDefined), "Defining both javadsl and scaladsl auth is not allowed")
 
-  override def withAuth(newAuth: JFunction[Optional[ProvidedCredentials], CompletionStage[Optional[String]]])
+  override def withAuth(newAuth: JFunction[? >: Optional[ProvidedCredentials], ? <: CompletionStage[Optional[String]]])
       : ManagementRouteProviderSettings =
-    copy(javadslAuth = Option(newAuth))
+    // safe because the function is only applied to credentials and the result only read
+    copy(javadslAuth =
+      Option(newAuth.asInstanceOf[JFunction[Optional[ProvidedCredentials], CompletionStage[Optional[String]]]]))
 
   override def withHttpsConnectionContext(
       newHttpsConnectionContext: HttpsConnectionContext): ManagementRouteProviderSettings =
