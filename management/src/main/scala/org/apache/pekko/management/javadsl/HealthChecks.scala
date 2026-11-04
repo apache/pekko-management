@@ -82,9 +82,13 @@ object StartupCheckSetup {
   /**
    * Programmatic definition of startup checks
    */
-  def create(createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]])
+  def create(
+      createHealthChecks: JFunction[? >: ActorSystem,
+        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : StartupCheckSetup = {
-    new StartupCheckSetup(createHealthChecks)
+    // safe because the function is only applied to an ActorSystem and the result only read
+    new StartupCheckSetup(
+      createHealthChecks.asInstanceOf[JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]])
   }
 }
 
@@ -99,9 +103,13 @@ object ReadinessCheckSetup {
   /**
    * Programmatic definition of readiness checks
    */
-  def create(createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]])
+  def create(
+      createHealthChecks: JFunction[? >: ActorSystem,
+        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : ReadinessCheckSetup = {
-    new ReadinessCheckSetup(createHealthChecks)
+    // safe because the function is only applied to an ActorSystem and the result only read
+    new ReadinessCheckSetup(
+      createHealthChecks.asInstanceOf[JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]])
   }
 
 }
@@ -117,9 +125,13 @@ object LivenessCheckSetup {
   /**
    * Programmatic definition of liveness checks
    */
-  def create(createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]])
+  def create(
+      createHealthChecks: JFunction[? >: ActorSystem,
+        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : LivenessCheckSetup = {
-    new LivenessCheckSetup(createHealthChecks)
+    // safe because the function is only applied to an ActorSystem and the result only read
+    new LivenessCheckSetup(
+      createHealthChecks.asInstanceOf[JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]])
   }
 
 }
