@@ -97,7 +97,7 @@ public class HealthCheckTest {
   @Test
   public void notOkayReturnsFalse() throws Exception {
     List<NamedHealthCheck> healthChecks =
-        List.of(new NamedHealthCheck("Ok", "org.apache.pekko.management.HealthCheckTest$Ok"));
+        List.of(new NamedHealthCheck("NotOk", "org.apache.pekko.management.HealthCheckTest$NotOk"));
     HealthChecks checks =
         new HealthChecks(
             system,
@@ -109,12 +109,12 @@ public class HealthCheckTest {
                 "ready",
                 "alive",
                 java.time.Duration.ofSeconds(1)));
-    assertEquals(true, checks.startupResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.aliveResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.readyResult().toCompletableFuture().get().isSuccess());
-    assertEquals(true, checks.startup().toCompletableFuture().get());
-    assertEquals(true, checks.alive().toCompletableFuture().get());
-    assertEquals(true, checks.ready().toCompletableFuture().get());
+    assertEquals(false, checks.startupResult().toCompletableFuture().get().isSuccess());
+    assertEquals(false, checks.aliveResult().toCompletableFuture().get().isSuccess());
+    assertEquals(false, checks.readyResult().toCompletableFuture().get().isSuccess());
+    assertEquals(false, checks.startup().toCompletableFuture().get());
+    assertEquals(false, checks.alive().toCompletableFuture().get());
+    assertEquals(false, checks.ready().toCompletableFuture().get());
   }
 
   @Test
