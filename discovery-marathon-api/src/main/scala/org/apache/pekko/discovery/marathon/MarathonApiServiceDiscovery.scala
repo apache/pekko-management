@@ -14,21 +14,22 @@
 package org.apache.pekko.discovery.marathon
 
 import java.net.InetAddress
-import org.apache.pekko
-import pekko.actor.ActorSystem
-import pekko.http.scaladsl._
-import pekko.http.scaladsl.model._
-import pekko.http.scaladsl.unmarshalling.Unmarshal
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
+
+import org.apache.pekko
+import pekko.actor.ActorSystem
+import pekko.annotation.ApiMayChange
+import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import AppList._
 import JsonFormat._
-import pekko.annotation.ApiMayChange
 import pekko.discovery.{ Lookup, ServiceDiscovery }
-import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.event.{ LogSource, Logging }
+import pekko.http.scaladsl._
+import pekko.http.scaladsl.model._
+import pekko.http.scaladsl.unmarshalling.Unmarshal
 
 @ApiMayChange
 object MarathonApiServiceDiscovery {

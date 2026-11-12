@@ -101,7 +101,18 @@ object Common extends AutoPlugin {
       // -v Log "test run started" / "test started" / "test run finished" events on log level "info" instead of "debug".
       // -a Show stack traces and exception class name for AssertionErrors.
       testOptions += Tests.Argument(TestFrameworks.JUnit, "-v", "-a"),
-      scalaVersion := Dependencies.scala213Version)
+      scalaVersion := Dependencies.scala213Version) ++ Seq(Compile, Test).map { config =>
+      config / scalacOptions := {
+        val options = (config / scalacOptions).value
+        if (semanticdbEnabled.value) {
+          // OrganizeImports needs unused-import diagnostics, but must be able to repair them before warnings fail the build.
+          options.filterNot(option =>
+            Set("-Xfatal-warnings", "-Werror").contains(option) ||
+            (option.startsWith("-Wconf:") && option.toLowerCase.contains("unused import"))) :+
+          (if (scalaVersion.value.startsWith("2.12.")) "-Ywarn-unused:imports" else "-Wunused:imports")
+        } else options
+      }
+    }
 
   override lazy val buildSettings = Seq(
     dynverSonatypeSnapshots := true)

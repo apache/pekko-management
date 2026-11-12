@@ -13,9 +13,10 @@
 
 package org.apache.pekko.discovery.marathon
 
-import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json._
+
 import AppList._
+import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 
 object JsonFormat extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val taskFormat: JsonFormat[Task] = jsonFormat2(Task.apply)
