@@ -13,6 +13,7 @@
 
 package org.apache.pekko.management.javadsl
 
+import java.lang.{ Iterable => JIterable }
 import java.util.concurrent.CompletionStage
 import java.util.function.Supplier
 import java.util.function.{ Function => JFunction }
@@ -90,9 +91,10 @@ final class HealthChecks(system: ExtendedActorSystem, settings: HealthCheckSetti
    */
   def readOnlyCopy(
       createHealthChecks: JFunction[? >: ActorSystem,
-        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
+        ? <: JIterable[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]] = { system =>
-    val healthChecks: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]] = createHealthChecks.apply(system)
+    val healthChecks: JIterable[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]] =
+      createHealthChecks.apply(system)
     // the cast is safe because a Supplier only produces values
     healthChecks.asScala.toList.map(_.asInstanceOf[Supplier[CompletionStage[java.lang.Boolean]]]).asJava
   }
@@ -105,7 +107,7 @@ object StartupCheckSetup {
    */
   def create(
       createHealthChecks: JFunction[? >: ActorSystem,
-        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
+        ? <: JIterable[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : StartupCheckSetup = {
     new StartupCheckSetup(HealthCheckSetups.readOnlyCopy(createHealthChecks))
   }
@@ -124,7 +126,7 @@ object ReadinessCheckSetup {
    */
   def create(
       createHealthChecks: JFunction[? >: ActorSystem,
-        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
+        ? <: JIterable[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : ReadinessCheckSetup = {
     new ReadinessCheckSetup(HealthCheckSetups.readOnlyCopy(createHealthChecks))
   }
@@ -144,7 +146,7 @@ object LivenessCheckSetup {
    */
   def create(
       createHealthChecks: JFunction[? >: ActorSystem,
-        ? <: JList[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
+        ? <: JIterable[? <: Supplier[? <: CompletionStage[java.lang.Boolean]]]])
       : LivenessCheckSetup = {
     new LivenessCheckSetup(HealthCheckSetups.readOnlyCopy(createHealthChecks))
   }

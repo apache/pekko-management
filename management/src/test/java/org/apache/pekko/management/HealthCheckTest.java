@@ -290,6 +290,23 @@ public class HealthCheckTest {
   }
 
   @Test
+  public void setupsAcceptIterableOfHealthChecks() {
+    NotOkFuture check = new NotOkFuture();
+    Function<ActorSystem, Iterable<NotOkFuture>> createHealthChecks =
+        system -> Collections.singleton(check);
+    List<Function<ActorSystem, List<Supplier<CompletionStage<Boolean>>>>> setups =
+        List.of(
+            StartupCheckSetup.create(createHealthChecks).createHealthChecks(),
+            ReadinessCheckSetup.create(createHealthChecks).createHealthChecks(),
+            LivenessCheckSetup.create(createHealthChecks).createHealthChecks());
+    for (Function<ActorSystem, List<Supplier<CompletionStage<Boolean>>>> setup : setups) {
+      List<Supplier<CompletionStage<Boolean>>> healthChecks = setup.apply(system);
+      assertEquals(1, healthChecks.size());
+      assertSame(check, healthChecks.get(0));
+    }
+  }
+
+  @Test
   public void withAuthAcceptsWiderFunctionType() throws Exception {
     Optional<String> principal = Optional.of("principal");
     Function<Object, CompletableFuture<Optional<String>>> auth =
