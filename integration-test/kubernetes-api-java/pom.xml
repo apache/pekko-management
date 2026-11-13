@@ -153,7 +153,8 @@
                   <exec>
                     <args>/bin/sh</args>
                     <args>-c</args>
-                    <args>java -jar /maven/integration-test-kubernetes-api-java-allinone.jar</args>
+                    <!-- Agrona requires this JVM option to work on recent JDKs -->
+                    <args>java --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED -jar /maven/integration-test-kubernetes-api-java-allinone.jar</args>
                   </exec>
                 </entryPoint>
                 <assembly>
