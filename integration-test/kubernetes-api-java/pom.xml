@@ -23,11 +23,11 @@
   </licenses>
 
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <pekko.version>1.2.1</pekko.version>
-    <pekko.http.version>1.2.0</pekko.http.version>
+    <pekko.version>2.0.0</pekko.version>
+    <pekko.http.version>2.0.0</pekko.http.version>
     <pekko-management.version>0.0.0</pekko-management.version> <!-- set by build -->
     <scala.binary.version>2.13</scala.binary.version>
   </properties>
@@ -153,7 +153,8 @@
                   <exec>
                     <args>/bin/sh</args>
                     <args>-c</args>
-                    <args>java -jar /maven/integration-test-kubernetes-api-java-allinone.jar</args>
+                    <!-- Agrona requires this JVM option to work on recent JDKs -->
+                    <args>java --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED -jar /maven/integration-test-kubernetes-api-java-allinone.jar</args>
                   </exec>
                 </entryPoint>
                 <assembly>
