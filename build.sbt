@@ -385,5 +385,24 @@ def pekkoModule(moduleName: String): Project =
 def pekkoIntTestModule(moduleName: String): Project =
   Project(id = s"integration-test-$moduleName", base = file(s"integration-test/$moduleName"))
 
+addCommandAlias("sortImports", ";scalafixEnable; scalafixAll OrganizeImports; scalafmtAll")
+
+// These applications are deliberately outside the normal root aggregate.
+val integrationImportProjects = Seq(
+  "rolling-update-kubernetes-int-test",
+  "lease-kubernetes-int-test",
+  "integration-test-rolling-update-kubernetes",
+  "integration-test-kubernetes-api",
+  "integration-test-kubernetes-api-java",
+  "integration-test-kubernetes-dns",
+  "integration-test-aws-api-ec2",
+  "integration-test-marathon-api-docker",
+  "integration-test-aws-api-ecs",
+  "integration-test-local")
+addCommandAlias(
+  "sortIntegrationTestImports",
+  (Seq("scalafixEnable") ++ integrationImportProjects.flatMap(project =>
+    Seq(s"$project/scalafixAll OrganizeImports", s"$project/scalafmtAll"))).mkString(";", ";", ""))
+
 addCommandAlias("checkCodeStyle", "scalafmtCheckAll; scalafmtSbtCheck; javafmtCheckAll; +headerCheckAll")
 addCommandAlias("applyCodeStyle", "+headerCreateAll; scalafmtAll; scalafmtSbt; javafmtAll")

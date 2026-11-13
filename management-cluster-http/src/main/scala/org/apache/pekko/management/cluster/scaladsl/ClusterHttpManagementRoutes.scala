@@ -18,7 +18,7 @@ import pekko.actor.AddressFromURIString
 import pekko.cluster.sharding.{ ClusterSharding, ShardRegion }
 import pekko.cluster.{ Cluster, Member, MemberStatus }
 import pekko.http.scaladsl.model.{ HttpMethod, HttpMethods, StatusCodes, Uri }
-import Uri.Path
+import pekko.http.scaladsl.model.Uri.Path
 import pekko.http.scaladsl.server.Route
 import pekko.management.cluster.{
   ClusterDomainEventServerSentEventEncoder,

@@ -103,3 +103,23 @@ git blame to ignore these commits you can execute the following.
 1. [CI](https://github.com/apache/pekko-management/actions) automatically merges the code, builds it, runs the tests and sets Pull Request status accordingly of results in GitHub.
 2. [Scalafmt](https://olafurpg.github.io/scalafmt) enforces some of the code style rules.
 3. [sbt-header plugin](https://github.com/sbt/sbt-header) manages consistent copyright headers in every source file.
+
+### Organizing Scala imports
+
+Run `sbt sortImports` to organize Scala imports with Scalafix and then format
+them with Scalafmt. The command enables SemanticDB for the current sbt session;
+it does not change the normal build or require globally enabled compiler plugins.
+Relative Pekko imports are grouped with their fully qualified counterparts.
+Generated sources are not rewritten by Scalafix. When an import depends on an
+object imported earlier in the same block, qualify that object from its package
+(e.g. `pekko.http.scaladsl.model.Uri.Path` rather than `Uri.Path`) so sorting
+does not move it before the prerequisite import. Recompile after organizing.
+
+Run `scripts/check-organize-imports.sh` to verify grouping, unused-import removal,
+and idempotence in an isolated fixture. Set `SCALA_VERSION` to test another
+supported Scala version, or pass an sbt launcher command to the script.
+
+`sortImports` follows the normal root aggregate. Use `sbt sortIntegrationTestImports`
+for the integration applications deliberately excluded from that aggregate.
+Neither command executes integration tests or starts external services. Standalone
+builds not declared in the root build remain independent.
