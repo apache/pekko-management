@@ -53,8 +53,8 @@ jobs:
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@001b9f30165b2a875b835ec5183ced75b94bc269 # v2.19.0
         with:
-          minikube version: 'v1.36.0'
-          kubernetes version: 'v1.29.15'
+          minikube version: 'v1.39.0' # default Kubernetes v1.37.0
+          kubernetes version: 'v1.37.0'
           driver: docker
           github token: ${{ secrets.GITHUB_TOKEN }}
           start args: '--addons=ingress'
