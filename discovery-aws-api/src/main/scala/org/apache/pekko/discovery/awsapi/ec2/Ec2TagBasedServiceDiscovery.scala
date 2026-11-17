@@ -101,11 +101,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
       }
   }
 
-  // holds the client once it has been successfully built, so that shutdown never forces
-  // (or re-attempts) the lazy initialisation
-  private val builtEc2Client = new AtomicReference[AmazonEC2]()
-
-  private lazy val ec2Client: AmazonEC2 = {
+  private def createEc2Client(): AmazonEC2 = {
     val clientConfiguration = clientConfigFqcn match {
       case Some(fqcn) =>
         getCustomClientConfigurationInstance(fqcn) match {
@@ -132,15 +128,31 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
       builder.withEndpointConfiguration(new EndpointConfiguration(endpoint, region))
     }
 
-    val client = builder.build()
+    builder.build()
+  }
+
+  // holds the client once it has been successfully built, so that shutdown never forces
+  // (or re-attempts) the lazy initialisation
+  private val builtEc2Client = new AtomicReference[AmazonEC2]()
+
+  // set when coordinated shutdown closes the client, so that a client whose construction was still
+  // in progress at that point is closed as soon as it has been built rather than leaked
+  @volatile private var shuttingDown = false
+
+  private lazy val ec2Client: AmazonEC2 = {
+    val client = createEc2Client()
     builtEc2Client.set(client)
+    if (shuttingDown) takeBuiltEc2Client().foreach(_.shutdown())
     client
   }
 
+  private def takeBuiltEc2Client(): Option[AmazonEC2] = Option(builtEc2Client.getAndSet(null))
+
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ec2-client-close") { () =>
-    builtEc2Client.getAndSet(null) match {
-      case null   => Future.successful(Done)
-      case client =>
+    shuttingDown = true
+    takeBuiltEc2Client() match {
+      case None         => Future.successful(Done)
+      case Some(client) =>
         Future {
           client.shutdown()
           Done
