@@ -17,6 +17,7 @@ import org.apache.pekko
 import pekko.annotation.InternalApi
 import pekko.discovery.kubernetes.PodList.{
   Added,
+  Bookmark,
   Container,
   ContainerPort,
   ContainerStatus,
@@ -53,6 +54,7 @@ import spray.json._
       case Added    => JsString("ADDED")
       case Modified => JsString("MODIFIED")
       case Deleted  => JsString("DELETED")
+      case Bookmark => JsString("BOOKMARK")
       case Error    => JsString("ERROR")
     }
 
@@ -60,6 +62,7 @@ import spray.json._
       case JsString("ADDED")    => Added
       case JsString("MODIFIED") => Modified
       case JsString("DELETED")  => Deleted
+      case JsString("BOOKMARK") => Bookmark
       case JsString("ERROR")    => Error
       case other                => throw new DeserializationException(s"Unknown watch event type: $other")
     }
@@ -71,9 +74,19 @@ import spray.json._
 
     def read(json: JsValue): WatchEvent = json.asJsObject("WatchEvent expected") match {
       case JsObject(fields) =>
-        val eventType = fields("type").convertTo[WatchEventType]
-        val pod = fields("object").convertTo[Pod]
-        WatchEvent(eventType, pod)
+        fields("type").convertTo[WatchEventType] match {
+          case Error =>
+            // the object is a `Status` - whose own `status` field is a string - so it cannot be read as a pod
+            val status = fields.get("object").collect { case JsObject(s) => s }.getOrElse(Map.empty[String, JsValue])
+            val message = Seq("code", "reason", "message").flatMap(key =>
+              status.get(key).map {
+                case JsString(value) => s"$key=$value"
+                case value           => s"$key=$value"
+              })
+            WatchEvent(Error, Pod(None, None, None), if (message.isEmpty) None else Some(message.mkString(", ")))
+          case eventType =>
+            WatchEvent(eventType, fields("object").convertTo[Pod])
+        }
       case other => throw new DeserializationException(s"Expected JsObject, got $other")
     }
   }

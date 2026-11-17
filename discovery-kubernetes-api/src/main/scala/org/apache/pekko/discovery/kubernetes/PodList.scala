@@ -57,14 +57,19 @@ import org.apache.pekko.annotation.InternalApi
   @InternalApi private[kubernetes] case object Added extends WatchEventType
   @InternalApi private[kubernetes] case object Modified extends WatchEventType
   @InternalApi private[kubernetes] case object Deleted extends WatchEventType
+  @InternalApi private[kubernetes] case object Bookmark extends WatchEventType
   @InternalApi private[kubernetes] case object Error extends WatchEventType
 
   /**
    * INTERNAL API
    *
-   * A single event from the Kubernetes Watch API.
+   * A single event from the Kubernetes Watch API. The object of an `ERROR` event is a `Status` rather
+   * than a pod, so for those `pod` is empty and `errorMessage` describes the error instead.
    */
-  @InternalApi private[kubernetes] final case class WatchEvent(eventType: WatchEventType, pod: Pod)
+  @InternalApi private[kubernetes] final case class WatchEvent(
+      eventType: WatchEventType,
+      pod: Pod,
+      errorMessage: Option[String] = None)
 }
 
 /**

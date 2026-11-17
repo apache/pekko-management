@@ -110,6 +110,28 @@ class JsonFormatSpec extends AnyWordSpec with Matchers {
       events(2).eventType shouldBe Deleted
       events(2).pod.metadata.flatMap(_.name) shouldBe Some("test-pod-1")
     }
+
+    "parse an ERROR watch event, whose object is a Status rather than a pod" in {
+      // as sent by the API server when the requested resourceVersion has been compacted away
+      val line =
+        """{"type":"ERROR","object":{"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure",""" +
+        """"message":"too old resource version: 100 (2000)","reason":"Expired","code":410}}"""
+
+      val event = JsonFormat.watchEventFormat.read(line.parseJson)
+
+      event.eventType shouldBe Error
+      event.errorMessage.getOrElse("") should (include("410").and(include("Expired")).and(include("too old")))
+    }
+
+    "parse a BOOKMARK watch event" in {
+      val line =
+        """{"type":"BOOKMARK","object":{"kind":"Pod","apiVersion":"v1","metadata":{"resourceVersion":"12746"}}}"""
+
+      val event = JsonFormat.watchEventFormat.read(line.parseJson)
+
+      event.eventType shouldBe Bookmark
+      event.pod.metadata.flatMap(_.resourceVersion) shouldBe Some("12746")
+    }
   }
 
   private def resourceAsString(name: String): String =

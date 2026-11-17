@@ -153,6 +153,10 @@ When watch mode is enabled, the first `lookup` call performs an initial pod list
 
 Each service name is watched separately, with its own cache, so one discovery instance can be used to look up more than one service. The watch streams are shut down during the `service-unbind` phase of Coordinated Shutdown.
 
+Until the initial pod list for a service has succeeded, lookups for it wait for that list rather than answering from an empty cache, and fail with a `TimeoutException` if it does not complete within the lookup's resolve timeout. If the watch request itself is refused - for example because the role grants `list` but not `watch` - each retry goes back through a full list, so the cache keeps being refreshed at `watch-on-error-reconnect-delay` instead of going stale.
+
+The watch asks for bookmark events, which let the API server advance the resume point while no pods change. The watch stream is a regular HTTP client connection, so `pekko.http.client.idle-timeout` (60 seconds by default) still applies to it: when a watch sees no traffic at all for that long, the connection is closed and the watch reconnects, resuming from the last version it saw. That is harmless, but if it shows up as frequent reconnect warnings in your logs, raise `pekko.http.host-connection-pool.client.idle-timeout`.
+
 
 ### Role-Based Access Control
 
