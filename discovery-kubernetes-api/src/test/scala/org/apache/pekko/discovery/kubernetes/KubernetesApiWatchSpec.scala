@@ -19,16 +19,19 @@ package org.apache.pekko.discovery.kubernetes
 
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
+import pekko.Done
 import pekko.actor.ActorSystem
+import pekko.discovery.Lookup
 import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.WatchState
 import pekko.discovery.kubernetes.PodList._
-import pekko.stream.scaladsl.{ Framing, Sink, Source }
+import pekko.stream.KillSwitches
+import pekko.stream.scaladsl.{ Framing, Keep, Sink, Source }
 import pekko.util.ByteString
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-import scala.concurrent.Await
+import scala.concurrent.{ Await, TimeoutException }
 import scala.concurrent.duration._
 
 class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterAll {
@@ -88,6 +91,18 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
       state.resourceVersion.get() should ===(None)
     }
 
+    "advance the resource version on a BOOKMARK event without touching the cache" in {
+      val state = new WatchState
+      discovery.processWatchEvent(WatchEvent(Added, pod("pod-a", "10.0.0.1", "100")), state)
+
+      discovery.processWatchEvent(
+        WatchEvent(Bookmark, Pod(None, None, Some(Metadata(deletionTimestamp = None, resourceVersion = Some("250"))))),
+        state)
+
+      state.resourceVersion.get() should ===(Some("250"))
+      cachedNames(state) should ===(Set("pod-a"))
+    }
+
     "ignore a pod with no metadata.name rather than caching it under a shared key" in {
       val state = new WatchState
       val anonymous = Pod(None, None, Some(Metadata(deletionTimestamp = None, name = None)))
@@ -107,6 +122,45 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
 
       cachedNames(serviceA) should ===(Set("a-1"))
       cachedNames(serviceB) should ===(Set("b-1"))
+    }
+
+  }
+
+  "resolveFromWatch" should {
+
+    "wait for the initial list instead of answering from an empty cache" in {
+      val state = new WatchState
+
+      val ex = intercept[TimeoutException] {
+        Await.result(discovery.resolveFromWatch(state, Lookup("svc"), "app=svc", "default", 200.millis), 10.seconds)
+      }
+      ex.getMessage should include("waiting for the initial pod list")
+    }
+
+    "answer from the cache once the initial list has completed" in {
+      val state = new WatchState
+      val pending = discovery.resolveFromWatch(state, Lookup("svc"), "app=svc", "default", 10.seconds)
+      discovery.processWatchEvent(WatchEvent(Added, pod("pod-a", "10.0.0.1", "100")), state)
+      pending.isCompleted shouldBe false
+
+      state.synced.trySuccess(Done)
+
+      Await.result(pending, 10.seconds).addresses.map(_.host) should ===(Seq("10-0-0-1.default.pod.cluster.local"))
+    }
+
+  }
+
+  "registerWatchStream" should {
+
+    "shut down a stream that is only registered after the watches have been stopped" in {
+      val stopped = new KubernetesApiServiceDiscovery(settings)
+      stopped.stopWatches()
+
+      val (killSwitch, done) =
+        Source.maybe[ByteString].viaMat(KillSwitches.single)(Keep.right).toMat(Sink.ignore)(Keep.both).run()
+      stopped.registerWatchStream(new WatchState, killSwitch)
+
+      Await.result(done, 10.seconds) should ===(Done)
     }
 
   }
