@@ -20,6 +20,7 @@ package org.apache.pekko.discovery.awsapi.ecs
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
 
+import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.discovery.Lookup
@@ -59,8 +60,16 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
 
   import AsyncEcsClientShutdownSpec._
 
+  // keeps the actor system running after coordinated shutdown, so that discovery can still be used
+  private val keepRunningConfig = ConfigFactory
+    .parseString("""
+      |pekko.coordinated-shutdown.terminate-actor-system = off
+      |pekko.coordinated-shutdown.run-by-actor-system-terminate = off
+      |""".stripMargin)
+    .withFallback(ConfigFactory.load())
+
   private def withSystem[T](name: String)(body: ActorSystem => T): T = {
-    val system = ActorSystem(name)
+    val system = ActorSystem(name, keepRunningConfig)
     try body(system)
     finally Await.ready(system.terminate(), 30.seconds)
   }
@@ -99,6 +108,19 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
       created.get() should ===(0)
     }
 
+    "close an ECS client that is only built after coordinated shutdown has closed the client" in
+    withSystem("AsyncEcsServiceDiscoveryLateSpec") { system =>
+      val stub = new StubEcsAsyncClient
+      val discovery = new AsyncEcsServiceDiscovery(system) {
+        override private[ecs] def createEcsClient(): EcsAsyncClient = stub
+      }
+
+      shutdown(system)
+      Await.result(discovery.lookup(Lookup("my-service"), 10.seconds), 30.seconds)
+
+      stub.closed.get() should ===(true)
+    }
+
   }
 
   "AsyncEcsTaskSetDiscovery" should {
@@ -110,7 +132,9 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
       }
 
       // requires the ECS_CONTAINER_METADATA_URI environment variable, so it is expected to fail here,
-      // but not before the (lazily created) ECS client has been built
+      // but not before the (lazily created) ECS client has been built: `lookup` passes `ecsClient` by
+      // value to `resolveTasks`, so the client is built before the task metadata is requested. If that
+      // ever changes, this lookup no longer builds the client and the assertions below will fail.
       Try(Await.ready(discovery.lookup(Lookup("my-service"), 10.seconds), 30.seconds))
       stub.closed.get() should ===(false)
 
@@ -132,6 +156,20 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
       shutdown(system)
 
       created.get() should ===(0)
+    }
+
+    "close an ECS client that is only built after coordinated shutdown has closed the client" in
+    withSystem("AsyncEcsTaskSetDiscoveryLateSpec") { system =>
+      val stub = new StubEcsAsyncClient
+      val discovery = new AsyncEcsTaskSetDiscovery(system) {
+        override private[ecs] def createEcsClient(): EcsAsyncClient = stub
+      }
+
+      shutdown(system)
+      // fails for want of ECS_CONTAINER_METADATA_URI, but builds the client first (see above)
+      Try(Await.ready(discovery.lookup(Lookup("my-service"), 10.seconds), 30.seconds))
+
+      stub.closed.get() should ===(true)
     }
 
   }

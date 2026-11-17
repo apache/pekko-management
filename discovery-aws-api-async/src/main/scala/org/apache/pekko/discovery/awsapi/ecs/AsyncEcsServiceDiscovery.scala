@@ -67,18 +67,26 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   // (or re-attempts) the lazy initialisation
   private val builtEcsClient = new AtomicReference[EcsAsyncClient]()
 
+  // set when coordinated shutdown closes the client, so that a client whose construction was still
+  // in progress at that point is closed as soon as it has been built rather than leaked
+  @volatile private var shuttingDown = false
+
   private lazy val ecsClient: EcsAsyncClient = {
     val client = createEcsClient()
     builtEcsClient.set(client)
+    if (shuttingDown) takeBuiltEcsClient().foreach(_.close())
     client
   }
+
+  private def takeBuiltEcsClient(): Option[EcsAsyncClient] = Option(builtEcsClient.getAndSet(null))
 
   private implicit val ec: ExecutionContext = system.dispatcher
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-async-client-close") { () =>
-    builtEcsClient.getAndSet(null) match {
-      case null   => Future.successful(Done)
-      case client =>
+    shuttingDown = true
+    takeBuiltEcsClient() match {
+      case None         => Future.successful(Done)
+      case Some(client) =>
         // closing a Netty-backed client blocks until its event loops have shut down
         Future {
           client.close()
