@@ -64,10 +64,13 @@ class ConsulServiceDiscoveryInternalsSpec extends AnyWordSpec with Matchers {
 
   private implicit val ec: ExecutionContext = ExecutionContext.global
 
-  // nothing is listening here, so a lookup fails fast without leaving the machine
+  // nothing is listening here, so a lookup fails fast without leaving the machine; the actor system
+  // keeps running after coordinated shutdown so that discovery can still be used afterwards
   private def config(overrides: String = ""): com.typesafe.config.Config =
     ConfigFactory
       .parseString(s"""
+         |pekko.coordinated-shutdown.terminate-actor-system = off
+         |pekko.coordinated-shutdown.run-by-actor-system-terminate = off
          |pekko.discovery.pekko-consul {
          |  consul-host = "127.0.0.1"
          |  consul-port = ${freePort()}
@@ -186,6 +189,17 @@ class ConsulServiceDiscoveryInternalsSpec extends AnyWordSpec with Matchers {
       shutdown(system)
 
       client.isDestroyed should ===(true)
+    }
+
+    "destroy a Consul client that is only built after coordinated shutdown has destroyed the client" in
+    withSystem("ConsulShutdownLateClient") { system =>
+      val discovery = new RecordingConsulServiceDiscovery(system)
+
+      shutdown(system)
+      Try(Await.ready(discovery.lookup(Lookup("my-service"), 10.seconds), 30.seconds))
+
+      discovery.created.get() should ===(1)
+      discovery.client.get().isDestroyed should ===(true)
     }
 
     "not create a Consul client during shutdown when discovery was never used" in

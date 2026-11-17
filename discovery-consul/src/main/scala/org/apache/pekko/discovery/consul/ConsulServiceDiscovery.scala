@@ -73,18 +73,26 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   // holds the client once it has been built, so that shutdown never forces the lazy initialisation
   private val builtConsul = new AtomicReference[Consul]()
 
+  // set when coordinated shutdown destroys the client, so that a client whose construction was still
+  // in progress at that point is destroyed as soon as it has been built rather than leaked
+  @volatile private var shuttingDown = false
+
   private lazy val consul: Consul = {
     val client = createConsulClient()
     builtConsul.set(client)
+    if (shuttingDown) takeBuiltConsul().foreach(_.destroy())
     client
   }
+
+  private def takeBuiltConsul(): Option[Consul] = Option(builtConsul.getAndSet(null))
 
   private val blockingEc: ExecutionContext = system.dispatchers.lookup(DefaultBlockingDispatcherId)
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "consul-close") { () =>
-    builtConsul.getAndSet(null) match {
-      case null   => Future.successful(Done)
-      case client =>
+    shuttingDown = true
+    takeBuiltConsul() match {
+      case None         => Future.successful(Done)
+      case Some(client) =>
         // destroy() shuts down the OkHttp connection pool and executor service, which blocks
         Future {
           client.destroy()
