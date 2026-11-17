@@ -16,7 +16,7 @@ package org.apache.pekko.management.cluster.bootstrap.internal
 import java.time.LocalDateTime
 import java.util.concurrent.ThreadLocalRandom
 import scala.collection.immutable
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ ExecutionContext, Future }
 import org.apache.pekko
 import pekko.actor.Actor
 import pekko.actor.ActorRef
@@ -34,6 +34,7 @@ import pekko.pattern.pipe
 
 import scala.concurrent.duration._
 import scala.util.Try
+import scala.util.control.NonFatal
 import pekko.event.Logging
 import pekko.management.cluster.bootstrap.{
   BootstrapLogMarker,
@@ -392,8 +393,17 @@ private[pekko] class BootstrapCoordinator(
 
         decisionInProgress = true
 
-        joinDecider
-          .decide(info)
+        // `JoinDecider` is user-pluggable, and an implementation may throw synchronously before it ever
+        // builds a Future - `SelfAwareJoinDecider` itself resolves the self contact point synchronously -
+        // and `recover` would not see that. Letting it escape would leave `decisionInProgress` stuck true
+        // and stop this coordinator deciding ever again.
+        val decision =
+          try joinDecider.decide(info)
+          catch {
+            case NonFatal(e) => Future.failed(e)
+          }
+
+        decision
           .recover {
             case e =>
               log.error(e, "Join decision failed: {}", e)
