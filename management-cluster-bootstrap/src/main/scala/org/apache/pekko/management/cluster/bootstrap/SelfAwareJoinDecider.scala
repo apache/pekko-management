@@ -86,9 +86,10 @@ import scala.concurrent.duration._
         case None if hasBlockedForSelfContactPoint.compareAndSet(false, true) =>
           Await.result(pending, selfContactPointTimeout)
         case None =>
+          // the one permitted wait may still be in progress on another thread, so do not claim it is over
           throw new TimeoutException(
-            "'Bootstrap.selfContactPoint' is still not set after waiting " +
-            s"[$selfContactPointTimeout] for it once. It is required for the bootstrap to work " +
+            "'Bootstrap.selfContactPoint' is not set, and another caller has already waited, or is " +
+            s"waiting, up to [$selfContactPointTimeout] for it. It is required for the bootstrap to work " +
             "if binding bootstrap routes manually and not via pekko-management.")
       }
       val resolved = toContactPoint(uri)

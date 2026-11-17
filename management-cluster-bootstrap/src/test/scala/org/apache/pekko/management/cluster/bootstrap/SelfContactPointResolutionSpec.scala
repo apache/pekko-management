@@ -28,7 +28,9 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.concurrent.duration._
+import scala.util.Try
 
 object SelfContactPointResolutionSpec {
 
@@ -110,9 +112,21 @@ class SelfContactPointResolutionSpec extends AnyWordSpec with Matchers with Befo
       val secondCall = elapsed(a[TimeoutException] should be thrownBy decider.selfContactPoint)
 
       firstCall should be >= 500.millis
-      // without this the bootstrap coordinator would park a dispatcher thread for the full
-      // timeout on every probe, for as long as the contact point stays unset
+      // without this every caller - e.g. a custom JoinDecider asked on every decision - would park a
+      // thread for the full timeout, for as long as the contact point stays unset
       secondCall should be < 250.millis
+    }
+
+    "not claim the wait is over while another caller is still waiting" in {
+      val (_, decider) = newDecider("self-contact-point-concurrent")
+
+      val waiting = Future(Try(decider.selfContactPoint))(ExecutionContext.global)
+      // let the first caller take the one permitted wait
+      Thread.sleep(100)
+      val ex = intercept[TimeoutException](decider.selfContactPoint)
+      ex.getMessage should include("or is waiting")
+
+      Await.result(waiting, 10.seconds).isFailure shouldBe true
     }
 
     "still pick up a contact point that is set after a timeout" in {

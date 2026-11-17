@@ -393,9 +393,10 @@ private[pekko] class BootstrapCoordinator(
 
         decisionInProgress = true
 
-        // `decide` may throw synchronously before it ever builds a Future (it resolves the self
-        // contact point eagerly), and `recover` would not see that. Letting it escape would leave
-        // `decisionInProgress` stuck true and stop this coordinator deciding ever again.
+        // `JoinDecider` is user-pluggable, and an implementation may throw synchronously before it ever
+        // builds a Future - `SelfAwareJoinDecider` itself resolves the self contact point synchronously -
+        // and `recover` would not see that. Letting it escape would leave `decisionInProgress` stuck true
+        // and stop this coordinator deciding ever again.
         val decision =
           try joinDecider.decide(info)
           catch {
