@@ -98,6 +98,7 @@ Notes:
 * If Pekko management port tag is not found on service in Consul the implementation defaults to catalog service port.
 
 * The Consul client is created on the first lookup and closed during the `service-unbind` phase of Coordinated
-Shutdown. If discovery is never used, no client is created.
+Shutdown. If discovery is never used, no client is created. Because of this, a problem with the client configuration, such as an unreadable
+`ca-path`, is reported when the first lookup fails rather than when discovery is started.
 
 
