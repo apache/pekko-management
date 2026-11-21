@@ -19,7 +19,11 @@ import org.apache.pekko.annotation.InternalApi
  * INTERNAL API
  */
 @InternalApi private[kubernetes] object PodList {
-  final case class Metadata(deletionTimestamp: Option[String])
+  final case class Metadata(
+      deletionTimestamp: Option[String],
+      name: Option[String] = None,
+      uid: Option[String] = None,
+      resourceVersion: Option[String] = None)
 
   final case class ContainerPort(name: Option[String], containerPort: Int)
 
@@ -35,9 +39,42 @@ import org.apache.pekko.annotation.InternalApi
       phase: Option[String])
 
   final case class Pod(spec: Option[PodSpec], status: Option[PodStatus], metadata: Option[Metadata])
+
+  /**
+   * INTERNAL API
+   *
+   * Collection-level metadata. Its `resourceVersion` is the point a watch must be started from for the
+   * watch to be consistent with the list it follows; an individual pod's `resourceVersion` is not.
+   */
+  @InternalApi private[kubernetes] final case class ListMeta(resourceVersion: Option[String] = None)
+
+  /**
+   * INTERNAL API
+   *
+   * Type of event from the Kubernetes Watch API.
+   */
+  @InternalApi private[kubernetes] sealed trait WatchEventType
+  @InternalApi private[kubernetes] case object Added extends WatchEventType
+  @InternalApi private[kubernetes] case object Modified extends WatchEventType
+  @InternalApi private[kubernetes] case object Deleted extends WatchEventType
+  @InternalApi private[kubernetes] case object Bookmark extends WatchEventType
+  @InternalApi private[kubernetes] case object Error extends WatchEventType
+
+  /**
+   * INTERNAL API
+   *
+   * A single event from the Kubernetes Watch API. The object of an `ERROR` event is a `Status` rather
+   * than a pod, so for those `pod` is empty and `errorMessage` describes the error instead.
+   */
+  @InternalApi private[kubernetes] final case class WatchEvent(
+      eventType: WatchEventType,
+      pod: Pod,
+      errorMessage: Option[String] = None)
 }
 
 /**
  * INTERNAL API
  */
-@InternalApi private[kubernetes] final case class PodList(items: Seq[PodList.Pod])
+@InternalApi private[kubernetes] final case class PodList(
+    items: Seq[PodList.Pod],
+    metadata: Option[PodList.ListMeta] = None)

@@ -17,7 +17,10 @@ import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeoutException
 import java.nio.file.{ Files, Paths }
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.{ AtomicBoolean, AtomicReference }
 
+import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
@@ -26,11 +29,13 @@ import scala.util.Try
 import scala.util.control.{ NoStackTrace, NonFatal }
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.Done
+import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.kubernetes.JsonFormat._
 import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.{ targets, KubernetesApiException }
+import pekko.discovery.kubernetes.PodList.{ Added, Bookmark, Deleted, Error, Modified, WatchEvent }
 import pekko.discovery.{ Lookup, ServiceDiscovery }
 import pekko.dispatch.Dispatchers.DefaultBlockingDispatcherId
 import pekko.event.Logging
@@ -41,6 +46,10 @@ import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.model.headers.{ Authorization, HttpEncodings, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pki.kubernetes.PemManagersProvider
+import pekko.stream.{ KillSwitches, UniqueKillSwitch }
+import pekko.stream.scaladsl.{ Framing, Keep, Sink }
+import pekko.util.ByteString
+import spray.json._
 
 object KubernetesApiServiceDiscovery {
 
@@ -96,6 +105,25 @@ object KubernetesApiServiceDiscovery {
       podNamespace: String,
       apiToken: String,
       clientHttpsConnectionContext: HttpsConnectionContext)
+
+  /**
+   * INTERNAL API
+   *
+   * Watch state for a single label selector: the pods it has seen, the version its watch resumes from,
+   * and the kill switch for the stream currently feeding it.
+   */
+  @InternalApi private[kubernetes] final class WatchState {
+    val podCache = new AtomicReference[Map[String, PodList.Pod]](Map.empty)
+    val resourceVersion = new AtomicReference[Option[String]](None)
+    val killSwitch = new AtomicReference[Option[UniqueKillSwitch]](None)
+    // completed by the first successful list; lookups wait for it so that they never answer from an
+    // empty cache that simply has not been populated yet
+    val synced: Promise[Done] = Promise[Done]()
+    private val started = new AtomicBoolean(false)
+
+    /** True for the caller that is responsible for starting the watch. */
+    def startOnce(): Boolean = started.compareAndSet(false, true)
+  }
 }
 
 /**
@@ -105,7 +133,7 @@ object KubernetesApiServiceDiscovery {
 class KubernetesApiServiceDiscovery(settings: Settings)(
     implicit system: ActorSystem) extends ServiceDiscovery {
 
-  import KubernetesApiServiceDiscovery.KubernetesSetup
+  import KubernetesApiServiceDiscovery.{ KubernetesSetup, WatchState }
   import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery._
 
   private val http = Http()
@@ -135,7 +163,34 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
 
   import system.dispatcher
 
+  // Watch mode state. A single discovery instance can be asked about more than one service name, and
+  // each service name maps to its own label selector, so the pod cache and the resource version have to
+  // be held per selector - sharing them would let one service's lookup return another service's pods.
+  private val watches = new ConcurrentHashMap[String, WatchState]()
+  private val watchesShutDown = new AtomicBoolean(false)
+
+  if (settings.watchMode) {
+    CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "kubernetes-api-watch-stop") { () =>
+      stopWatches()
+      Future.successful(Done)
+    }
+  }
+
+  /** Stops every running watch stream and prevents any further (re)starts. */
+  private[kubernetes] def stopWatches(): Unit = {
+    watchesShutDown.set(true)
+    watches.values().asScala.foreach(_.killSwitch.getAndSet(None).foreach(_.shutdown()))
+  }
+
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
+    if (settings.watchMode) {
+      lookupWatch(query, resolveTimeout)
+    } else {
+      lookupList(query, resolveTimeout)
+    }
+  }
+
+  private def lookupList(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     val labelSelector = settings.podLabelSelector(query.serviceName)
 
     for {
@@ -281,5 +336,279 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         Coders.NoCoding
     }
     decoder.decodeMessage(response)
+  }
+
+  // ---- Watch mode methods ----
+
+  private def lookupWatch(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
+    val labelSelector = settings.podLabelSelector(query.serviceName)
+
+    kubernetesSetup.flatMap { setup =>
+      val state = watches.computeIfAbsent(watchKey(setup.podNamespace, labelSelector), _ => new WatchState)
+      if (state.startOnce()) {
+        log.info(
+          "Starting watch for pods with label selector: [{}]. Namespace: [{}]",
+          labelSelector,
+          setup.podNamespace)
+        // retries on its own until the initial list succeeds, which completes `state.synced`
+        startWatch(setup, labelSelector, state)
+      }
+      resolveFromWatch(state, query, labelSelector, setup.podNamespace, resolveTimeout)
+    }
+  }
+
+  /**
+   * Answers a lookup from the watch cache once the initial list has populated it. Until then the lookup
+   * waits, and fails with a `TimeoutException` if the initial list does not succeed within `resolveTimeout`.
+   */
+  private[kubernetes] def resolveFromWatch(
+      state: WatchState,
+      query: Lookup,
+      labelSelector: String,
+      podNamespace: String,
+      resolveTimeout: FiniteDuration): Future[Resolved] = {
+    val resolved = state.synced.future.map { _ =>
+      val cachedPods = state.podCache.get()
+      val podList = PodList(cachedPods.values.toList)
+      val addresses =
+        targets(podList, query.portName, podNamespace, settings.podDomain, settings.rawIp, settings.containerName)
+      if (addresses.isEmpty && cachedPods.nonEmpty) {
+        if (log.isInfoEnabled) {
+          val containerPortNames =
+            cachedPods.values.flatMap(_.spec).flatMap(_.containers).flatMap(_.ports).flatten.toSet
+          log.info(
+            "No targets found from pod cache. Is the correct port name configured? Current configuration: [{}]. Ports on pods: [{}]",
+            query.portName,
+            containerPortNames)
+        }
+      }
+      Resolved(
+        serviceName = query.serviceName,
+        addresses = addresses)
+    }
+
+    withTimeout(
+      resolved,
+      resolveTimeout,
+      s"Kubernetes API watch lookup for label selector [$labelSelector] timed out after $resolveTimeout" +
+      (if (state.synced.isCompleted) "" else " waiting for the initial pod list"))
+  }
+
+  private def watchKey(namespace: String, labelSelector: String): String = s"$namespace:$labelSelector"
+
+  /** Performs the initial list, which seeds the cache and fixes the point the watch resumes from. */
+  private def startWatch(setup: KubernetesSetup, labelSelector: String, state: WatchState): Future[Unit] = {
+    val listed = for {
+      listReq <- optionToFuture(
+        listRequest(setup.apiToken, setup.podNamespace, labelSelector),
+        s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})")
+      listResp <- http.singleRequest(listReq, setup.clientHttpsConnectionContext).map(decodeResponse)
+      bytes <- listResp.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
+      podList <- {
+        listResp.status match {
+          case StatusCodes.OK =>
+            Unmarshal(HttpEntity(ContentTypes.`application/json`, bytes)).to[PodList]
+          case other =>
+            log.warning("Initial list failed with status [{}]", other)
+            Future.failed(new KubernetesApiException(s"Initial pod list failed with status $other"))
+        }
+      }
+    } yield {
+      // A full list replaces the cache outright, so pods deleted while we were disconnected drop out.
+      state.podCache.set(podsByName(podList))
+      // The list's own resourceVersion, not an item's - resuming from an item's version can silently
+      // skip the events between it and the end of the list.
+      state.resourceVersion.set(podList.metadata.flatMap(_.resourceVersion))
+      state.synced.trySuccess(Done)
+      ()
+    }
+
+    listed.flatMap(_ => startWatchStream(setup, labelSelector, state)).recover {
+      case NonFatal(e) =>
+        log.error(e, "Failed to start watch for pods with label selector: [{}]", labelSelector)
+        scheduleWatchRestart(setup, labelSelector, state, settings.watchOnErrorReconnectDelay)
+    }
+  }
+
+  private def startWatchStream(setup: KubernetesSetup, labelSelector: String, state: WatchState): Future[Unit] = {
+    val resourceVersion = state.resourceVersion.get()
+    optionToFuture(
+      watchRequest(setup.apiToken, setup.podNamespace, labelSelector, resourceVersion),
+      s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})"
+    ).flatMap { request =>
+      log.debug("Starting watch stream with resourceVersion: [{}]", resourceVersion)
+      http.singleRequest(request, setup.clientHttpsConnectionContext).map { response =>
+        response.status match {
+          case StatusCodes.OK =>
+            log.info("Watch stream started for label selector: [{}]", labelSelector)
+            processWatchStream(decodeResponse(response), setup, labelSelector, state)
+          case StatusCodes.Gone =>
+            // resourceVersion too old; drop it so the restart goes back through a full list
+            log.warning("Watch resourceVersion expired (410 Gone), restarting with a fresh list")
+            response.discardEntityBytes()
+            state.resourceVersion.set(None)
+            scheduleWatchRestart(setup, labelSelector, state, settings.watchReconnectDelay)
+          case other =>
+            // e.g. 403 when the service account may list pods but not watch them. Drop the version so the
+            // retry goes back through a full list; resuming the watch alone would leave the cache frozen
+            // at whatever the last list returned, for as long as the watch keeps failing.
+            response.discardEntityBytes()
+            state.resourceVersion.set(None)
+            throw new KubernetesApiException(s"Watch request failed with status $other")
+        }
+      }
+    }
+  }
+
+  private def processWatchStream(
+      response: HttpResponse,
+      setup: KubernetesSetup,
+      labelSelector: String,
+      state: WatchState): Unit = {
+    // Frame on the raw bytes rather than decoding each chunk: a chunk boundary can fall in the middle
+    // of a multi-byte UTF-8 character, and decoding per chunk would corrupt it.
+    val (killSwitch, done) = response.entity.dataBytes
+      .viaMat(KillSwitches.single)(Keep.right)
+      .via(Framing.delimiter(ByteString("\n"), settings.watchMaxFrameLength, allowTruncation = true))
+      .map(_.utf8String)
+      .filter(_.nonEmpty)
+      .toMat(Sink.foreach { line =>
+        Try(JsonFormat.watchEventFormat.read(line.parseJson)) match {
+          case scala.util.Success(event) => processWatchEvent(event, state)
+          case scala.util.Failure(ex)    => log.warning("Failed to parse watch event: [{}]", ex.getMessage)
+        }
+      })(Keep.both)
+      .run()
+
+    registerWatchStream(state, killSwitch)
+
+    done.onComplete { result =>
+      state.killSwitch.set(None)
+      val delay = result match {
+        case scala.util.Success(_) =>
+          log.info("Watch stream completed, reconnecting")
+          settings.watchReconnectDelay
+        case scala.util.Failure(ex) =>
+          log.warning("Watch stream failed: [{}], reconnecting", ex.getMessage)
+          settings.watchOnErrorReconnectDelay
+      }
+      scheduleWatchRestart(setup, labelSelector, state, delay)
+    }
+  }
+
+  /**
+   * Records the kill switch of a newly started watch stream. If shutdown ran while the stream was being
+   * started it will have missed this kill switch, so the stream is shut down here instead of being left
+   * open until the API server closes it.
+   */
+  private[kubernetes] def registerWatchStream(state: WatchState, killSwitch: UniqueKillSwitch): Unit = {
+    state.killSwitch.set(Some(killSwitch))
+    if (watchesShutDown.get()) state.killSwitch.getAndSet(None).foreach(_.shutdown())
+  }
+
+  private[kubernetes] def processWatchEvent(event: WatchEvent, state: WatchState): Unit = {
+    def withName(f: String => Unit): Unit = event.pod.metadata.flatMap(_.name) match {
+      case Some(podName) =>
+        f(podName)
+        // each event carries the version to resume the watch from
+        event.pod.metadata.flatMap(_.resourceVersion).foreach(rv => state.resourceVersion.set(Some(rv)))
+      case None =>
+        log.warning("Ignoring [{}] watch event for a pod without metadata.name", event.eventType)
+    }
+
+    event.eventType match {
+      case Added | Modified =>
+        withName { podName =>
+          log.debug("Watch event [{}] for pod [{}]", event.eventType, podName)
+          state.podCache.updateAndGet(cache => cache + (podName -> event.pod))
+        }
+      case Deleted =>
+        withName { podName =>
+          log.debug("Watch event DELETED for pod [{}]", podName)
+          state.podCache.updateAndGet(cache => cache - podName)
+        }
+      case Bookmark =>
+        // carries nothing but the version to resume from, which keeps a quiet watch resumable
+        event.pod.metadata.flatMap(_.resourceVersion).foreach(rv => state.resourceVersion.set(Some(rv)))
+      case Error =>
+        // The server signals an error - most often an expired resourceVersion - and closes the stream.
+        // Drop the version so that the reconnect resyncs from a full list rather than resuming.
+        log.warning(
+          "Watch stream reported an ERROR event [{}], will resync from a fresh list",
+          event.errorMessage.getOrElse("no message"))
+        state.resourceVersion.set(None)
+    }
+  }
+
+  private def scheduleWatchRestart(
+      setup: KubernetesSetup,
+      labelSelector: String,
+      state: WatchState,
+      delay: FiniteDuration): Unit =
+    if (watchesShutDown.get()) {
+      log.debug("Not restarting watch for label selector: [{}], shutting down", labelSelector)
+    } else {
+      system.scheduler.scheduleOnce(delay) {
+        if (watchesShutDown.get()) {
+          log.debug("Not restarting watch for label selector: [{}], shutting down", labelSelector)
+        } else {
+          log.info("Restarting watch for label selector: [{}]", labelSelector)
+          // without a resource version there is nothing to resume from, so go back through a full list
+          val restarted =
+            if (state.resourceVersion.get().isEmpty) startWatch(setup, labelSelector, state)
+            else startWatchStream(setup, labelSelector, state)
+          restarted.recover {
+            case NonFatal(e) =>
+              log.error(e, "Watch restart failed for label selector: [{}]", labelSelector)
+              scheduleWatchRestart(setup, labelSelector, state, settings.watchOnErrorReconnectDelay)
+          }
+        }
+      }
+    }
+
+  private def listRequest(token: String, namespace: String, labelSelector: String): Option[HttpRequest] =
+    podRequest(token, namespace, labelSelector)
+
+  private def watchRequest(
+      token: String,
+      namespace: String,
+      labelSelector: String,
+      resourceVersion: Option[String]): Option[HttpRequest] = {
+    for {
+      host <- sys.env.get(settings.apiServiceHostEnvName)
+      portStr <- sys.env.get(settings.apiServicePortEnvName)
+      port <- Try(portStr.toInt).toOption
+    } yield {
+      val path = Uri.Path.Empty / "api" / "v1" / "namespaces" / namespace / "pods"
+      // bookmarks let the server advance our resource version while no pods change
+      val params = Seq("labelSelector" -> labelSelector, "watch" -> "true", "allowWatchBookmarks" -> "true") ++
+        resourceVersion.map(rv => "resourceVersion" -> rv)
+      val query = Uri.Query(params: _*)
+      val uri = Uri.from(scheme = "https", host = host, port = port).withPath(path).withQuery(query)
+
+      val authHeaders = Seq(Authorization(OAuth2BearerToken(token)))
+      val acceptEncodingHeader = HttpEncodings.getForKey(settings.httpRequestAcceptEncoding)
+        .map(httpEncoding => AcceptEncoding.create(httpEncoding))
+      HttpRequest(uri = uri, headers = authHeaders ++ acceptEncodingHeader)
+    }
+  }
+
+  /**
+   * Keyed by pod name. Pods without a name are dropped rather than collapsed onto a shared key, which
+   * would let them overwrite each other.
+   */
+  private def podsByName(podList: PodList): Map[String, PodList.Pod] =
+    podList.items.flatMap(pod => pod.metadata.flatMap(_.name).map(_ -> pod)).toMap
+
+  private def withTimeout[T](future: Future[T], timeout: FiniteDuration, message: => String): Future[T] = {
+    val promise = Promise[T]()
+    val timeoutCancellable = system.scheduler.scheduleOnce(timeout) {
+      promise.tryFailure(new TimeoutException(message))
+    }
+    future.onComplete { result =>
+      timeoutCancellable.cancel()
+      promise.tryComplete(result)
+    }
+    promise.future
   }
 }
