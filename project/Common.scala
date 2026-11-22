@@ -43,6 +43,8 @@ object Common extends AutoPlugin {
         url("https://github.com/apache/pekko-management/graphs/contributors")),
       description := "Apache Pekko Management is a suite of tools for operating Apache Pekko Clusters.",
       crossScalaVersions := Dependencies.crossScalaVersions,
+      // all Scala 3 versions share the _3 suffix, so the scala3Next build is only tested, never published
+      publish / skip := (publish / skip).value || scalaVersion.value == Dependencies.scala3NextVersion,
       projectInfoVersion := (if (isSnapshot.value) "snapshot" else version.value),
       crossVersion := CrossVersion.binary,
       scalacOptions ++= {
