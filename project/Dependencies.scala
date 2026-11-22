@@ -14,7 +14,6 @@ object Dependencies {
   val scala213Version = "2.13.18"
   val scala3Version = "3.3.9"
   val scala3NextVersion = "3.9.0"
-  // scala3NextVersion is only tested; Common.scala skips publishing it
   val crossScalaVersions = Seq(scala213Version, scala3Version, scala3NextVersion)
 
   val pekkoVersion = PekkoCoreDependency.version
