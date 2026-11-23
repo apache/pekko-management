@@ -1,3 +1,12 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  license agreements; and to You under the Apache License, version 2.0:
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+  This file is part of the Apache Pekko project, which was derived from Akka.
+-->
+
 ## Kubernetes API
 
 If you want to use Kubernetes for @ref[Cluster Bootstrap](../bootstrap/index.md), please follow the @ref[Cluster Bootstrap Kubernetes API](../bootstrap/kubernetes-api.md) documentation that is tailored for that use case.

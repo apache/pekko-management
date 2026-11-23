@@ -1,3 +1,12 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  license agreements; and to You under the Apache License, version 2.0:
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+  This file is part of the Apache Pekko project, which was derived from Akka.
+-->
+
 # Istio
 
 [Istio](https://istio.io/) is a service mesh that handles many of the concerns of service to service communication for you, such as routing, load balancing, authentication, authorization, and observability. In certain use cases, it can complement a Pekko cluster well. Typically, Pekko cluster communication is used for multiple nodes of the same service to communicate with each other, to achieve things such as sharding, replication and peer to peer communication, while a service mesh might be used for nodes of different services to communicate with each other, through REST and gRPC APIs.
