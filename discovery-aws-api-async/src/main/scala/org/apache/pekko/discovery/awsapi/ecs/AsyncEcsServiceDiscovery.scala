@@ -15,6 +15,7 @@ package org.apache.pekko.discovery.awsapi.ecs
 
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicReference
 
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
@@ -23,7 +24,8 @@ import scala.jdk.FutureConverters._
 import scala.util.Try
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.Done
+import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.AsyncEcsServiceDiscovery.{ resolveTasks, Tag }
@@ -50,20 +52,76 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     }
     .toList
 
-  private lazy val ecsClient = {
+  // `httpClientBuilder` (rather than `httpClient`) hands ownership of the Netty client to the
+  // SDK, so that closing the ECS client also shuts down its event loop threads.
+  private[ecs] def createEcsClient(): EcsAsyncClient = {
     val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
-    val httpClient = NettyNioAsyncHttpClient.create()
-    EcsAsyncClient.builder().overrideConfiguration(conf).httpClient(httpClient).build()
+    EcsAsyncClient
+      .builder()
+      .overrideConfiguration(conf)
+      .httpClientBuilder(NettyNioAsyncHttpClient.builder())
+      .build()
+  }
+
+  // holds the client once it has been successfully built, so that shutdown never forces
+  // (or re-attempts) the lazy initialisation
+  private val builtEcsClient = new AtomicReference[EcsAsyncClient]()
+
+  // set when coordinated shutdown closes the client, so that a client whose construction was still
+  // in progress at that point is closed as soon as it has been built rather than leaked
+  @volatile private var shuttingDown = false
+
+  private lazy val ecsClient: EcsAsyncClient = {
+    val client = createEcsClient()
+    builtEcsClient.set(client)
+    // shutdown started while the client was being built, and so found nothing to close
+    if (shuttingDown) takeBuiltEcsClient().foreach(close)
+    client
+  }
+
+  private def takeBuiltEcsClient(): Option[EcsAsyncClient] = Option(builtEcsClient.getAndSet(null))
+
+  private lazy val blockingEc: ExecutionContext =
+    system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
+
+  // closing a Netty-backed client blocks until its event loops have shut down, so it is kept off the
+  // calling thread - a coordinated shutdown task, or a lookup overtaken by shutdown
+  private def close(client: EcsAsyncClient): Future[Done] =
+    Future {
+      client.close()
+      Done
+    }(blockingEc)
+
+  /**
+   * The client to send a request with. Fails once shutdown has started: no client is built from then
+   * on, and one that shutdown has closed - or is closing - is never handed out for a request.
+   */
+  private def activeEcsClient(): EcsAsyncClient = {
+    def ensureNotShutDown(): Unit =
+      if (shuttingDown) throw new IllegalStateException("ECS service discovery has been shut down")
+    ensureNotShutDown()
+    val client = ecsClient
+    // shutdown may have started while the client was being built
+    ensureNotShutDown()
+    client
   }
 
   private implicit val ec: ExecutionContext = system.dispatcher
+
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-async-client-close") { () =>
+    shuttingDown = true
+    takeBuiltEcsClient() match {
+      case None         => Future.successful(Done)
+      case Some(client) => close(client)
+    }
+  }
 
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     Future.firstCompletedOf(
       Seq(
         after(resolveTimeout, using = system.scheduler)(
           Future.failed(new TimeoutException("Future timed out!"))),
-        resolveTasks(ecsClient, cluster, lookup.serviceName, tags).map(tasks =>
+        Future.fromTry(Try(activeEcsClient())).flatMap(resolveTasks(_, cluster, lookup.serviceName, tags)).map(tasks =>
           Resolved(
             serviceName = lookup.serviceName,
             addresses = for {

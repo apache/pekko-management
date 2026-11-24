@@ -15,6 +15,7 @@ package org.apache.pekko.discovery.awsapi.ecs
 
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicReference
 
 import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
@@ -23,7 +24,8 @@ import scala.jdk.FutureConverters._
 import scala.util.Try
 
 import org.apache.pekko
-import pekko.actor.ActorSystem
+import pekko.Done
+import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.annotation.ApiMayChange
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.awsapi.ecs.AsyncEcsTaskSetDiscovery.resolveTasks
@@ -54,9 +56,52 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private val config = system.settings.config.getConfig("pekko.discovery.aws-api-ecs-task-set-async")
   private val cluster = config.getString("cluster")
 
-  private lazy val ecsClient = {
+  private[ecs] def createEcsClient(): EcsAsyncClient = {
     val conf = ClientOverrideConfiguration.builder().retryStrategy(DefaultRetryStrategy.doNotRetry()).build()
     EcsAsyncClient.builder().overrideConfiguration(conf).build()
+  }
+
+  // holds the client once it has been successfully built, so that shutdown never forces
+  // (or re-attempts) the lazy initialisation
+  private val builtEcsClient = new AtomicReference[EcsAsyncClient]()
+
+  // set when coordinated shutdown closes the client, so that a client whose construction was still
+  // in progress at that point is closed as soon as it has been built rather than leaked
+  @volatile private var shuttingDown = false
+
+  private lazy val ecsClient: EcsAsyncClient = {
+    val client = createEcsClient()
+    builtEcsClient.set(client)
+    // shutdown started while the client was being built, and so found nothing to close
+    if (shuttingDown) takeBuiltEcsClient().foreach(close)
+    client
+  }
+
+  private def takeBuiltEcsClient(): Option[EcsAsyncClient] = Option(builtEcsClient.getAndSet(null))
+
+  private lazy val blockingEc: ExecutionContext =
+    system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
+
+  // closing the client blocks until the underlying HTTP client has shut down, so it is kept off the
+  // calling thread - a coordinated shutdown task, or a lookup overtaken by shutdown
+  private def close(client: EcsAsyncClient): Future[Done] =
+    Future {
+      client.close()
+      Done
+    }(blockingEc)
+
+  /**
+   * The client to send a request with. Fails once shutdown has started: no client is built from then
+   * on, and one that shutdown has closed - or is closing - is never handed out for a request.
+   */
+  private def activeEcsClient(): EcsAsyncClient = {
+    def ensureNotShutDown(): Unit =
+      if (shuttingDown) throw new IllegalStateException("ECS service discovery has been shut down")
+    ensureNotShutDown()
+    val client = ecsClient
+    // shutdown may have started while the client was being built
+    ensureNotShutDown()
+    client
   }
 
   private implicit val actorSystem: ActorSystem = system
@@ -64,12 +109,20 @@ class AsyncEcsTaskSetDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private val httpClient: HttpExt = Http()
 
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ecs-task-set-async-client-close") { () =>
+    shuttingDown = true
+    takeBuiltEcsClient() match {
+      case None         => Future.successful(Done)
+      case Some(client) => close(client)
+    }
+  }
+
   override def lookup(lookup: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] =
     Future.firstCompletedOf(
       Seq(
         after(resolveTimeout, using = system.scheduler)(
           Future.failed(new TimeoutException(s"$lookup timed out after $resolveTimeout"))),
-        resolveTasks(ecsClient, cluster, httpClient).map(tasks =>
+        Future.fromTry(Try(activeEcsClient())).flatMap(resolveTasks(_, cluster, httpClient)).map(tasks =>
           Resolved(
             serviceName = lookup.serviceName,
             addresses = for {
