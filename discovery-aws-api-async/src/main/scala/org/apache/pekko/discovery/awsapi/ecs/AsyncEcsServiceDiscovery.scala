@@ -74,11 +74,37 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   private lazy val ecsClient: EcsAsyncClient = {
     val client = createEcsClient()
     builtEcsClient.set(client)
-    if (shuttingDown) takeBuiltEcsClient().foreach(_.close())
+    // shutdown started while the client was being built, and so found nothing to close
+    if (shuttingDown) takeBuiltEcsClient().foreach(close)
     client
   }
 
   private def takeBuiltEcsClient(): Option[EcsAsyncClient] = Option(builtEcsClient.getAndSet(null))
+
+  private lazy val blockingEc: ExecutionContext =
+    system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
+
+  // closing a Netty-backed client blocks until its event loops have shut down, so it is kept off the
+  // calling thread - a coordinated shutdown task, or a lookup overtaken by shutdown
+  private def close(client: EcsAsyncClient): Future[Done] =
+    Future {
+      client.close()
+      Done
+    }(blockingEc)
+
+  /**
+   * The client to send a request with. Fails once shutdown has started: no client is built from then
+   * on, and one that shutdown has closed - or is closing - is never handed out for a request.
+   */
+  private def activeEcsClient(): EcsAsyncClient = {
+    def ensureNotShutDown(): Unit =
+      if (shuttingDown) throw new IllegalStateException("ECS service discovery has been shut down")
+    ensureNotShutDown()
+    val client = ecsClient
+    // shutdown may have started while the client was being built
+    ensureNotShutDown()
+    client
+  }
 
   private implicit val ec: ExecutionContext = system.dispatcher
 
@@ -86,12 +112,7 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
     shuttingDown = true
     takeBuiltEcsClient() match {
       case None         => Future.successful(Done)
-      case Some(client) =>
-        // closing a Netty-backed client blocks until its event loops have shut down
-        Future {
-          client.close()
-          Done
-        }(system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher"))
+      case Some(client) => close(client)
     }
   }
 
@@ -100,7 +121,7 @@ class AsyncEcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
       Seq(
         after(resolveTimeout, using = system.scheduler)(
           Future.failed(new TimeoutException("Future timed out!"))),
-        resolveTasks(ecsClient, cluster, lookup.serviceName, tags).map(tasks =>
+        Future.fromTry(Try(activeEcsClient())).flatMap(resolveTasks(_, cluster, lookup.serviceName, tags)).map(tasks =>
           Resolved(
             serviceName = lookup.serviceName,
             addresses = for {

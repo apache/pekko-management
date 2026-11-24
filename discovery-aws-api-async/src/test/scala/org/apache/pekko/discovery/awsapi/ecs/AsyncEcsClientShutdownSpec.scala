@@ -18,12 +18,13 @@
 package org.apache.pekko.discovery.awsapi.ecs
 
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
+import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger, AtomicReference }
 
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.discovery.Lookup
+import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import software.amazon.awssdk.services.ecs.EcsAsyncClient
@@ -34,7 +35,7 @@ import software.amazon.awssdk.services.ecs.model.{
   ListTasksResponse
 }
 
-import scala.concurrent.Await
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -42,21 +43,31 @@ object AsyncEcsClientShutdownSpec {
 
   class StubEcsAsyncClient extends EcsAsyncClient {
     val closed = new AtomicBoolean(false)
+    // the thread `close()` was called on
+    val closedOn = new AtomicReference[String]()
+    val requests = new AtomicInteger(0)
 
     override def serviceName(): String = EcsAsyncClient.SERVICE_NAME
 
-    override def close(): Unit = closed.set(true)
+    override def close(): Unit = {
+      closedOn.set(Thread.currentThread().getName)
+      closed.set(true)
+    }
 
-    override def listTasks(request: ListTasksRequest): CompletableFuture[ListTasksResponse] =
+    override def listTasks(request: ListTasksRequest): CompletableFuture[ListTasksResponse] = {
+      requests.incrementAndGet()
       CompletableFuture.completedFuture(ListTasksResponse.builder().build())
+    }
 
-    override def describeTasks(request: DescribeTasksRequest): CompletableFuture[DescribeTasksResponse] =
+    override def describeTasks(request: DescribeTasksRequest): CompletableFuture[DescribeTasksResponse] = {
+      requests.incrementAndGet()
       CompletableFuture.completedFuture(DescribeTasksResponse.builder().build())
+    }
   }
 
 }
 
-class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
+class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers with Eventually {
 
   import AsyncEcsClientShutdownSpec._
 
@@ -76,6 +87,19 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
 
   private def shutdown(system: ActorSystem): Unit =
     Await.result(CoordinatedShutdown(system).run(CoordinatedShutdown.UnknownReason), 30.seconds)
+
+  private def failedBecauseShutDown(lookup: Future[?]): Unit = {
+    val failure = Await.result(lookup.failed, 30.seconds)
+    failure shouldBe an[IllegalStateException]
+    failure.getMessage should include("has been shut down")
+  }
+
+  // the client was closed, but on the blocking dispatcher rather than by the lookup itself
+  private def closedOffTheLookupPath(stub: StubEcsAsyncClient): Unit = {
+    eventually(stub.closed.get() should ===(true))
+    stub.closedOn.get() should include("default-blocking-io-dispatcher")
+    stub.closedOn.get() should not be Thread.currentThread().getName
+  }
 
   "AsyncEcsServiceDiscovery" should {
 
@@ -108,17 +132,37 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
       created.get() should ===(0)
     }
 
-    "close an ECS client that is only built after coordinated shutdown has closed the client" in
-    withSystem("AsyncEcsServiceDiscoveryLateSpec") { system =>
-      val stub = new StubEcsAsyncClient
+    "fail a lookup after coordinated shutdown without building an ECS client" in
+    withSystem("AsyncEcsServiceDiscoveryLateLookupSpec") { system =>
+      val created = new AtomicInteger(0)
       val discovery = new AsyncEcsServiceDiscovery(system) {
-        override private[ecs] def createEcsClient(): EcsAsyncClient = stub
+        override private[ecs] def createEcsClient(): EcsAsyncClient = {
+          created.incrementAndGet()
+          new StubEcsAsyncClient
+        }
       }
 
       shutdown(system)
-      Await.result(discovery.lookup(Lookup("my-service"), 10.seconds), 30.seconds)
 
-      stub.closed.get() should ===(true)
+      failedBecauseShutDown(discovery.lookup(Lookup("my-service"), 10.seconds))
+      created.get() should ===(0)
+    }
+
+    "close an ECS client whose construction is overtaken by shutdown off the lookup path, and fail the " +
+    "lookup without sending a request" in withSystem("AsyncEcsServiceDiscoveryLateSpec") { system =>
+      val stub = new StubEcsAsyncClient
+      // coordinated shutdown runs while the client is being built, so it finds no client to close
+      val discovery = new AsyncEcsServiceDiscovery(system) {
+        override private[ecs] def createEcsClient(): EcsAsyncClient = {
+          shutdown(system)
+          stub
+        }
+      }
+
+      failedBecauseShutDown(discovery.lookup(Lookup("my-service"), 10.seconds))
+
+      closedOffTheLookupPath(stub)
+      stub.requests.get() should ===(0)
     }
 
   }
@@ -158,18 +202,37 @@ class AsyncEcsClientShutdownSpec extends AnyWordSpec with Matchers {
       created.get() should ===(0)
     }
 
-    "close an ECS client that is only built after coordinated shutdown has closed the client" in
-    withSystem("AsyncEcsTaskSetDiscoveryLateSpec") { system =>
-      val stub = new StubEcsAsyncClient
+    "fail a lookup after coordinated shutdown without building an ECS client" in
+    withSystem("AsyncEcsTaskSetDiscoveryLateLookupSpec") { system =>
+      val created = new AtomicInteger(0)
       val discovery = new AsyncEcsTaskSetDiscovery(system) {
-        override private[ecs] def createEcsClient(): EcsAsyncClient = stub
+        override private[ecs] def createEcsClient(): EcsAsyncClient = {
+          created.incrementAndGet()
+          new StubEcsAsyncClient
+        }
       }
 
       shutdown(system)
-      // fails for want of ECS_CONTAINER_METADATA_URI, but builds the client first (see above)
-      Try(Await.ready(discovery.lookup(Lookup("my-service"), 10.seconds), 30.seconds))
 
-      stub.closed.get() should ===(true)
+      failedBecauseShutDown(discovery.lookup(Lookup("my-service"), 10.seconds))
+      created.get() should ===(0)
+    }
+
+    "close an ECS client whose construction is overtaken by shutdown off the lookup path, and fail the " +
+    "lookup without sending a request" in withSystem("AsyncEcsTaskSetDiscoveryLateSpec") { system =>
+      val stub = new StubEcsAsyncClient
+      // coordinated shutdown runs while the client is being built, so it finds no client to close
+      val discovery = new AsyncEcsTaskSetDiscovery(system) {
+        override private[ecs] def createEcsClient(): EcsAsyncClient = {
+          shutdown(system)
+          stub
+        }
+      }
+
+      failedBecauseShutDown(discovery.lookup(Lookup("my-service"), 10.seconds))
+
+      closedOffTheLookupPath(stub)
+      stub.requests.get() should ===(0)
     }
 
   }

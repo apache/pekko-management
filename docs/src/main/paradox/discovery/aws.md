@@ -210,7 +210,7 @@ non-blocking IO, which you probably want.
 
 Both of the discovery methods below create their `EcsAsyncClient` lazily, on the first lookup, and close it
 again during the `service-unbind` phase of Coordinated Shutdown. If discovery is never used, no client is
-created and nothing needs to be closed.
+created and nothing needs to be closed. A lookup made once that phase has started fails without calling ECS.
 
 @@dependency[sbt,Gradle,Maven] {
   symbol1=PekkoManagementVersion
