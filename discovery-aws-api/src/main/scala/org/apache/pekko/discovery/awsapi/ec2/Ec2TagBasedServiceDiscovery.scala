@@ -148,6 +148,21 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
 
   private def takeBuiltEc2Client(): Option[AmazonEC2] = Option(builtEc2Client.getAndSet(null))
 
+  // A lookup must not use a client that coordinated shutdown has closed (or is about to close), so
+  // it fails here, before any AWS request is made. The flag is checked before the lazy val is
+  // touched, so that no client is built once shutdown has started, and again afterwards, to catch
+  // a client whose construction overlapped with shutdown and which has therefore been closed.
+  private def activeEc2Client(): AmazonEC2 = {
+    failIfShuttingDown()
+    val client = ec2Client
+    failIfShuttingDown()
+    client
+  }
+
+  private def failIfShuttingDown(): Unit =
+    if (shuttingDown)
+      throw new IllegalStateException("The EC2 client has been closed because the actor system is shutting down")
+
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ec2-client-close") { () =>
     shuttingDown = true
     takeBuiltEc2Client() match {
@@ -205,7 +220,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
     val allFilters: List[Filter] = runningInstancesFilter :: tagFilter :: otherFilters
 
     Future {
-      getInstances(ec2Client, allFilters, None).flatMap((ip: String) =>
+      getInstances(activeEc2Client(), allFilters, None).flatMap((ip: String) =>
         preDefinedPorts match {
           case None =>
             ResolvedTarget(host = ip, port = None, address = Try(InetAddress.getByName(ip)).toOption) :: Nil

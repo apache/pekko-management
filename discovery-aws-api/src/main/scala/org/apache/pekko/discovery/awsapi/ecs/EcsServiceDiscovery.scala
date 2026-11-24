@@ -81,6 +81,21 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private def takeBuiltEcsClient(): Option[AmazonECS] = Option(builtEcsClient.getAndSet(null))
 
+  // A lookup must not use a client that coordinated shutdown has closed (or is about to close), so
+  // it fails here, before any AWS request is made. The flag is checked before the lazy val is
+  // touched, so that no client is built once shutdown has started, and again afterwards, to catch
+  // a client whose construction overlapped with shutdown and which has therefore been closed.
+  private def activeEcsClient(): AmazonECS = {
+    failIfShuttingDown()
+    val client = ecsClient
+    failIfShuttingDown()
+    client
+  }
+
+  private def failIfShuttingDown(): Unit =
+    if (shuttingDown)
+      throw new IllegalStateException("The ECS client has been closed because the actor system is shutting down")
+
   private implicit val ec: ExecutionContext =
     system.dispatchers.lookup("pekko.actor.default-blocking-io-dispatcher")
 
@@ -105,7 +120,7 @@ final class EcsServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
           Resolved(
             serviceName = query.serviceName,
             addresses = for {
-              task <- resolveTasks(ecsClient, cluster, query.serviceName)
+              task <- resolveTasks(activeEcsClient(), cluster, query.serviceName)
               container <- task.getContainers.asScala
               networkInterface <- container.getNetworkInterfaces.asScala
             } yield {

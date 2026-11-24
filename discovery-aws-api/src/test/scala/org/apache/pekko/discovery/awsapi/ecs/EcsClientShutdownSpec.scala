@@ -34,10 +34,11 @@ class EcsClientShutdownSpec extends AnyWordSpec with Matchers with Inside {
 
   "EcsServiceDiscovery" should {
 
-    "close an ECS client that is only built after coordinated shutdown has closed the client" in
+    "fail a lookup that starts after coordinated shutdown, before any AWS request" in
     withDummyCredentials {
-      // nothing listens on the endpoint, so a live client fails to connect, whereas a shut down one
-      // fails because its connection pool has been shut down
+      // nothing listens on the endpoint: a request on a live client fails to connect, and one on a
+      // shut down client fails because its connection pool has been shut down. Neither is expected,
+      // because the lookup must fail before it gets as far as the SDK.
       val system = ActorSystem(
         "EcsClientShutdownSpecLateClient",
         ConfigFactory
@@ -56,7 +57,9 @@ class EcsClientShutdownSpec extends AnyWordSpec with Matchers with Inside {
 
         val result = Await.ready(discovery.lookup(Lookup("my-service"), 10.seconds), 30.seconds).value
         inside(result) {
-          case Some(Failure(ex)) => ex.getMessage should include("Connection pool shut down")
+          case Some(Failure(ex)) =>
+            ex shouldBe an[IllegalStateException]
+            ex.getMessage should include("The ECS client has been closed because the actor system is shutting down")
         }
       } finally Await.ready(system.terminate(), 30.seconds)
     }
