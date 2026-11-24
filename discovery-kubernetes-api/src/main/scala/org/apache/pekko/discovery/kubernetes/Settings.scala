@@ -13,7 +13,7 @@
 
 package org.apache.pekko.discovery.kubernetes
 
-import java.util.Optional
+import java.util.{ Locale, Optional }
 
 import scala.concurrent.duration._
 import scala.jdk.DurationConverters._
@@ -106,6 +106,22 @@ final class Settings(kubernetesApi: Config) extends Extension {
       s"was [$configured]")
     configured.toInt
   }
+
+  /**
+   * How long a watch may go without a lookup before it is stopped and its cached pods are released, or
+   * `Duration.Inf` if watches are kept until the actor system shuts down.
+   */
+  val watchIdleTimeout: Duration =
+    kubernetesApi.getString("watch-idle-timeout").toLowerCase(Locale.ROOT) match {
+      case "off" => Duration.Inf
+      case _     =>
+        val configured = kubernetesApi.getDuration("watch-idle-timeout").toScala
+        require(
+          configured > Duration.Zero,
+          s"pekko.discovery.kubernetes-api.watch-idle-timeout must be a positive duration or 'off', " +
+          s"was [$configured]")
+        configured
+    }
 
   override def toString =
     s"Settings($apiCaPath, $apiTokenPath, $apiServiceHostEnvName, $apiServicePortEnvName, " +

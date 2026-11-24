@@ -129,6 +129,41 @@ class SettingsSpec extends AnyWordSpec with Matchers {
         system.terminate()
       }
     }
+    "default watch-idle-timeout to 5 minutes" in {
+      val system = ActorSystem("test")
+      try {
+        Settings(system).watchIdleTimeout shouldBe 5.minutes
+      } finally {
+        system.terminate()
+      }
+    }
+    "support turning watch-idle-timeout off" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          watch-idle-timeout = off
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        Settings(system).watchIdleTimeout shouldBe Duration.Inf
+      } finally {
+        system.terminate()
+      }
+    }
+    "reject a non-positive watch-idle-timeout" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          watch-idle-timeout = 0s
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        val ex = intercept[IllegalArgumentException](Settings(system).watchIdleTimeout)
+        ex.getMessage should include("watch-idle-timeout must be")
+      } finally {
+        system.terminate()
+      }
+    }
     "reject a non-positive watch-max-frame-length" in {
       val config = ConfigFactory.parseString("""
         pekko.discovery.kubernetes-api {

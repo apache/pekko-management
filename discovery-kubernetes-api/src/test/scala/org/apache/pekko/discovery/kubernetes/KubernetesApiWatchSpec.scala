@@ -22,8 +22,11 @@ import org.apache.pekko
 import pekko.Done
 import pekko.actor.ActorSystem
 import pekko.discovery.Lookup
-import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.WatchState
+import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.{ KubernetesSetup, WatchState }
 import pekko.discovery.kubernetes.PodList._
+import pekko.http.scaladsl.{ ConnectionContext, Http }
+import pekko.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpRequest, HttpResponse, StatusCodes }
+import pekko.http.scaladsl.settings.ConnectionPoolSettings
 import pekko.stream.KillSwitches
 import pekko.stream.scaladsl.{ Framing, Keep, Sink, Source }
 import pekko.util.ByteString
@@ -31,14 +34,23 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-import scala.concurrent.{ Await, TimeoutException }
+import javax.net.ssl.SSLContext
+
+import scala.concurrent.{ Await, Future, TimeoutException }
 import scala.concurrent.duration._
 
 class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterAll {
 
   private implicit val system: ActorSystem = ActorSystem(
     "KubernetesApiWatchSpec",
-    ConfigFactory.parseString("""pekko.discovery.kubernetes-api.api-poll-mode = "watch" """)
+    ConfigFactory.parseString("""
+      pekko.discovery.kubernetes-api {
+        api-poll-mode = "watch"
+        watch-idle-timeout = 1 minute
+        # never set, so that no request to an API server can be formed
+        api-service-host-env-name = "PEKKO_KUBERNETES_API_WATCH_SPEC_NO_SUCH_HOST"
+      }
+      """)
       .withFallback(ConfigFactory.load()))
 
   private val settings = Settings(system)
@@ -161,6 +173,126 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
       stopped.registerWatchStream(new WatchState, killSwitch)
 
       Await.result(done, 10.seconds) should ===(Done)
+    }
+
+  }
+
+  "startWatch" should {
+
+    // the caller schedules the retry, so it has to be told that the watch did not start
+    "fail the returned future when the watch cannot be started" in {
+      val setup = KubernetesSetup("default", "token", ConnectionContext.httpsClient(SSLContext.getDefault))
+
+      val failure = Await.result(discovery.startWatch(setup, "app=svc", new WatchState).failed, 10.seconds)
+
+      failure shouldBe a[NoSuchElementException]
+      failure.getMessage should include("Unable to form request")
+    }
+
+  }
+
+  "the idle watch release" should {
+
+    def runningStream() =
+      Source.maybe[ByteString].viaMat(KillSwitches.single)(Keep.right).toMat(Sink.ignore)(Keep.both).run()
+
+    val idleTimeout = settings.watchIdleTimeout.asInstanceOf[FiniteDuration]
+
+    "stop and forget a watch that is no longer looked up, and start a fresh one on a later lookup" in {
+      val lifecycle = new KubernetesApiServiceDiscovery(settings)
+      val state = lifecycle.watchStateFor("default", "app=idle")
+      state.startOnce() shouldBe true
+      discovery.processWatchEvent(WatchEvent(Added, pod("pod-a", "10.0.0.1", "100")), state)
+      val (killSwitch, done) = runningStream()
+      lifecycle.registerWatchStream(state, killSwitch)
+
+      lifecycle.releaseIdleWatches(System.nanoTime() + idleTimeout.toNanos)
+
+      Await.result(done, 10.seconds) should ===(Done)
+      state.isStopped shouldBe true
+
+      val fresh = lifecycle.watchStateFor("default", "app=idle")
+      fresh should not be theSameInstanceAs(state)
+      fresh.isStopped shouldBe false
+      fresh.podCache.get() shouldBe empty
+      // the fresh state has not been started, so the lookup that created it starts a new watch
+      fresh.startOnce() shouldBe true
+      lifecycle.stopWatches()
+    }
+
+    "keep a watch that is still being looked up" in {
+      val lifecycle = new KubernetesApiServiceDiscovery(settings)
+      val idle = lifecycle.watchStateFor("default", "app=idle")
+      val active = lifecycle.watchStateFor("default", "app=active")
+      val (killSwitch, done) = runningStream()
+      lifecycle.registerWatchStream(active, killSwitch)
+
+      // half the timeout later `app=active` is looked up again, `app=idle` is not
+      val later = System.nanoTime() + idleTimeout.toNanos / 2
+      lifecycle.releaseIdleWatches(later)
+      (lifecycle.watchStateFor("default", "app=active") should be).theSameInstanceAs(active)
+
+      lifecycle.releaseIdleWatches(System.nanoTime() + idleTimeout.toNanos - 1.second.toNanos)
+      (lifecycle.watchStateFor("default", "app=active") should be).theSameInstanceAs(active)
+      active.isStopped shouldBe false
+      done.isCompleted shouldBe false
+      idle.isStopped shouldBe false
+
+      lifecycle.releaseIdleWatches(System.nanoTime() + idleTimeout.toNanos)
+      idle.isStopped shouldBe true
+      lifecycle.stopWatches()
+    }
+
+    "shut down a stream that is only registered after its watch was released" in {
+      val lifecycle = new KubernetesApiServiceDiscovery(settings)
+      val state = lifecycle.watchStateFor("default", "app=idle")
+      lifecycle.releaseIdleWatches(System.nanoTime() + idleTimeout.toNanos)
+
+      val (killSwitch, done) = runningStream()
+      lifecycle.registerWatchStream(state, killSwitch)
+
+      Await.result(done, 10.seconds) should ===(Done)
+      lifecycle.stopWatches()
+    }
+
+  }
+
+  "watchSingleRequest" should {
+
+    // A watch holds its connection for as long as it runs. Through the host connection pool, which has
+    // max-connections per host, the watches beyond that number would never get a response.
+    "run more concurrent watches than the host connection pool has connections" in {
+      import system.dispatcher
+      // a response that, like a watch, sends an event and then stays open
+      val binding = Await.result(
+        Http().newServerAt("127.0.0.1", 0).bindSync { _ =>
+          HttpResponse(
+            StatusCodes.OK,
+            entity = HttpEntity(
+              ContentTypes.`application/json`,
+              Source.single(ByteString("{}\n")).concat(Source.maybe[ByteString])))
+        },
+        10.seconds)
+      try {
+        val watchCount = ConnectionPoolSettings(system).maxConnections + 2
+        val request = HttpRequest(uri = s"http://127.0.0.1:${binding.localAddress.getPort}/api/v1/pods?watch=true")
+
+        val streams = (1 to watchCount).map { _ =>
+          discovery.watchSingleRequest(request, ConnectionContext.noEncryption()).map { response =>
+            response.status should ===(StatusCodes.OK)
+            response.entity.dataBytes
+              .viaMat(KillSwitches.single)(Keep.right)
+              .toMat(Sink.queue[ByteString]())(Keep.both)
+              .run()
+          }
+        }
+        val running = Await.result(Future.sequence(streams), 10.seconds)
+        // every watch is being served at the same time
+        val firstEvents = Await.result(Future.sequence(running.map(_._2.pull())), 10.seconds)
+        firstEvents should ===(Vector.fill(watchCount)(Some(ByteString("{}\n"))))
+
+        running.foreach(_._1.shutdown())
+      } finally Await.result(binding.terminate(5.seconds), 10.seconds)
     }
 
   }

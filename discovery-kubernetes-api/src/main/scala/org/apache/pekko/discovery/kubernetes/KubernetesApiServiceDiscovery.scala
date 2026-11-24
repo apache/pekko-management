@@ -18,19 +18,19 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeoutException
 import java.nio.file.{ Files, Paths }
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.{ AtomicBoolean, AtomicReference }
+import java.util.concurrent.atomic.{ AtomicBoolean, AtomicLong, AtomicReference }
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 import scala.util.Try
 import scala.util.control.{ NoStackTrace, NonFatal }
 
 import org.apache.pekko
 import pekko.Done
-import pekko.actor.{ ActorSystem, CoordinatedShutdown }
+import pekko.actor.{ ActorSystem, Cancellable, CoordinatedShutdown }
 import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
 import pekko.discovery.kubernetes.JsonFormat._
@@ -47,7 +47,7 @@ import pekko.http.scaladsl.model.headers.{ Authorization, HttpEncodings, OAuth2B
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pki.kubernetes.PemManagersProvider
 import pekko.stream.{ KillSwitches, UniqueKillSwitch }
-import pekko.stream.scaladsl.{ Framing, Keep, Sink }
+import pekko.stream.scaladsl.{ Framing, Keep, Sink, Source }
 import pekko.util.ByteString
 import spray.json._
 
@@ -120,9 +120,25 @@ object KubernetesApiServiceDiscovery {
     // empty cache that simply has not been populated yet
     val synced: Promise[Done] = Promise[Done]()
     private val started = new AtomicBoolean(false)
+    private val stopped = new AtomicBoolean(false)
+    private val lastLookupNanos = new AtomicLong(System.nanoTime())
 
     /** True for the caller that is responsible for starting the watch. */
     def startOnce(): Boolean = started.compareAndSet(false, true)
+
+    /** Records a lookup, which keeps the watch from being released as idle. */
+    def touch(): Unit = lastLookupNanos.set(System.nanoTime())
+
+    /** How long ago, in nanoseconds as of `nowNanos`, the last lookup used this watch. */
+    def idleNanos(nowNanos: Long): Long = nowNanos - lastLookupNanos.get()
+
+    def isStopped: Boolean = stopped.get()
+
+    /** Shuts down the stream feeding this watch, if any, and keeps it from being restarted. */
+    def stop(): Unit = {
+      stopped.set(true)
+      killSwitch.getAndSet(None).foreach(_.shutdown())
+    }
   }
 }
 
@@ -176,11 +192,24 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
     }
   }
 
+  // A watch is only useful while something keeps looking its service up. Cluster Bootstrap, for one, stops
+  // once the node has joined, so a watch that is no longer looked up is released rather than being kept,
+  // with its connection and cached pods, until the actor system shuts down.
+  private val idleWatchReaper: Option[Cancellable] = settings.watchIdleTimeout match {
+    case idleTimeout: FiniteDuration if settings.watchMode =>
+      val interval = (idleTimeout / 2).max(1.second)
+      Some(system.scheduler.scheduleWithFixedDelay(interval, interval)(() => releaseIdleWatches()))
+    case _ => None
+  }
+
   /** Stops every running watch stream and prevents any further (re)starts. */
   private[kubernetes] def stopWatches(): Unit = {
     watchesShutDown.set(true)
-    watches.values().asScala.foreach(_.killSwitch.getAndSet(None).foreach(_.shutdown()))
+    idleWatchReaper.foreach(_.cancel())
+    watches.values().asScala.foreach(_.stop())
   }
+
+  private def isStopped(state: WatchState): Boolean = state.isStopped || watchesShutDown.get()
 
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     if (settings.watchMode) {
@@ -344,18 +373,53 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
     val labelSelector = settings.podLabelSelector(query.serviceName)
 
     kubernetesSetup.flatMap { setup =>
-      val state = watches.computeIfAbsent(watchKey(setup.podNamespace, labelSelector), _ => new WatchState)
+      val state = watchStateFor(setup.podNamespace, labelSelector)
       if (state.startOnce()) {
         log.info(
           "Starting watch for pods with label selector: [{}]. Namespace: [{}]",
           labelSelector,
           setup.podNamespace)
         // retries on its own until the initial list succeeds, which completes `state.synced`
-        startWatch(setup, labelSelector, state)
+        runWatch(setup, labelSelector, state)
       }
       resolveFromWatch(state, query, labelSelector, setup.podNamespace, resolveTimeout)
     }
   }
+
+  /**
+   * The watch state for a label selector, created if there is none. Counts as a lookup, so the state
+   * returned is not released as idle before `watch-idle-timeout` has passed again.
+   */
+  private[kubernetes] def watchStateFor(podNamespace: String, labelSelector: String): WatchState =
+    // marked as used inside `compute`, which is atomic with the removal in `releaseIdleWatches`: a lookup
+    // either gets a state that has just been marked as used, or a new one - never one being released
+    watches.compute(
+      watchKey(podNamespace, labelSelector),
+      (_, existing) => {
+        val state = if (existing eq null) new WatchState else existing
+        state.touch()
+        state
+      })
+
+  /**
+   * Stops and forgets every watch that has not been looked up for `watch-idle-timeout`. The next lookup
+   * for such a selector starts a fresh watch, from a new initial list.
+   */
+  private[kubernetes] def releaseIdleWatches(nowNanos: Long = System.nanoTime()): Unit =
+    settings.watchIdleTimeout match {
+      case idleTimeout: FiniteDuration =>
+        watches.keySet().asScala.toList.foreach { key =>
+          watches.computeIfPresent(
+            key,
+            (_, state) =>
+              if (state.idleNanos(nowNanos) >= idleTimeout.toNanos) {
+                log.info("Stopping watch [{}], which has not been looked up for {}", key, idleTimeout)
+                state.stop()
+                null
+              } else state)
+        }
+      case _ => // watches are kept until shutdown
+    }
 
   /**
    * Answers a lookup from the watch cache once the initial list has populated it. Until then the lookup
@@ -396,8 +460,29 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
 
   private def watchKey(namespace: String, labelSelector: String): String = s"$namespace:$labelSelector"
 
-  /** Performs the initial list, which seeds the cache and fixes the point the watch resumes from. */
-  private def startWatch(setup: KubernetesSetup, labelSelector: String, state: WatchState): Future[Unit] = {
+  /**
+   * Starts the watch - from a full list if there is no resource version to resume from - and schedules a
+   * retry if it could not be started. This is the only place a failed start is turned into a retry;
+   * `startWatch` and `startWatchStream` report failure through the future they return.
+   */
+  private def runWatch(setup: KubernetesSetup, labelSelector: String, state: WatchState): Unit =
+    if (isStopped(state)) {
+      log.debug("Not starting watch for label selector: [{}], it has been stopped", labelSelector)
+    } else {
+      val started =
+        if (state.resourceVersion.get().isEmpty) startWatch(setup, labelSelector, state)
+        else startWatchStream(setup, labelSelector, state)
+      started.failed.foreach { e =>
+        log.error(e, "Failed to start watch for pods with label selector: [{}]", labelSelector)
+        scheduleWatchRestart(setup, labelSelector, state, settings.watchOnErrorReconnectDelay)
+      }
+    }
+
+  /**
+   * Performs the initial list, which seeds the cache and fixes the point the watch resumes from, then
+   * opens the watch stream. The returned future fails if either step does.
+   */
+  private[kubernetes] def startWatch(setup: KubernetesSetup, labelSelector: String, state: WatchState): Future[Unit] = {
     val listed = for {
       listReq <- optionToFuture(
         listRequest(setup.apiToken, setup.podNamespace, labelSelector),
@@ -423,13 +508,14 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
       ()
     }
 
-    listed.flatMap(_ => startWatchStream(setup, labelSelector, state)).recover {
-      case NonFatal(e) =>
-        log.error(e, "Failed to start watch for pods with label selector: [{}]", labelSelector)
-        scheduleWatchRestart(setup, labelSelector, state, settings.watchOnErrorReconnectDelay)
-    }
+    listed.flatMap(_ => startWatchStream(setup, labelSelector, state))
   }
 
+  /**
+   * Opens the watch stream from the current resource version. The returned future fails if the request
+   * could not be made or was refused; it succeeds once the stream is running, or the restart that a
+   * `410 Gone` calls for has been scheduled.
+   */
   private def startWatchStream(setup: KubernetesSetup, labelSelector: String, state: WatchState): Future[Unit] = {
     val resourceVersion = state.resourceVersion.get()
     optionToFuture(
@@ -437,7 +523,7 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
       s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})"
     ).flatMap { request =>
       log.debug("Starting watch stream with resourceVersion: [{}]", resourceVersion)
-      http.singleRequest(request, setup.clientHttpsConnectionContext).map { response =>
+      watchSingleRequest(request, setup.clientHttpsConnectionContext).map { response =>
         response.status match {
           case StatusCodes.OK =>
             log.info("Watch stream started for label selector: [{}]", labelSelector)
@@ -459,6 +545,24 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
       }
     }
   }
+
+  /**
+   * Sends a watch request over a connection of its own rather than through the host connection pool. A
+   * watch holds its connection for as long as the stream runs, and the pool only has
+   * `pekko.http.host-connection-pool.max-connections` (4 by default) per host, so a few watches would
+   * starve every other request to the API server, the initial lists and further watches included.
+   */
+  private[kubernetes] def watchSingleRequest(
+      request: HttpRequest,
+      connectionContext: ConnectionContext): Future[HttpResponse] =
+    Source
+      .single(request)
+      .via(
+        http.outgoingConnectionUsingContext(
+          request.uri.authority.host.address(),
+          request.uri.effectivePort,
+          connectionContext))
+      .runWith(Sink.head)
 
   private def processWatchStream(
       response: HttpResponse,
@@ -497,13 +601,13 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
   }
 
   /**
-   * Records the kill switch of a newly started watch stream. If shutdown ran while the stream was being
-   * started it will have missed this kill switch, so the stream is shut down here instead of being left
-   * open until the API server closes it.
+   * Records the kill switch of a newly started watch stream. If the watch was stopped - by shutdown, or
+   * because it was idle - while the stream was being started, that will have missed this kill switch, so
+   * the stream is shut down here instead of being left open until the API server closes it.
    */
   private[kubernetes] def registerWatchStream(state: WatchState, killSwitch: UniqueKillSwitch): Unit = {
     state.killSwitch.set(Some(killSwitch))
-    if (watchesShutDown.get()) state.killSwitch.getAndSet(None).foreach(_.shutdown())
+    if (isStopped(state)) state.killSwitch.getAndSet(None).foreach(_.shutdown())
   }
 
   private[kubernetes] def processWatchEvent(event: WatchEvent, state: WatchState): Unit = {
@@ -545,24 +649,12 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
       labelSelector: String,
       state: WatchState,
       delay: FiniteDuration): Unit =
-    if (watchesShutDown.get()) {
-      log.debug("Not restarting watch for label selector: [{}], shutting down", labelSelector)
+    if (isStopped(state)) {
+      log.debug("Not restarting watch for label selector: [{}], it has been stopped", labelSelector)
     } else {
       system.scheduler.scheduleOnce(delay) {
-        if (watchesShutDown.get()) {
-          log.debug("Not restarting watch for label selector: [{}], shutting down", labelSelector)
-        } else {
-          log.info("Restarting watch for label selector: [{}]", labelSelector)
-          // without a resource version there is nothing to resume from, so go back through a full list
-          val restarted =
-            if (state.resourceVersion.get().isEmpty) startWatch(setup, labelSelector, state)
-            else startWatchStream(setup, labelSelector, state)
-          restarted.recover {
-            case NonFatal(e) =>
-              log.error(e, "Watch restart failed for label selector: [{}]", labelSelector)
-              scheduleWatchRestart(setup, labelSelector, state, settings.watchOnErrorReconnectDelay)
-          }
-        }
+        if (!isStopped(state)) log.info("Restarting watch for label selector: [{}]", labelSelector)
+        runWatch(setup, labelSelector, state)
       }
     }
 
