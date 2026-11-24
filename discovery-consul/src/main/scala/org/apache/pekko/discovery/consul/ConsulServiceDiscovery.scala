@@ -77,27 +77,45 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
   // in progress at that point is destroyed as soon as it has been built rather than leaked
   @volatile private var shuttingDown = false
 
+  private val blockingEc: ExecutionContext = system.dispatchers.lookup(DefaultBlockingDispatcherId)
+
   private lazy val consul: Consul = {
     val client = createConsulClient()
     builtConsul.set(client)
-    if (shuttingDown) takeBuiltConsul().foreach(_.destroy())
+    // shutdown started while the client was being built, and so found nothing to destroy
+    if (shuttingDown) takeBuiltConsul().foreach(destroy)
     client
   }
 
   private def takeBuiltConsul(): Option[Consul] = Option(builtConsul.getAndSet(null))
 
-  private val blockingEc: ExecutionContext = system.dispatchers.lookup(DefaultBlockingDispatcherId)
+  // destroy() shuts down the OkHttp connection pool and executor service, which blocks, so it is kept
+  // off the calling thread - a coordinated shutdown task, or a lookup overtaken by shutdown
+  private def destroy(client: Consul): Future[Done] =
+    Future {
+      client.destroy()
+      Done
+    }(blockingEc)
+
+  /**
+   * The client to send a request with. Fails once shutdown has started: no client is built from then
+   * on, and one that shutdown has destroyed - or is destroying - is never handed out for a request.
+   */
+  private def activeConsul(): Consul = {
+    def ensureNotShutDown(): Unit =
+      if (shuttingDown) throw new IllegalStateException("Consul service discovery has been shut down")
+    ensureNotShutDown()
+    val client = consul
+    // shutdown may have started while the client was being built
+    ensureNotShutDown()
+    client
+  }
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "consul-close") { () =>
     shuttingDown = true
     takeBuiltConsul() match {
       case None         => Future.successful(Done)
-      case Some(client) =>
-        // destroy() shuts down the OkHttp connection pool and executor service, which blocks
-        Future {
-          client.destroy()
-          Done
-        }(blockingEc)
+      case Some(client) => destroy(client)
     }
   }
 
@@ -165,12 +183,12 @@ class ConsulServiceDiscovery(system: ActorSystem) extends ServiceDiscovery {
 
   private def getServicesWithTags: Future[ConsulResponse[util.Map[String, util.List[String]]]] = {
     ((callback: ConsulResponseCallback[util.Map[String, util.List[String]]]) =>
-          consul.catalogClient().getServices(callback)).asFuture
+          activeConsul().catalogClient().getServices(callback)).asFuture
   }
 
   private def getService(name: String) =
     ((callback: ConsulResponseCallback[util.List[CatalogService]]) =>
-          consul.catalogClient().getService(name, Options.BLANK_QUERY_OPTIONS, callback)).asFuture
+          activeConsul().catalogClient().getService(name, Options.BLANK_QUERY_OPTIONS, callback)).asFuture
 
 }
 

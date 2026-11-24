@@ -17,16 +17,18 @@
 
 package org.apache.pekko.discovery.consul
 
-import java.net.ServerSocket
+import java.net.{ InetSocketAddress, ServerSocket }
 import java.nio.file.Paths
 import java.util.concurrent.atomic.{ AtomicInteger, AtomicReference }
 import javax.net.ssl.X509TrustManager
 
+import com.sun.net.httpserver.{ HttpExchange, HttpServer }
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, CoordinatedShutdown }
 import pekko.discovery.Lookup
 import org.kiwiproject.consul.Consul
+import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -58,7 +60,7 @@ object ConsulServiceDiscoveryInternalsSpec {
 
 }
 
-class ConsulServiceDiscoveryInternalsSpec extends AnyWordSpec with Matchers {
+class ConsulServiceDiscoveryInternalsSpec extends AnyWordSpec with Matchers with Eventually {
 
   import ConsulServiceDiscoveryInternalsSpec._
 
@@ -191,15 +193,50 @@ class ConsulServiceDiscoveryInternalsSpec extends AnyWordSpec with Matchers {
       client.isDestroyed should ===(true)
     }
 
-    "destroy a Consul client that is only built after coordinated shutdown has destroyed the client" in
-    withSystem("ConsulShutdownLateClient") { system =>
+    "fail a lookup after coordinated shutdown without building a Consul client" in
+    withSystem("ConsulShutdownLateLookup") { system =>
       val discovery = new RecordingConsulServiceDiscovery(system)
 
       shutdown(system)
-      Try(Await.ready(discovery.lookup(Lookup("my-service"), 10.seconds), 30.seconds))
+      val failure = Await.result(discovery.lookup(Lookup("my-service"), 10.seconds).failed, 30.seconds)
 
-      discovery.created.get() should ===(1)
-      discovery.client.get().isDestroyed should ===(true)
+      failure shouldBe an[IllegalStateException]
+      failure.getMessage should include("shut down")
+      discovery.created.get() should ===(0)
+    }
+
+    "destroy a Consul client whose construction is overtaken by shutdown, and fail the lookup " +
+    "without sending a request" in {
+      val requests = new AtomicInteger(0)
+      val server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0)
+      server.createContext("/",
+        (exchange: HttpExchange) => {
+          requests.incrementAndGet()
+          exchange.sendResponseHeaders(500, -1)
+          exchange.close()
+        })
+      server.start()
+      try
+        withSystem("ConsulShutdownLateClient", s"consul-port = ${server.getAddress.getPort}") { system =>
+          // coordinated shutdown runs while the client is being built, so it finds no client to destroy
+          val discovery = new RecordingConsulServiceDiscovery(system) {
+            override private[consul] def createConsulClient(): Consul = {
+              val consul = super.createConsulClient()
+              shutdown(system)
+              consul
+            }
+          }
+
+          val failure = Await.result(discovery.lookup(Lookup("my-service"), 10.seconds).failed, 30.seconds)
+
+          failure shouldBe an[IllegalStateException]
+          failure.getMessage should include("shut down")
+          discovery.created.get() should ===(1)
+          // destroyed on the blocking dispatcher rather than by the lookup itself
+          eventually(discovery.client.get().isDestroyed should ===(true))
+          requests.get() should ===(0)
+        }
+      finally server.stop(0)
     }
 
     "not create a Consul client during shutdown when discovery was never used" in
