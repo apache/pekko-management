@@ -155,7 +155,7 @@ pekko.discovery {
 
 When watch mode is enabled, the first `lookup` call performs an initial pod list to populate a local cache, then starts a persistent watch stream. Subsequent lookups read directly from the cache without making API calls. The watch stream automatically reconnects on errors or stream completion, using the Kubernetes `resourceVersion` mechanism to resume from where it left off. If the resume point is no longer valid - the server answers `410 Gone`, or sends an `ERROR` event - the cache is rebuilt from a fresh list rather than resumed, so that pods deleted while disconnected do not linger.
 
-Each service name is watched separately, with its own cache, so one discovery instance can be used to look up more than one service. The watch streams are shut down during the `service-unbind` phase of Coordinated Shutdown.
+Each service name is watched separately, with its own cache, so one discovery instance can be used to look up more than one service. The watch streams are shut down during the `service-unbind` phase of Coordinated Shutdown. From then on lookups fail straight away, rather than starting a new watch or answering from a cache that is no longer kept up to date.
 
 A watch is only kept while its service is still being looked up. Once a service has not been looked up for `watch-idle-timeout`, its watch stream is closed and its cached pods are released; a later lookup starts a fresh watch from a new initial list. Cluster Bootstrap, for example, stops looking up once the node has joined the cluster, so its watch is closed a few minutes later instead of staying open for the lifetime of the actor system. Keep `watch-idle-timeout` well above the interval between your lookups, or set it to `off` to never release a watch.
 

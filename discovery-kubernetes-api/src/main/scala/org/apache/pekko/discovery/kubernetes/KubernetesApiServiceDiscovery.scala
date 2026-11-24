@@ -134,10 +134,15 @@ object KubernetesApiServiceDiscovery {
 
     def isStopped: Boolean = stopped.get()
 
-    /** Shuts down the stream feeding this watch, if any, and keeps it from being restarted. */
+    /**
+     * Shuts down the stream feeding this watch, if any, and keeps it from being restarted. A watch that
+     * is stopped before its initial list has completed will never complete it, so the lookups waiting
+     * for it are failed rather than left to time out.
+     */
     def stop(): Unit = {
       stopped.set(true)
       killSwitch.getAndSet(None).foreach(_.shutdown())
+      synced.tryFailure(new KubernetesApiException("The watch was stopped before its initial pod list completed"))
     }
   }
 }
@@ -202,7 +207,10 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
     case _ => None
   }
 
-  /** Stops every running watch stream and prevents any further (re)starts. */
+  /**
+   * Stops every running watch stream and prevents any further (re)starts. From here on lookups fail,
+   * the ones still waiting for an initial list included, and no new watch is created.
+   */
   private[kubernetes] def stopWatches(): Unit = {
     watchesShutDown.set(true)
     idleWatchReaper.foreach(_.cancel())
@@ -210,6 +218,9 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
   }
 
   private def isStopped(state: WatchState): Boolean = state.isStopped || watchesShutDown.get()
+
+  /** The number of label selectors that currently have a watch state. */
+  private[kubernetes] def watchCount: Int = watches.size()
 
   override def lookup(query: Lookup, resolveTimeout: FiniteDuration): Future[Resolved] = {
     if (settings.watchMode) {
@@ -373,33 +384,53 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
     val labelSelector = settings.podLabelSelector(query.serviceName)
 
     kubernetesSetup.flatMap { setup =>
-      val state = watchStateFor(setup.podNamespace, labelSelector)
-      if (state.startOnce()) {
-        log.info(
-          "Starting watch for pods with label selector: [{}]. Namespace: [{}]",
-          labelSelector,
-          setup.podNamespace)
-        // retries on its own until the initial list succeeds, which completes `state.synced`
-        runWatch(setup, labelSelector, state)
+      watchStateFor(setup.podNamespace, labelSelector) match {
+        case Some(state) =>
+          if (state.startOnce()) {
+            log.info(
+              "Starting watch for pods with label selector: [{}]. Namespace: [{}]",
+              labelSelector,
+              setup.podNamespace)
+            // retries on its own until the initial list succeeds, which completes `state.synced`
+            runWatch(setup, labelSelector, state)
+          }
+          resolveFromWatch(state, query, labelSelector, setup.podNamespace, resolveTimeout)
+        case None =>
+          // the watches no longer run, so nothing would complete this lookup or keep its answer current
+          Future.failed(
+            new KubernetesApiException(
+              s"Kubernetes API watch lookup for label selector [$labelSelector] failed, " +
+              "the watches have been stopped because the actor system is shutting down"))
       }
-      resolveFromWatch(state, query, labelSelector, setup.podNamespace, resolveTimeout)
     }
   }
 
   /**
    * The watch state for a label selector, created if there is none. Counts as a lookup, so the state
-   * returned is not released as idle before `watch-idle-timeout` has passed again.
+   * returned is not released as idle before `watch-idle-timeout` has passed again. `None` once the
+   * watches have been stopped, in which case no state is created.
    */
-  private[kubernetes] def watchStateFor(podNamespace: String, labelSelector: String): WatchState =
-    // marked as used inside `compute`, which is atomic with the removal in `releaseIdleWatches`: a lookup
-    // either gets a state that has just been marked as used, or a new one - never one being released
-    watches.compute(
-      watchKey(podNamespace, labelSelector),
-      (_, existing) => {
-        val state = if (existing eq null) new WatchState else existing
-        state.touch()
-        state
-      })
+  private[kubernetes] def watchStateFor(podNamespace: String, labelSelector: String): Option[WatchState] =
+    if (watchesShutDown.get()) None
+    else {
+      // marked as used inside `compute`, which is atomic with the removal in `releaseIdleWatches`: a lookup
+      // either gets a state that has just been marked as used, or a new one - never one being released
+      val key = watchKey(podNamespace, labelSelector)
+      val state = watches.compute(
+        key,
+        (_, existing) => {
+          val state = if (existing eq null) new WatchState else existing
+          state.touch()
+          state
+        })
+      // `stopWatches` may have run since the check above, and may not have seen a state that was only
+      // being created at the time, so that is stopped and forgotten here instead
+      if (watchesShutDown.get()) {
+        state.stop()
+        watches.remove(key, state)
+        None
+      } else Some(state)
+    }
 
   /**
    * Stops and forgets every watch that has not been looked up for `watch-idle-timeout`. The next lookup

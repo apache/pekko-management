@@ -177,6 +177,46 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
 
   }
 
+  "stopWatches" should {
+
+    "fail a later lookup promptly, without creating a new watch" in {
+      val stopped = new KubernetesApiServiceDiscovery(settings)
+      stopped.stopWatches()
+
+      // far longer than the test waits: the lookup has to fail by itself, not by timing out
+      val failure = Await.result(stopped.lookup(Lookup("svc"), 1.hour).failed, 10.seconds)
+
+      failure shouldBe a[KubernetesApiServiceDiscovery.KubernetesApiException]
+      failure.getMessage should include("the watches have been stopped")
+      stopped.watchStateFor("default", "app=svc") should ===(None)
+      stopped.watchCount should ===(0)
+    }
+
+    "fail a later lookup for a selector that was being watched" in {
+      val stopped = new KubernetesApiServiceDiscovery(settings)
+      val state = stopped.watchStateFor("default", "app=svc").get
+      state.synced.trySuccess(Done)
+      stopped.stopWatches()
+
+      stopped.watchStateFor("default", "app=svc") should ===(None)
+      state.isStopped shouldBe true
+    }
+
+    "fail the lookups that are still waiting for the initial list" in {
+      val stopped = new KubernetesApiServiceDiscovery(settings)
+      val state = stopped.watchStateFor("default", "app=svc").get
+      val pending = stopped.resolveFromWatch(state, Lookup("svc"), "app=svc", "default", 1.hour)
+      pending.isCompleted shouldBe false
+
+      stopped.stopWatches()
+
+      val failure = Await.result(pending.failed, 10.seconds)
+      failure shouldBe a[KubernetesApiServiceDiscovery.KubernetesApiException]
+      failure.getMessage should include("stopped before its initial pod list completed")
+    }
+
+  }
+
   "startWatch" should {
 
     // the caller schedules the retry, so it has to be told that the watch did not start
@@ -200,7 +240,7 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
 
     "stop and forget a watch that is no longer looked up, and start a fresh one on a later lookup" in {
       val lifecycle = new KubernetesApiServiceDiscovery(settings)
-      val state = lifecycle.watchStateFor("default", "app=idle")
+      val state = lifecycle.watchStateFor("default", "app=idle").get
       state.startOnce() shouldBe true
       discovery.processWatchEvent(WatchEvent(Added, pod("pod-a", "10.0.0.1", "100")), state)
       val (killSwitch, done) = runningStream()
@@ -211,7 +251,7 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
       Await.result(done, 10.seconds) should ===(Done)
       state.isStopped shouldBe true
 
-      val fresh = lifecycle.watchStateFor("default", "app=idle")
+      val fresh = lifecycle.watchStateFor("default", "app=idle").get
       fresh should not be theSameInstanceAs(state)
       fresh.isStopped shouldBe false
       fresh.podCache.get() shouldBe empty
@@ -222,18 +262,18 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
 
     "keep a watch that is still being looked up" in {
       val lifecycle = new KubernetesApiServiceDiscovery(settings)
-      val idle = lifecycle.watchStateFor("default", "app=idle")
-      val active = lifecycle.watchStateFor("default", "app=active")
+      val idle = lifecycle.watchStateFor("default", "app=idle").get
+      val active = lifecycle.watchStateFor("default", "app=active").get
       val (killSwitch, done) = runningStream()
       lifecycle.registerWatchStream(active, killSwitch)
 
       // half the timeout later `app=active` is looked up again, `app=idle` is not
       val later = System.nanoTime() + idleTimeout.toNanos / 2
       lifecycle.releaseIdleWatches(later)
-      (lifecycle.watchStateFor("default", "app=active") should be).theSameInstanceAs(active)
+      (lifecycle.watchStateFor("default", "app=active").get should be).theSameInstanceAs(active)
 
       lifecycle.releaseIdleWatches(System.nanoTime() + idleTimeout.toNanos - 1.second.toNanos)
-      (lifecycle.watchStateFor("default", "app=active") should be).theSameInstanceAs(active)
+      (lifecycle.watchStateFor("default", "app=active").get should be).theSameInstanceAs(active)
       active.isStopped shouldBe false
       done.isCompleted shouldBe false
       idle.isStopped shouldBe false
@@ -245,7 +285,7 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
 
     "shut down a stream that is only registered after its watch was released" in {
       val lifecycle = new KubernetesApiServiceDiscovery(settings)
-      val state = lifecycle.watchStateFor("default", "app=idle")
+      val state = lifecycle.watchStateFor("default", "app=idle").get
       lifecycle.releaseIdleWatches(System.nanoTime() + idleTimeout.toNanos)
 
       val (killSwitch, done) = runningStream()
