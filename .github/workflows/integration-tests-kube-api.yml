@@ -37,7 +37,65 @@ jobs:
           git fetch origin pull/${{ github.event.pull_request.number }}/merge:scratch
           git checkout scratch
 
+      - name: Identify root README-only pull requests
+        id: pr_scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if python3 -I - <<'PY'
+          import os
+          import re
+          import subprocess
+
+          def git(*args):
+              return subprocess.check_output(["git", *args])
+
+          def allowed_diff(before, after):
+              # Treat both sides of a rename independently; allow only modified regular files.
+              changes = git(
+                  "diff", "--raw", "-z", "--no-renames", "--no-abbrev",
+                  "--ignore-submodules=none", "--no-ext-diff", before, after
+              ).split(b"\0")
+              return (
+                  len(changes) == 3
+                  and changes[1:] == [b"README.md", b""]
+                  and re.fullmatch(rb":100644 100644 [0-9a-f]{40} [0-9a-f]{40} M", changes[0])
+              )
+
+          def docs_only():
+              base = os.environ.get("BASE_SHA", "")
+              head = os.environ.get("HEAD_SHA", "")
+              merge = os.environ.get("GITHUB_SHA", "")
+              if not all(re.fullmatch("[0-9a-f]{40}", sha) for sha in (base, head, merge)):
+                  return False
+              if git("rev-list", "--parents", "-n", "1", "HEAD").split() != [
+                  sha.encode() for sha in (merge, base, head)
+              ]:
+                  return False
+              if git("rev-parse", "--is-shallow-repository").strip() != b"false":
+                  return False
+              merge_bases = git("merge-base", "--all", base, head).split()
+              if len(merge_bases) != 1 or not re.fullmatch(rb"[0-9a-f]{40}", merge_bases[0]):
+                  return False
+
+              # Require both the authored PR diff and the actual test tree delta to be docs-only.
+              return allowed_diff(merge_bases[0].decode("ascii"), head) and allowed_diff(base, merge)
+
+          try:
+              raise SystemExit(0 if docs_only() else 1)
+          except (OSError, subprocess.SubprocessError):
+              raise SystemExit(1)
+          PY
+          then
+            echo "skip_integration=true" >> "$GITHUB_OUTPUT"
+            echo "Only the root README was modified. The Kubernetes API integration suite was not run."
+            echo "Skipped the Kubernetes API integration suite: only the root README was modified." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Setup Java 17
+        if: steps.pr_scope.outputs.skip_integration != 'true'
         uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -45,12 +103,15 @@ jobs:
 
 
       - name: Install sbt
+        if: steps.pr_scope.outputs.skip_integration != 'true'
         uses: sbt/setup-sbt@7e114eae4f32ec3f93c851c2793376a77f384409 # v1.5.15
 
       - name: Cache Coursier cache
+        if: steps.pr_scope.outputs.skip_integration != 'true'
         uses: coursier/cache-action@ee0650f98295f27a505e4bfd284c9bfaa913a465 # v9.0.1
 
       - name: Setup Minikube
+        if: steps.pr_scope.outputs.skip_integration != 'true'
         uses: manusa/actions-setup-minikube@001b9f30165b2a875b835ec5183ced75b94bc269 # v2.19.0
         with:
           minikube version: 'v1.39.0' # default Kubernetes v1.37.0
@@ -60,6 +121,7 @@ jobs:
           start args: '--addons=ingress'
 
       - name: Run Integration Tests
+        if: steps.pr_scope.outputs.skip_integration != 'true'
         run: |-
           ./integration-test/kubernetes-api/test.sh
 
