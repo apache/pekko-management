@@ -107,6 +107,12 @@ final class PekkoManagementSettings(val config: Config) {
   /** Java API */
   def getHttpRouteProviders: java.util.List[NamedRouteProvider] = Http.RouteProviders.asJava
 
+  /** Java API */
+  def getHttpRouteProvidersReadOnly: Boolean = Http.RouteProvidersReadOnly
+
+  /** Java API */
+  def getHttpGracefulTerminationTimeout: java.time.Duration = Http.GracefulTerminationTimeout.toJava
+
 }
 
 /**

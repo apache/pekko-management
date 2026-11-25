@@ -19,3 +19,6 @@
 ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.management.javadsl.LivenessCheckSetup.create(java.util.function.Function)org.apache.pekko.management.javadsl.LivenessCheckSetup")
 ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.management.javadsl.ManagementRouteProviderSettings.withAuth(java.util.function.Function)org.apache.pekko.management.javadsl.ManagementRouteProviderSettings")
 ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.management.javadsl.ReadinessCheckSetup.create(java.util.function.Function)org.apache.pekko.management.javadsl.ReadinessCheckSetup")
+
+# CheckResult.success returns Optional<Done> instead of Optional<BoxedUnit>. Only the generic signature changes, not the erased descriptor
+ProblemFilters.exclude[IncompatibleSignatureProblem]("org.apache.pekko.management.javadsl.CheckResult.success()java.util.Optional")

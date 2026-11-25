@@ -38,6 +38,7 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.concurrent.TimeoutException
+import scala.jdk.FutureConverters._
 import scala.util.control.NonFatal
 
 final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Extension with ManagementRouteProvider {
@@ -63,13 +64,7 @@ final class ClusterBootstrap(implicit system: ExtendedActorSystem) extends Exten
         Discovery(system).loadServiceDiscovery(otherDiscoveryMechanism)
     }
 
-  private val joinDecider: JoinDecider = {
-    system.dynamicAccess
-      .createInstanceFor[JoinDecider](
-        settings.joinDecider.implClass,
-        List((classOf[ActorSystem], system), (classOf[ClusterBootstrapSettings], settings)))
-      .get
-  }
+  private val joinDecider: JoinDecider = ClusterBootstrap.createJoinDecider(system, settings)
 
   private val _selfContactPointUri: Promise[Uri] = Promise()
 
@@ -162,6 +157,26 @@ object ClusterBootstrap extends ExtensionId[ClusterBootstrap] with ExtensionIdPr
    * `SelfAwareJoinDecider.selfContactPointTimeout`.
    */
   @InternalApi private[bootstrap] val SelfContactPointTimeout: FiniteDuration = 10.seconds
+
+  /**
+   * INTERNAL API
+   *
+   * Instantiates the configured `join-decider.class`, which is either a [[JoinDecider]] or a
+   * [[javadsl.JoinDecider]]. The latter is adapted to the former.
+   */
+  @InternalApi private[bootstrap] def createJoinDecider(
+      system: ExtendedActorSystem,
+      settings: ClusterBootstrapSettings): JoinDecider = {
+    val args = List((classOf[ActorSystem], system), (classOf[ClusterBootstrapSettings], settings))
+    val implClass = system.dynamicAccess.getClassFor[AnyRef](settings.joinDecider.implClass).get
+    if (classOf[javadsl.JoinDecider].isAssignableFrom(implClass)) {
+      val javaDecider = system.dynamicAccess.createInstanceFor[javadsl.JoinDecider](implClass, args).get
+      new JoinDecider {
+        override def decide(info: SeedNodesInformation): Future[JoinDecision] = javaDecider.decide(info).asScala
+      }
+    } else
+      system.dynamicAccess.createInstanceFor[JoinDecider](implClass, args).get
+  }
 
   override def lookup: ClusterBootstrap.type = ClusterBootstrap
 

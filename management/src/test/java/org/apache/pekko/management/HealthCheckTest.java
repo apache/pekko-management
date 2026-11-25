@@ -29,6 +29,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.apache.pekko.Done;
 import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.actor.BootstrapSetup;
 import org.apache.pekko.actor.ClassicActorSystemProvider;
@@ -134,7 +135,9 @@ public class HealthCheckTest {
             .toCompletableFuture()
             .get();
     assertEquals(true, result.isSuccess());
-    assertTrue(result.success().isPresent());
+    // the element type is a Java-friendly type rather than scala.runtime.BoxedUnit
+    Optional<Done> success = result.success();
+    assertSame(Done.getInstance(), success.get());
     assertFalse(result.failure().isPresent());
   }
 

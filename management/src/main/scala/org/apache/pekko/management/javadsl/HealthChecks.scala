@@ -20,6 +20,7 @@ import java.util.function.{ Function => JFunction }
 import java.util.{ List => JList, Optional }
 
 import org.apache.pekko
+import pekko.Done
 import pekko.actor.ActorSystem
 import pekko.actor.ExtendedActorSystem
 import pekko.actor.setup.Setup
@@ -160,9 +161,13 @@ final class LivenessCheckSetup private (
     val createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]) extends Setup
 
 /**
- * Result for readiness and liveness checks
+ * Result for startup, readiness and liveness checks, constructor is *Internal API*
  */
-final class CheckResult private[javadsl] (private val result: Either[String, Unit]) {
+final class CheckResult @InternalApi private[javadsl] (private val result: Either[String, Unit]) {
+
+  /**
+   * The reason the check failed, empty if the check succeeded
+   */
   def failure: Optional[String] =
     Optional.ofNullable(result.left.toOption.orNull)
 
@@ -170,6 +175,9 @@ final class CheckResult private[javadsl] (private val result: Either[String, Uni
 
   def isSuccess: java.lang.Boolean = result.isRight
 
-  def success: Optional[Unit] =
-    result.toOption.toJava
+  /**
+   * Contains `Done` if the check succeeded, empty if the check failed
+   */
+  def success: Optional[Done] =
+    result.toOption.map(_ => Done.done()).toJava
 }

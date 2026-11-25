@@ -19,6 +19,7 @@ import java.util.function.{ Function => JFunction }
 import org.apache.pekko
 import pekko.Done
 import pekko.actor.{ ActorSystem, ClassicActorSystemProvider }
+import pekko.annotation.InternalApi
 import pekko.http.javadsl.model.Uri
 import pekko.http.javadsl.server.directives.RouteAdapter
 import pekko.management.PekkoManagementSettings
@@ -34,7 +35,10 @@ object PekkoManagement {
     new PekkoManagement(scaladsl.PekkoManagement(classicActorSystemProvider))
 }
 
-final class PekkoManagement(delegate: scaladsl.PekkoManagement) {
+/**
+ * Java API for Pekko Management, constructor is *Internal API*, use [[PekkoManagement.get]]
+ */
+final class PekkoManagement @InternalApi() (delegate: scaladsl.PekkoManagement) {
 
   def settings: PekkoManagementSettings = delegate.settings
 
