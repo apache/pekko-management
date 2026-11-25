@@ -29,6 +29,7 @@ See the [GitHub Milestone for 2.0.0-M2](https://github.com/apache/pekko-manageme
 
 * Java API: `PekkoManagementSettings` has new `getHttpRouteProvidersReadOnly` and `getHttpGracefulTerminationTimeout` getters ([PR1065](https://github.com/apache/pekko-management/pull/1065))
 * Java API: a custom join decider can be written in Java by implementing `org.apache.pekko.management.cluster.bootstrap.javadsl.JoinDecider` ([PR1065](https://github.com/apache/pekko-management/pull/1065))
+* Cluster Bootstrap can send HTTP Basic credentials when probing contact points, configured with `pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth` ([#436](https://github.com/apache/pekko-management/issues/436))
 
 ### Removals
 

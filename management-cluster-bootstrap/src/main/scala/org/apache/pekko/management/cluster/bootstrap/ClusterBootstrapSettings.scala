@@ -140,6 +140,15 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
 
       val caPath: String = httpClientConfig.getString("ca-path")
       val tlsVersion: String = httpClientConfig.getString("tls-version")
+
+      /**
+       * The username sent as HTTP Basic credentials with the requests made to the contact points.
+       * `None` means that no `Authorization` header is sent.
+       */
+      val basicAuthUsername: Option[String] = httpClientConfig.optValue("basic-auth.username")
+
+      /** The password that goes with [[basicAuthUsername]]. */
+      val basicAuthPassword: String = httpClientConfig.getString("basic-auth.password")
     }
 
     val fallbackPort: Int =
@@ -162,6 +171,14 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
 
     val httpMaxSeedNodesToExpose: Int = 5
   }
+
+  // checked here, and not in the nested object, because that is only initialised on first access
+  require(
+    contactPoint.httpClient.basicAuthUsername.isDefined || contactPoint.httpClient.basicAuthPassword.isEmpty,
+    "contact-point.http-client.basic-auth.password is set but basic-auth.username is empty")
+  require(
+    !contactPoint.httpClient.basicAuthUsername.exists(_.contains(':')),
+    "contact-point.http-client.basic-auth.username must not contain a colon")
 
   /** Java API */
   def getContactPointFallbackPort: Int = contactPoint.fallbackPort

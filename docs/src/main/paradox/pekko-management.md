@@ -155,6 +155,23 @@ In order to do this, invoke `start(transformSettings)` where `transformSettings`
 to amend the `ManagementRouteProviderSettings`. Use `.withAuth` and `.withHttpsConnectionContext`
 if the `ManagementRouteProviderSettings` to enable authentication and HTTPS respectively.
 
+#### Basic Authentication and Cluster Bootstrap
+
+When the management endpoints require Basic Authentication, @ref[Pekko Cluster Bootstrap](bootstrap/index.md) has to
+authenticate as well, because every node probes the `/bootstrap/seed-nodes` endpoint of the other nodes. Configure
+the credentials that the bootstrap client sends, on every node, and make sure the authenticator accepts them:
+
+```
+pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth {
+  username = "bootstrap"
+  password = ${?MANAGEMENT_PASSWORD}
+}
+```
+
+The `Authorization` header is only sent when `username` is not empty. Basic credentials are only base64 encoded, so
+serve the management endpoints over HTTPS when you use this, and supply the password through an environment variable
+or a mounted secret rather than hardcoding it in a config file.
+
 ## Stopping Pekko Management
 
 In a dynamic environment you might stop instances of Pekko Management, for example if you want to free up resources

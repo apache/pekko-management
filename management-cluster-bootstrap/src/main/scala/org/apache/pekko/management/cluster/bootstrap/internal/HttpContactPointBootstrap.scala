@@ -39,6 +39,7 @@ import pekko.http.scaladsl.model.HttpResponse
 import pekko.http.scaladsl.model.StatusCodes
 import pekko.http.scaladsl.model.Uri
 import pekko.http.scaladsl.model.Uri.Host
+import pekko.http.scaladsl.model.headers.BasicHttpCredentials
 import pekko.http.scaladsl.settings.ConnectionPoolSettings
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.management.cluster.bootstrap.ClusterBootstrapSettings
@@ -65,6 +66,11 @@ private[bootstrap] object HttpContactPointBootstrap {
   private case object ProbeTick extends DeadLetterSuppression
   private val ProbingTimerKey = "probing-key"
   private val DefaultTlsVersion = "TLSv1.2" // keep in sync with default in reference.conf
+
+  def basicAuthCredentials(settings: ClusterBootstrapSettings): Option[BasicHttpCredentials] =
+    settings.contactPoint.httpClient.basicAuthUsername.map { username =>
+      BasicHttpCredentials(username, settings.contactPoint.httpClient.basicAuthPassword)
+    }
 
   def generateSSLContext(settings: ClusterBootstrapSettings): SSLContext = {
     val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
@@ -131,7 +137,13 @@ private[bootstrap] class HttpContactPointBootstrap(
   import context.dispatcher
 
   private val probeInterval = settings.contactPoint.probeInterval
-  private val probeRequest = ClusterBootstrapRequests.bootstrapSeedNodes(baseUri)
+  private val probeRequest = {
+    val request = ClusterBootstrapRequests.bootstrapSeedNodes(baseUri)
+    basicAuthCredentials(settings) match {
+      case Some(credentials) => request.addCredentials(credentials)
+      case None              => request
+    }
+  }
 
   /**
    * If probing keeps failing until the deadline triggers, we notify the parent,
