@@ -78,7 +78,6 @@ Snapshots are published to https://repository.apache.org/content/groups/snapshot
 
 The following modules are considered experimental and require more work and testing to be considered production ready:
 
-* pekko-discovery-marathon-api
 * pekko-discovery-aws-api
 * pekko-discovery-aws-api-async
 * pekko-discovery-consul

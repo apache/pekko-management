@@ -62,14 +62,6 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
 
-  val discoveryMarathonApi = Seq(
-    "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
-    "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion,
-    "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion,
-    "org.scalatest" %% "scalatest" % scalaTestVersion % Test)
-
   val discoveryAwsApi = Seq(
     "org.apache.pekko" %% "pekko-actor" % pekkoVersion,
     "org.apache.pekko" %% "pekko-discovery" % pekkoVersion,

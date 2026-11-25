@@ -50,7 +50,6 @@ val userProjects: Seq[ProjectReference] = Seq[ProjectReference](
   discoveryAwsApiAsync,
   discoveryConsul,
   discoveryKubernetesApi,
-  discoveryMarathonApi,
   leaseKubernetes,
   management,
   managementPki,
@@ -90,13 +89,6 @@ lazy val discoveryKubernetesApi = pekkoModule("discovery-kubernetes-api")
     libraryDependencies ++= Dependencies.discoveryKubernetesApi,
     mimaPreviousArtifactsSet)
   .dependsOn(managementPki)
-
-lazy val discoveryMarathonApi = pekkoModule("discovery-marathon-api")
-  .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
-  .settings(
-    name := "pekko-discovery-marathon-api",
-    libraryDependencies ++= Dependencies.discoveryMarathonApi,
-    mimaPreviousArtifactsSet)
 
 lazy val discoveryAwsApi = pekkoModule("discovery-aws-api")
   .enablePlugins(AutomateHeaderPlugin, ReproducibleBuildsPlugin)
@@ -291,17 +283,6 @@ lazy val integrationTestAwsApiEc2TagBased = pekkoIntTestModule("aws-api-ec2")
     discoveryAwsApi,
     managementClusterBootstrap)
 
-lazy val integrationTestMarathonApiDocker = pekkoIntTestModule("marathon-api-docker")
-  .disablePlugins(MimaPlugin)
-  .enablePlugins(AutomateHeaderPlugin, NoPublish)
-  .settings(
-    name := "integration-test-marathon-api-docker")
-  .dependsOn(
-    management,
-    managementClusterHttp,
-    managementClusterBootstrap,
-    discoveryMarathonApi)
-
 lazy val integrationTestAwsApiEcs = pekkoIntTestModule("aws-api-ecs")
   .disablePlugins(MimaPlugin)
   .enablePlugins(AutomateHeaderPlugin)
@@ -396,7 +377,6 @@ val integrationImportProjects = Seq(
   "integration-test-kubernetes-api-java",
   "integration-test-kubernetes-dns",
   "integration-test-aws-api-ec2",
-  "integration-test-marathon-api-docker",
   "integration-test-aws-api-ecs",
   "integration-test-local")
 addCommandAlias(

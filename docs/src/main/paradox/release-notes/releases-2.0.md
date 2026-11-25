@@ -17,6 +17,18 @@
 
 # Release Notes (2.0.x)
 
+## 2.0.0-M2
+
+This is a milestone release and is aimed at testing this new major version by early adopters. This is experimental. This release should not be used in production.
+
+This release is meant to be used with other Pekko 2.0 module releases.
+
+See the [GitHub Milestone for 2.0.0-M2](https://github.com/apache/pekko-management/milestone/9?closed=1) for a fuller list of changes.
+
+### Removals
+
+* The discovery-marathon-api module has been removed, because Apache Mesos has been retired. There is no replacement. The 1.x releases still include it ([#672](https://github.com/apache/pekko-management/issues/672))
+
 ## 2.0.0-M1
 
 This is a milestone release and is aimed at testing this new major version by early adopters. This is experimental. This release should not be used in production.

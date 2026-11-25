@@ -9,6 +9,5 @@ dependency-change: "/project/Dependencies.scala"
 't:aws': ["/discovery-aws-api", "/discovery-aws-api-async"]
 't:consul': ["/discovery-consul"]
 't:kubernetes': ["/discovery-kubernetes-api"]
-'t:marathon': ["/discovery-marathon-api"]
 
 't:dynamic-log-levels': ["/loglevels-logback"]

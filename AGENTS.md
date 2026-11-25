@@ -40,7 +40,7 @@ Follow `CONTRIBUTING.md`. If this file conflicts with `CONTRIBUTING.md`, follow 
 - The GitHub `Check / Binary Compatibility` job must pass before merge.
 - Wire protocol changes must consider rolling upgrade compatibility.
 - Dependency changes must verify Apache-compatible licenses.
-- Discovery mechanism changes (Kubernetes, Marathon, AWS, Consul) must be tested against the target platform or documented if integration testing is unavailable.
+- Discovery mechanism changes (Kubernetes, AWS, Consul) must be tested against the target platform or documented if integration testing is unavailable.
 - Cluster bootstrap changes must preserve backward compatibility with existing bootstrap protocols.
 
 ## Package Requirements
