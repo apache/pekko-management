@@ -70,7 +70,7 @@ class HttpContactPointBootstrapBasicAuthSpec
   private def authenticator(credentials: Credentials): Option[String] =
     credentials match {
       case p @ Credentials.Provided("bootstrap") if p.verify("s3cr3t") => Some("bootstrap")
-      case _                                                          => None
+      case _                                                           => None
     }
 
   // stands in for the Pekko Management endpoint of another node, protected with basic authentication
@@ -110,7 +110,8 @@ class HttpContactPointBootstrapBasicAuthSpec
         }""")
       val child = parent.childActorOf(HttpContactPointBootstrap.props(probeSettings, contactPoint, baseUri))
       try {
-        val observation = parent.expectMsgType[BootstrapCoordinator.Protocol.ObtainedHttpSeedNodesObservation](10.seconds)
+        val observation =
+          parent.expectMsgType[BootstrapCoordinator.Protocol.ObtainedHttpSeedNodesObservation](10.seconds)
         observation.contactPoint should ===(contactPoint)
         observation.seedNodesSourceAddress should ===(contactPointSelfNode)
         observation.observedSeedNodes should ===(Set.empty[Address])
