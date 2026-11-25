@@ -25,7 +25,6 @@ Pekko Management consists of multiple modules:
  
  * @ref[Kubernetes API](discovery/kubernetes.md)
  * @ref[Consul](discovery/consul.md)
- * @ref[Marathon API](discovery/marathon.md)
  * @ref[AWS](discovery/aws.md)
 
 Various parts of Pekko management can be used together for deploying Pekko Cluster applications to Kubernetes.

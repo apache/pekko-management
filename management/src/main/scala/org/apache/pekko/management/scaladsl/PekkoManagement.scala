@@ -62,7 +62,6 @@ final class PekkoManagement(implicit private[pekko] val system: ExtendedActorSys
     dependencies = List(
       "pekko-discovery-consul",
       "pekko-discovery-aws-api",
-      "pekko-discovery-marathon-api",
       "pekko-discovery-aws-api-async",
       "pekko-discovery-kubernetes-api",
       "pekko-lease-kubernetes",
