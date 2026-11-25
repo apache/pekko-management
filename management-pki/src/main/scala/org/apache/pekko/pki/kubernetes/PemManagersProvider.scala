@@ -125,11 +125,30 @@ private[pekko] object PemManagersProvider {
   /**
    * INTERNAL API
    *
+   * An engine factory, for `ConnectionContext.httpsClient`, whose engines are configured with
+   * [[configureClientEngine]].
+   *
+   * `minTlsVersion` is trimmed and validated here, against the protocols `sslContext` supports,
+   * so a bad setting fails when the connection context is built rather than on every
+   * connection attempt.
+   *
+   * @throws IllegalArgumentException if `minTlsVersion` is not a known TLS version, or if no
+   *                                  supported protocol satisfies it.
+   */
+  @InternalApi def clientEngineFactory(sslContext: SSLContext, minTlsVersion: String): (String, Int) => SSLEngine = {
+    val version = minTlsVersion.trim
+    protocolsAtOrAbove(version, sslContext.getSupportedSSLParameters.getProtocols)
+    (host, port) => configureClientEngine(sslContext.createSSLEngine(host, port), version)
+  }
+
+  /**
+   * INTERNAL API
+   *
    * Creates an SSLContext that trusts the given CA certificate file, with no client key material.
    *
    * The returned context supports every TLS version the JVM enables by default; a minimum
    * version cannot be pinned on an `SSLContext`, so restrict the connection itself with
-   * [[configureClientEngine]].
+   * [[clientEngineFactory]].
    */
   @InternalApi def createSslContext(caCertPath: String): SSLContext =
     createSslContext(Some(caCertPath))

@@ -17,6 +17,7 @@
 
 package org.apache.pekko.discovery.kubernetes
 
+import scala.annotation.nowarn
 import scala.concurrent.duration._
 
 import com.typesafe.config.ConfigFactory
@@ -47,6 +48,8 @@ class SettingsSpec extends AnyWordSpec with Matchers {
       try {
         val settings = Settings(system)
         settings.minTlsVersion shouldBe "TLSv1.3"
+        // the deprecated accessor still reports the configured value
+        (settings.tlsVersion: @nowarn("cat=deprecation")) shouldBe "TLSv1.3"
       } finally {
         system.terminate()
       }

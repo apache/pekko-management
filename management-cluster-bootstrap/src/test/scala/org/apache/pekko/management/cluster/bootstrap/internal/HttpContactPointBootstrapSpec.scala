@@ -15,6 +15,8 @@ package org.apache.pekko.management.cluster.bootstrap.internal
 
 import java.nio.file.NoSuchFileException
 
+import scala.annotation.nowarn
+
 import org.apache.pekko
 import pekko.actor.{ ActorPath, ActorSystem }
 import pekko.event.Logging
@@ -74,7 +76,7 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
         sys.terminate()
       }
     }
-    "fail with bad tls-version when a connection engine is created" in {
+    "fail with bad tls-version when the connection context is built" in {
       val sys = ActorSystem("HttpContactPointBootstrapSpec")
       val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
       try {
@@ -84,13 +86,9 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
             tls-version = "BAD_VERSION"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
-        // the context builds fine; the version is validated per connection engine
-        HttpContactPointBootstrap.generateClientConnectionContext(settings) should not be null
-        val sslContext = HttpContactPointBootstrap.generateSSLContext(settings)
+        // the version is validated up front, not on each connection attempt
         val illegalArgumentException = intercept[IllegalArgumentException] {
-          PemManagersProvider.configureClientEngine(
-            sslContext.createSSLEngine("example.com", 443),
-            settings.contactPoint.httpClient.minTlsVersion.trim)
+          HttpContactPointBootstrap.generateClientConnectionContext(settings)
         }
         illegalArgumentException.getMessage.contains("BAD_VERSION") should be(true)
       } finally {
@@ -110,11 +108,13 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
         val settings = new ClusterBootstrapSettings(cfg, log)
         HttpContactPointBootstrap.generateClientConnectionContext(settings) should not be null
         val sslContext = HttpContactPointBootstrap.generateSSLContext(settings)
-        val engine = PemManagersProvider.configureClientEngine(
-          sslContext.createSSLEngine("example.com", 443),
-          settings.contactPoint.httpClient.minTlsVersion.trim)
+        val engine = PemManagersProvider.clientEngineFactory(
+          sslContext,
+          settings.contactPoint.httpClient.minTlsVersion)("example.com", 443)
         engine.getEnabledProtocols.toSeq shouldEqual Seq("TLSv1.3")
         engine.getSSLParameters.getEndpointIdentificationAlgorithm shouldEqual "https"
+        // the deprecated accessor still reports the configured value
+        (settings.contactPoint.httpClient.tlsVersion: @nowarn("cat=deprecation")) shouldEqual "TLSv1.3"
       } finally {
         sys.terminate()
       }

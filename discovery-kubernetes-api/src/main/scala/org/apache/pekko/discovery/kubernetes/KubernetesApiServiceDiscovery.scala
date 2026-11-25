@@ -354,8 +354,7 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
    */
   private def clientHttpsConnectionContext(): HttpsConnectionContext = {
     val sslContext = PemManagersProvider.createSslContext(settings.apiCaPath)
-    ConnectionContext.httpsClient((host, port) =>
-      PemManagersProvider.configureClientEngine(sslContext.createSSLEngine(host, port), settings.minTlsVersion))
+    ConnectionContext.httpsClient(PemManagersProvider.clientEngineFactory(sslContext, settings.minTlsVersion))
   }
 
   /**

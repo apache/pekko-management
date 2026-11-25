@@ -61,8 +61,7 @@ import scala.util.matching.Regex
     PemManagersProvider.createSslContext(settings.apiCaPath)
 
   private lazy val clientSslContext: HttpsConnectionContext =
-    ConnectionContext.httpsClient((host, port) =>
-      PemManagersProvider.configureClientEngine(sslContext.createSSLEngine(host, port), settings.minTlsVersion))
+    ConnectionContext.httpsClient(PemManagersProvider.clientEngineFactory(sslContext, settings.minTlsVersion))
 
   protected val namespace: Future[String] = {
     settings.namespace match {

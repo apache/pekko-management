@@ -480,8 +480,7 @@ PUTs must contain resourceVersions. Response:
   private def clientHttpsConnectionContext(k8sSettings: KubernetesSettings): Option[HttpsConnectionContext] = {
     if (k8sSettings.secure) {
       val sslContext = PemManagersProvider.createSslContext(k8sSettings.apiCaPath)
-      Some(ConnectionContext.httpsClient((host, port) =>
-        PemManagersProvider.configureClientEngine(sslContext.createSSLEngine(host, port), DefaultMinTlsVersion)))
+      Some(ConnectionContext.httpsClient(PemManagersProvider.clientEngineFactory(sslContext, DefaultMinTlsVersion)))
     } else
       None
   }

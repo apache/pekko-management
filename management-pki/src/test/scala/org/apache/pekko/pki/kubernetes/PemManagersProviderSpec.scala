@@ -88,6 +88,29 @@ class PemManagersProviderSpec extends AnyWordSpec with Matchers {
     }
   }
 
+  "clientEngineFactory" should {
+    "reject an unknown minimum version before any engine is created" in {
+      val sslContext = PemManagersProvider.createSslContext(None)
+      intercept[IllegalArgumentException] {
+        PemManagersProvider.clientEngineFactory(sslContext, "BAD_VERSION")
+      }.getMessage should include("BAD_VERSION")
+      // "TLS" was accepted when the setting was passed to SSLContext.getInstance; it is not a version
+      intercept[IllegalArgumentException] {
+        PemManagersProvider.clientEngineFactory(sslContext, "TLS")
+      }
+    }
+
+    "trim the minimum version and apply it to the engines it creates" in {
+      val sslContext = PemManagersProvider.createSslContext(None)
+      val engine = PemManagersProvider.clientEngineFactory(sslContext, " TLSv1.3 ")("example.com", 443)
+      engine.getEnabledProtocols.toSeq shouldEqual Seq("TLSv1.3")
+      engine.getUseClientMode shouldBe true
+      engine.getSSLParameters.getEndpointIdentificationAlgorithm shouldEqual "https"
+      engine.getPeerHost shouldEqual "example.com"
+      engine.getPeerPort shouldEqual 443
+    }
+  }
+
   "createSslContext" should {
     "support more than just the default protocol" in {
       // the context itself must stay unrestricted; the engine is what pins the minimum

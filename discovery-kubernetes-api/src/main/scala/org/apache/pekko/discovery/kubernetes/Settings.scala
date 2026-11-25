@@ -54,6 +54,9 @@ final class Settings(kubernetesApi: Config) extends Extension {
   val minTlsVersion: String =
     kubernetesApi.getString("tls-version")
 
+  @deprecated("Use minTlsVersion instead", "2.0.0")
+  def tlsVersion: String = minTlsVersion
+
   val podNamespacePath: String =
     kubernetesApi.getString("pod-namespace-path")
 

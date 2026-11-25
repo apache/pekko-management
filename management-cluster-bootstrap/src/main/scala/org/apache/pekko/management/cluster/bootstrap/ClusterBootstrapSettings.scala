@@ -141,6 +141,9 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
       val caPath: String = httpClientConfig.getString("ca-path")
       val minTlsVersion: String = httpClientConfig.getString("tls-version")
 
+      @deprecated("Use minTlsVersion instead", "2.0.0")
+      def tlsVersion: String = minTlsVersion
+
       /**
        * The username sent as HTTP Basic credentials with the requests made to the contact points.
        * `None` means that no `Authorization` header is sent.

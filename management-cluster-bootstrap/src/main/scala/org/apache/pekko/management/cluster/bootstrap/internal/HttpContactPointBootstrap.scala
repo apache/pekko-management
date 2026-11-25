@@ -93,9 +93,8 @@ private[bootstrap] object HttpContactPointBootstrap {
 
   def generateClientConnectionContext(settings: ClusterBootstrapSettings): HttpsConnectionContext = {
     val sslContext = generateSSLContext(settings)
-    val minTlsVersion = settings.contactPoint.httpClient.minTlsVersion.trim
-    ConnectionContext.httpsClient((host, port) =>
-      PemManagersProvider.configureClientEngine(sslContext.createSSLEngine(host, port), minTlsVersion))
+    ConnectionContext.httpsClient(
+      PemManagersProvider.clientEngineFactory(sslContext, settings.contactPoint.httpClient.minTlsVersion))
   }
 }
 
