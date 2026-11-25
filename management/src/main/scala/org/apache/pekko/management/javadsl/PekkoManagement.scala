@@ -36,7 +36,7 @@ object PekkoManagement {
 }
 
 /**
- * Java API for Pekko Management, constructor is *Internal API*, use [[PekkoManagement.get]]
+ * Java API for Pekko Management, constructor is *Internal API*, use `PekkoManagement.get`
  */
 final class PekkoManagement @InternalApi() (delegate: scaladsl.PekkoManagement) {
 
