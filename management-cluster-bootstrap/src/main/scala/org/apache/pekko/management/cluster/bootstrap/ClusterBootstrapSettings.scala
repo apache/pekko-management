@@ -172,6 +172,10 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
     val probingFailureTimeout: FiniteDuration =
       contactPointConfig.getDuration("probing-failure-timeout", TimeUnit.MILLISECONDS).millis
 
+    /** How long a single probe request may take before it is counted as failed. */
+    val probingRequestTimeout: FiniteDuration =
+      contactPointConfig.getDuration("probing-request-timeout", TimeUnit.MILLISECONDS).millis
+
     val probeInterval: FiniteDuration =
       contactPointConfig.getDuration("probe-interval", TimeUnit.MILLISECONDS).millis
 
@@ -192,8 +196,18 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
   /** Java API */
   def getContactPointFallbackPort: Int = contactPoint.fallbackPort
 
+  if (contactPoint.probingRequestTimeout >= contactPoint.probingFailureTimeout)
+    log.warning(
+      "contact-point.probing-request-timeout [{}] is not shorter than contact-point.probing-failure-timeout [{}]. " +
+      "A probe request that times out will not be retried, the contact point is rediscovered instead.",
+      contactPoint.probingRequestTimeout,
+      contactPoint.probingFailureTimeout)
+
   /** Java API */
   def getContactPointProbingFailureTimeout: java.time.Duration = contactPoint.probingFailureTimeout.toJava
+
+  /** Java API */
+  def getContactPointProbingRequestTimeout: java.time.Duration = contactPoint.probingRequestTimeout.toJava
 
   object joinDecider {
     val implClass: String = bootConfig.getString("join-decider.class")

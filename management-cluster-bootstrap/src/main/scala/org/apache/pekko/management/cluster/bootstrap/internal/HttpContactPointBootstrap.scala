@@ -197,7 +197,9 @@ private[bootstrap] class HttpContactPointBootstrap(
       // timeout fires first, we properly discard the in-flight response entity to release
       // the HTTP connection back to the pool.
       val promise = Promise[SeedNodes]()
-      val timeoutCancellable = context.system.scheduler.scheduleOnce(settings.contactPoint.probingFailureTimeout) {
+      // This is deliberately shorter than probingFailureTimeout: the failure deadline started before this
+      // request was sent, so a request that only fails at probingFailureTimeout would never be retried.
+      val timeoutCancellable = context.system.scheduler.scheduleOnce(settings.contactPoint.probingRequestTimeout) {
         promise.tryFailure(new TimeoutException(s"Probing timeout of [$baseUri]"))
       }
       response.flatMap(handleResponse).onComplete {

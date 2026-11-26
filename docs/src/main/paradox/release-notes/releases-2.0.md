@@ -31,6 +31,10 @@ See the [GitHub Milestone for 2.0.0-M2](https://github.com/apache/pekko-manageme
 * Java API: a custom join decider can be written in Java by implementing `org.apache.pekko.management.cluster.bootstrap.javadsl.JoinDecider` ([PR1065](https://github.com/apache/pekko-management/pull/1065))
 * Cluster Bootstrap can send HTTP Basic credentials when probing contact points, configured with `pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth`. The credentials are only sent over HTTPS, unless `basic-auth.allow-insecure-http` is enabled ([#436](https://github.com/apache/pekko-management/issues/436))
 
+### Changes
+
+* Cluster Bootstrap: a probe request to a contact point now times out after the new `pekko.management.cluster.bootstrap.contact-point.probing-request-timeout` (1 second by default) and is retried until `probing-failure-timeout` has passed. Before, a request only timed out after `probing-failure-timeout` and was never retried ([#209](https://github.com/apache/pekko-management/issues/209))
+
 ### Removals
 
 * The discovery-marathon-api module has been removed, because Apache Mesos has been retired. There is no replacement. The 1.x releases still include it ([#672](https://github.com/apache/pekko-management/issues/672))
