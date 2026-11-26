@@ -20,7 +20,6 @@ import java.util.function.{ Function => JFunction }
 import java.util.{ List => JList, Optional }
 
 import org.apache.pekko
-import pekko.Done
 import pekko.actor.ActorSystem
 import pekko.actor.ExtendedActorSystem
 import pekko.actor.setup.Setup
@@ -176,8 +175,10 @@ final class CheckResult @InternalApi private[javadsl] (private val result: Eithe
   def isSuccess: java.lang.Boolean = result.isRight
 
   /**
-   * Contains `Done` if the check succeeded, empty if the check failed
+   * Present if the check succeeded, empty if the check failed. The element is a
+   * `scala.runtime.BoxedUnit`, which is kept for compatibility with existing Java callers.
+   * Java code should prefer [[isSuccess]].
    */
-  def success: Optional[Done] =
-    result.toOption.map(_ => Done.done()).toJava
+  def success: Optional[Unit] =
+    result.toOption.toJava
 }

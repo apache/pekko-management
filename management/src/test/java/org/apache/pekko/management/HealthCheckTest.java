@@ -29,7 +29,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.apache.pekko.Done;
 import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.actor.BootstrapSetup;
 import org.apache.pekko.actor.ClassicActorSystemProvider;
@@ -47,6 +46,7 @@ import org.apache.pekko.testkit.javadsl.TestKit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import scala.runtime.BoxedUnit;
 
 public class HealthCheckTest {
   private static Throwable cause = new RuntimeException("oh dear");
@@ -135,9 +135,9 @@ public class HealthCheckTest {
             .toCompletableFuture()
             .get();
     assertEquals(true, result.isSuccess());
-    // the element type is a Java-friendly type rather than scala.runtime.BoxedUnit
-    Optional<Done> success = result.success();
-    assertSame(Done.getInstance(), success.get());
+    // existing Java callers may name the element type, so it has to stay a BoxedUnit
+    BoxedUnit success = result.success().get();
+    assertSame(BoxedUnit.UNIT, success);
     assertFalse(result.failure().isPresent());
   }
 

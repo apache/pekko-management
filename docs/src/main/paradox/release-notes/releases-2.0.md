@@ -30,10 +30,6 @@ See the [GitHub Milestone for 2.0.0-M2](https://github.com/apache/pekko-manageme
 * Java API: `PekkoManagementSettings` has new `getHttpRouteProvidersReadOnly` and `getHttpGracefulTerminationTimeout` getters ([PR1065](https://github.com/apache/pekko-management/pull/1065))
 * Java API: a custom join decider can be written in Java by implementing `org.apache.pekko.management.cluster.bootstrap.javadsl.JoinDecider` ([PR1065](https://github.com/apache/pekko-management/pull/1065))
 
-### Changes
-
-* Java API: `CheckResult.success()` returns `Optional<Done>` instead of `Optional<scala.runtime.BoxedUnit>`. This is binary compatible, but Java code that names the old element type needs to be changed ([PR1065](https://github.com/apache/pekko-management/pull/1065))
-
 ### Removals
 
 * The discovery-marathon-api module has been removed, because Apache Mesos has been retired. There is no replacement. The 1.x releases still include it ([#672](https://github.com/apache/pekko-management/issues/672))
