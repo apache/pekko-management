@@ -96,6 +96,26 @@ private[bootstrap] object HttpContactPointBootstrap {
     ConnectionContext.httpsClient(
       PemManagersProvider.clientEngineFactory(sslContext, settings.contactPoint.httpClient.minTlsVersion))
   }
+
+  /**
+   * The connection context that https probes use instead of the default client https context
+   * of the HTTP extension, if there is one.
+   *
+   * With the shipped defaults (no `ca-path` and the default `tls-version`) this is `None` and
+   * the probes use `Http().defaultClientHttpsContext`, which the application may have replaced
+   * with `Http().setDefaultClientHttpsContext`. That context then takes precedence: it decides
+   * what is trusted and which TLS versions are enabled, and the configured minimum is not
+   * applied to it. Pekko HTTP offers no way to narrow the protocols of an existing
+   * `HttpsConnectionContext` without replacing its trust settings.
+   *
+   * Setting a `ca-path`, or a `tls-version` other than the default, gives the probes a context
+   * of their own, restricted to the configured minimum TLS version.
+   */
+  def customClientConnectionContext(settings: ClusterBootstrapSettings): Option[HttpsConnectionContext] =
+    if (settings.contactPoint.httpClient.caPath.trim.nonEmpty ||
+      settings.contactPoint.httpClient.minTlsVersion.trim != DefaultTlsVersion)
+      Some(generateClientConnectionContext(settings))
+    else None
 }
 
 /**
@@ -132,12 +152,9 @@ private[bootstrap] class HttpContactPointBootstrap(
 
   private implicit val sys: ActorSystem = context.system
 
-  private val useCustomSslContext: Boolean =
-    settings.contactPoint.httpClient.caPath.trim.nonEmpty ||
-    settings.contactPoint.httpClient.minTlsVersion != DefaultTlsVersion
-
-  private lazy val clientSslContext: HttpsConnectionContext =
-    generateClientConnectionContext(settings)
+  // None means that the default client https context of the HTTP extension is used
+  private lazy val customClientSslContext: Option[HttpsConnectionContext] =
+    customClientConnectionContext(settings)
 
   private val http = Http()
 
@@ -168,11 +185,13 @@ private[bootstrap] class HttpContactPointBootstrap(
   override def receive = {
     case ProbeTick =>
       log.debug("Probing [{}] for seed nodes...", probeRequest.uri)
-      val response = if (probeRequest.uri.scheme == "https" && useCustomSslContext) {
-        http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
-          connectionContext = clientSslContext)
-      } else {
-        http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries)
+      val customSslContext = if (probeRequest.uri.scheme == "https") customClientSslContext else None
+      val response = customSslContext match {
+        case Some(connectionContext) =>
+          http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
+            connectionContext = connectionContext)
+        case None =>
+          http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries)
       }
       // Use a Promise-based pattern instead of Future.firstCompletedOf so that when the
       // timeout fires first, we properly discard the in-flight response entity to release

@@ -31,6 +31,13 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
 
   val userDir = System.getProperty("user.dir")
 
+  @nowarn("cat=deprecation")
+  private def matchesTlsVersion(settings: ClusterBootstrapSettings, version: String): Boolean =
+    version match {
+      case settings.contactPoint.httpClient.tlsVersion => true
+      case _                                           => false
+    }
+
   "HttpContactPointBootstrap" should {
     "use a safe name when connecting over IPv6" in {
       val name = HttpContactPointBootstrap.name(Host("[fe80::1013:2070:258a:c662]"), 443)
@@ -115,6 +122,51 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
         engine.getSSLParameters.getEndpointIdentificationAlgorithm shouldEqual "https"
         // the deprecated accessor still reports the configured value
         (settings.contactPoint.httpClient.tlsVersion: @nowarn("cat=deprecation")) shouldEqual "TLSv1.3"
+        // the deprecated accessor is a val, so that it can still be used as a stable identifier
+        matchesTlsVersion(settings, "TLSv1.3") shouldBe true
+        matchesTlsVersion(settings, "TLSv1.2") shouldBe false
+      } finally {
+        sys.terminate()
+      }
+    }
+
+    "leave https probes on the default client https context with the default config" in {
+      val sys = ActorSystem("HttpContactPointBootstrapSpec")
+      val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
+      try {
+        val settings = new ClusterBootstrapSettings(sys.settings.config, log)
+        // the default context of the HTTP extension takes precedence, the minimum is not applied to it
+        HttpContactPointBootstrap.customClientConnectionContext(settings) shouldBe empty
+      } finally {
+        sys.terminate()
+      }
+    }
+
+    "use a context of its own for https probes when ca-path is set" in {
+      val sys = ActorSystem("HttpContactPointBootstrapSpec")
+      val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
+      try {
+        val cfg = ConfigFactory.parseString(s"""
+          pekko.management.cluster.bootstrap.contact-point.http-client {
+            ca-path = "${userDir}/src/test/files/ca.crt"
+          }""").withFallback(sys.settings.config)
+        val settings = new ClusterBootstrapSettings(cfg, log)
+        HttpContactPointBootstrap.customClientConnectionContext(settings) should not be empty
+      } finally {
+        sys.terminate()
+      }
+    }
+
+    "use a context of its own for https probes when tls-version is not the default" in {
+      val sys = ActorSystem("HttpContactPointBootstrapSpec")
+      val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
+      try {
+        val cfg = ConfigFactory.parseString("""
+          pekko.management.cluster.bootstrap.contact-point.http-client {
+            tls-version = "TLSv1.3"
+          }""").withFallback(sys.settings.config)
+        val settings = new ClusterBootstrapSettings(cfg, log)
+        HttpContactPointBootstrap.customClientConnectionContext(settings) should not be empty
       } finally {
         sys.terminate()
       }

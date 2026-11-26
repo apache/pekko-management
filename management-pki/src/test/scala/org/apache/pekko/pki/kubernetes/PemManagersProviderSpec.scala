@@ -17,7 +17,17 @@
 
 package org.apache.pekko.pki.kubernetes
 
-import javax.net.ssl.SSLEngine
+import java.security.{ KeyManagementException, SecureRandom }
+import javax.net.ssl.{
+  KeyManager,
+  SSLContext,
+  SSLContextSpi,
+  SSLEngine,
+  SSLServerSocketFactory,
+  SSLSessionContext,
+  SSLSocketFactory,
+  TrustManager
+}
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -28,6 +38,32 @@ class PemManagersProviderSpec extends AnyWordSpec with Matchers {
     // no CA path: trust the default JVM store, which is enough to inspect protocol negotiation
     val sslContext = PemManagersProvider.createSslContext(None)
     PemManagersProvider.configureClientEngine(sslContext.createSSLEngine("example.com", 443), minTlsVersion)
+  }
+
+  /**
+   * An SSLContext whose client engines only have `clientProtocols` enabled, which is what the
+   * `jdk.tls.client.protocols` system property does. That property is read once per JVM, so it
+   * cannot be set from a test.
+   */
+  private def restrictedClientContext(clientProtocols: String*): SSLContext = {
+    val delegate = PemManagersProvider.createSslContext(None)
+    def restrict(engine: SSLEngine): SSLEngine = {
+      engine.setUseClientMode(true)
+      engine.setEnabledProtocols(clientProtocols.toArray)
+      engine
+    }
+    val spi = new SSLContextSpi {
+      override def engineInit(km: Array[KeyManager], tm: Array[TrustManager], sr: SecureRandom): Unit =
+        throw new KeyManagementException("already initialized")
+      override def engineGetSocketFactory(): SSLSocketFactory = delegate.getSocketFactory
+      override def engineGetServerSocketFactory(): SSLServerSocketFactory = delegate.getServerSocketFactory
+      override def engineCreateSSLEngine(): SSLEngine = restrict(delegate.createSSLEngine())
+      override def engineCreateSSLEngine(host: String, port: Int): SSLEngine =
+        restrict(delegate.createSSLEngine(host, port))
+      override def engineGetServerSessionContext(): SSLSessionContext = delegate.getServerSessionContext
+      override def engineGetClientSessionContext(): SSLSessionContext = delegate.getClientSessionContext
+    }
+    new SSLContext(spi, delegate.getProvider, delegate.getProtocol) {}
   }
 
   "protocolsAtOrAbove" should {
@@ -74,6 +110,23 @@ class PemManagersProviderSpec extends AnyWordSpec with Matchers {
       enabled.foreach(p => Seq("TLSv1.2", "TLSv1.3") should contain(p))
     }
 
+    // the minimum narrows what is enabled for the client, it must not bring back a version
+    // that is supported by the JVM but was excluded, e.g. with jdk.tls.client.protocols
+    "not enable protocols that are supported but not enabled for the client" in {
+      val engine = restrictedClientContext("TLSv1.2").createSSLEngine("example.com", 443)
+      engine.getSupportedProtocols should contain("TLSv1.3")
+      PemManagersProvider.configureClientEngine(engine, "TLSv1.2")
+      engine.getEnabledProtocols.toSeq shouldEqual Seq("TLSv1.2")
+    }
+
+    "reject a minimum that only a protocol not enabled for the client satisfies" in {
+      val engine = restrictedClientContext("TLSv1.2").createSSLEngine("example.com", 443)
+      intercept[IllegalArgumentException] {
+        PemManagersProvider.configureClientEngine(engine, "TLSv1.3")
+      }.getMessage should include("TLSv1.3")
+      engine.getEnabledProtocols.toSeq shouldEqual Seq("TLSv1.2")
+    }
+
     "put the engine in client mode and keep https endpoint identification" in {
       val engine = clientEngine("TLSv1.2")
       engine.getUseClientMode shouldBe true
@@ -98,6 +151,22 @@ class PemManagersProviderSpec extends AnyWordSpec with Matchers {
       intercept[IllegalArgumentException] {
         PemManagersProvider.clientEngineFactory(sslContext, "TLS")
       }
+    }
+
+    "keep a restricted client protocol list restricted" in {
+      val sslContext = restrictedClientContext("TLSv1.1", "TLSv1.2")
+      val engine = PemManagersProvider.clientEngineFactory(sslContext, "TLSv1.2")("example.com", 443)
+      engine.getSupportedProtocols should contain("TLSv1.3")
+      engine.getEnabledProtocols.toSeq shouldEqual Seq("TLSv1.2")
+    }
+
+    "check the minimum against the protocols enabled for the client before any connection" in {
+      // TLSv1.3 is supported by the JVM, but not in the restricted client list
+      val sslContext = restrictedClientContext("TLSv1.2")
+      sslContext.getSupportedSSLParameters.getProtocols should contain("TLSv1.3")
+      intercept[IllegalArgumentException] {
+        PemManagersProvider.clientEngineFactory(sslContext, "TLSv1.3")
+      }.getMessage should include("TLSv1.3")
     }
 
     "trim the minimum version and apply it to the engines it creates" in {

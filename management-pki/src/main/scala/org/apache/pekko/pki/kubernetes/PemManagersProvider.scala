@@ -82,27 +82,49 @@ private[pekko] object PemManagersProvider {
   /**
    * INTERNAL API
    *
-   * The subset of `supportedProtocols` that is at or above `minTlsVersion`.
+   * The subset of `enabledProtocols` that is at or above `minTlsVersion`.
+   *
+   * A minimum only ever narrows: pass the protocols that are already enabled for the
+   * connection (not everything the JVM supports), so that protocols the operator has
+   * excluded, for example with the `jdk.tls.client.protocols` system property, stay excluded.
    *
    * A minimum version can only be enforced on an `SSLSocket` or `SSLEngine`; an `SSLContext`
    * has no mutable protocol list, so callers must apply the result via
-   * [[configureClientEngine]] or `SSLSocket.setEnabledProtocols`.
+   * [[restrictToMinTlsVersion]], [[configureClientEngine]] or `SSLSocket.setEnabledProtocols`.
    *
    * @throws IllegalArgumentException if `minTlsVersion` is not a known TLS version, or if no
-   *                                  supported protocol satisfies it.
+   *                                  enabled protocol satisfies it.
    */
-  @InternalApi def protocolsAtOrAbove(minTlsVersion: String, supportedProtocols: Array[String]): Array[String] = {
+  @InternalApi def protocolsAtOrAbove(minTlsVersion: String, enabledProtocols: Array[String]): Array[String] = {
     val minOrder = TlsVersionOrder.getOrElse(
       minTlsVersion,
       throw new IllegalArgumentException(
         s"Unknown TLS version [$minTlsVersion]. Supported values: " +
         TlsVersionOrder.keys.toSeq.sorted.mkString(", ")))
-    val filtered = supportedProtocols.filter(protocol => TlsVersionOrder.get(protocol).exists(_ >= minOrder))
+    val filtered = enabledProtocols.filter(protocol => TlsVersionOrder.get(protocol).exists(_ >= minOrder))
     if (filtered.isEmpty)
       throw new IllegalArgumentException(
-        s"No TLS protocol at or above [$minTlsVersion] is supported. Supported protocols: " +
-        supportedProtocols.mkString(", "))
+        s"No TLS protocol at or above [$minTlsVersion] is enabled. Enabled protocols: " +
+        enabledProtocols.mkString(", "))
     filtered
+  }
+
+  /**
+   * INTERNAL API
+   *
+   * Removes the TLS versions below `minTlsVersion` from the protocols that are enabled on
+   * `engine`. Nothing that is not already enabled gets enabled, and no other setting of the
+   * engine is touched, so this can be applied to an engine that somebody else configured.
+   *
+   * The engine must already be in the mode (client or server) that it will be used in, because
+   * switching the mode can reset the enabled protocols.
+   *
+   * @throws IllegalArgumentException if `minTlsVersion` is not a known TLS version, or if no
+   *                                  protocol enabled on the engine satisfies it.
+   */
+  @InternalApi def restrictToMinTlsVersion(engine: SSLEngine, minTlsVersion: String): SSLEngine = {
+    engine.setEnabledProtocols(protocolsAtOrAbove(minTlsVersion, engine.getEnabledProtocols))
+    engine
   }
 
   /**
@@ -112,10 +134,14 @@ private[pekko] object PemManagersProvider {
    * `minTlsVersion`, keeping the "https" endpoint identification algorithm that
    * `ConnectionContext.httpsClient(sslContext)` would otherwise apply, so hostname
    * verification is not lost.
+   *
+   * The minimum is applied to the protocols that are enabled for a client engine, see
+   * [[restrictToMinTlsVersion]].
    */
   @InternalApi def configureClientEngine(engine: SSLEngine, minTlsVersion: String): SSLEngine = {
+    // switch to client mode first: the client and server defaults for the enabled protocols differ
     engine.setUseClientMode(true)
-    engine.setEnabledProtocols(protocolsAtOrAbove(minTlsVersion, engine.getSupportedProtocols))
+    restrictToMinTlsVersion(engine, minTlsVersion)
     val params = engine.getSSLParameters
     params.setEndpointIdentificationAlgorithm("https")
     engine.setSSLParameters(params)
@@ -128,16 +154,17 @@ private[pekko] object PemManagersProvider {
    * An engine factory, for `ConnectionContext.httpsClient`, whose engines are configured with
    * [[configureClientEngine]].
    *
-   * `minTlsVersion` is trimmed and validated here, against the protocols `sslContext` supports,
-   * so a bad setting fails when the connection context is built rather than on every
-   * connection attempt.
+   * `minTlsVersion` is trimmed and validated here, against the protocols that `sslContext`
+   * enables for a client engine (the same set that the engines are later restricted from), so
+   * a bad setting fails when the connection context is built rather than on every connection
+   * attempt.
    *
    * @throws IllegalArgumentException if `minTlsVersion` is not a known TLS version, or if no
-   *                                  supported protocol satisfies it.
+   *                                  enabled protocol satisfies it.
    */
   @InternalApi def clientEngineFactory(sslContext: SSLContext, minTlsVersion: String): (String, Int) => SSLEngine = {
     val version = minTlsVersion.trim
-    protocolsAtOrAbove(version, sslContext.getSupportedSSLParameters.getProtocols)
+    configureClientEngine(sslContext.createSSLEngine(), version)
     (host, port) => configureClientEngine(sslContext.createSSLEngine(host, port), version)
   }
 
