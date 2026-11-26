@@ -52,7 +52,8 @@ fi
 max_tries=10
 try_count=0
 
-# Loop until all pods are included or the maximum number of tries is reached
+# The CR deployment has three replicas. Wait until all three pods are in the CR.
+expected_pods=3
 while true
 do
   # Get the list of pods matching the namespace and app name, and are in the Running state
@@ -61,12 +62,15 @@ do
   # Get the pods in the CR
   cr_pod_list=$(kubectl describe podcosts.pekko.apache.org $APP_NAME -n $NAMESPACE | grep "Pod Name" | awk '{print $3}' | sort)
 
-  if [ "$pod_list" = "$cr_pod_list" ]
+  pod_count=$(printf '%s\n' "$pod_list" | wc -w)
+  if [ "$pod_count" -eq "$expected_pods" ] && [ "$pod_list" = "$cr_pod_list" ]
     then
       echo "Found expected pods in CR: $cr_pod_list"
       break
   else
-      echo "Expected $pod_list, but didn't find expected pods in CR: $cr_pod_list"
+      echo "Expected $expected_pods running pods with matching CR entries, found $pod_count running pods"
+      echo "Running pods: $pod_list"
+      echo "Pods in CR: $cr_pod_list"
   fi
 
   # Increment the try count and check if the maximum number of tries is reached
