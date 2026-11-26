@@ -18,6 +18,7 @@
 package org.apache.pekko.management.cluster.bootstrap.internal
 
 import java.net.InetAddress
+import java.util.concurrent.atomic.AtomicInteger
 
 import scala.concurrent.duration._
 
@@ -74,11 +75,16 @@ class HttpContactPointBootstrapBasicAuthSpec
     }
 
   // stands in for the Pekko Management endpoint of another node, protected with basic authentication
+  private val requestCount = new AtomicInteger(0)
+
   private val securedRoute: Route =
-    authenticateBasic(realm = "secured", authenticator) { _ =>
-      path("bootstrap" / "seed-nodes") {
-        get {
-          complete(SeedNodes(contactPointSelfNode, Set.empty))
+    extractRequest { _ =>
+      requestCount.incrementAndGet()
+      authenticateBasic(realm = "secured", authenticator) { _ =>
+        path("bootstrap" / "seed-nodes") {
+          get {
+            complete(SeedNodes(contactPointSelfNode, Set.empty))
+          }
         }
       }
     }
@@ -107,6 +113,7 @@ class HttpContactPointBootstrapBasicAuthSpec
         pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth {
           username = "bootstrap"
           password = "s3cr3t"
+          allow-insecure-http = on
         }""")
       val child = parent.childActorOf(HttpContactPointBootstrap.props(probeSettings, contactPoint, baseUri))
       try {
@@ -118,6 +125,34 @@ class HttpContactPointBootstrapBasicAuthSpec
       } finally {
         system.stop(child)
       }
+    }
+
+    "refuse to send the credentials over plain http unless that is explicitly allowed" in {
+      val parent = TestProbe()
+      val probeSettings = settings("""
+        pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth {
+          username = "bootstrap"
+          password = "s3cr3t"
+        }""")
+      val requestsBefore = requestCount.get
+      val child = parent.childActorOf(HttpContactPointBootstrap.props(probeSettings, contactPoint, baseUri))
+      // the actor fails to start, rather than probing with or without the credentials
+      parent.watch(child)
+      parent.expectTerminated(child, 10.seconds)
+      parent.expectNoMessage(300.millis)
+      requestCount.get should ===(requestsBefore)
+    }
+
+    "allow the credentials to be sent over https without further settings" in {
+      val probeSettings = settings("""
+        pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth {
+          username = "bootstrap"
+          password = "s3cr3t"
+        }""")
+      HttpContactPointBootstrap.mayProbeWithScheme(probeSettings, "https") should ===(true)
+      HttpContactPointBootstrap.mayProbeWithScheme(probeSettings, "http") should ===(false)
+      // anonymous probing is not restricted
+      HttpContactPointBootstrap.mayProbeWithScheme(settings(""), "http") should ===(true)
     }
 
     "fail probing a contact point that requires basic auth when no credentials are configured" in {
@@ -134,6 +169,7 @@ class HttpContactPointBootstrapBasicAuthSpec
         pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth {
           username = "bootstrap"
           password = "wrong"
+          allow-insecure-http = on
         }""")
       parent.childActorOf(HttpContactPointBootstrap.props(probeSettings, contactPoint, baseUri))
       val failed = parent.expectMsgType[BootstrapCoordinator.Protocol.ProbingFailed](10.seconds)

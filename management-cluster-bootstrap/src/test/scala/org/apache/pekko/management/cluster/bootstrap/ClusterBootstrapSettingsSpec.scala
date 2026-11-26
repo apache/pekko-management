@@ -51,6 +51,18 @@ class ClusterBootstrapSettingsSpec extends AbstractBootstrapSpec {
       val settings = ClusterBootstrapSettings(config, NoLogging)
       settings.contactPoint.httpClient.basicAuthUsername should ===(None)
       settings.contactPoint.httpClient.basicAuthPassword should ===("")
+      settings.contactPoint.httpClient.basicAuthAllowInsecureHttp should ===(false)
+    }
+
+    "read the opt-in to send basic auth credentials over plain http" in {
+      val overrides = ConfigFactory.parseString("""
+        pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth {
+          username = "bootstrap"
+          password = "s3cr3t"
+          allow-insecure-http = on
+        }""")
+      val settings = ClusterBootstrapSettings(overrides.withFallback(config), NoLogging)
+      settings.contactPoint.httpClient.basicAuthAllowInsecureHttp should ===(true)
     }
 
     "read basic auth credentials for the contact point client" in {

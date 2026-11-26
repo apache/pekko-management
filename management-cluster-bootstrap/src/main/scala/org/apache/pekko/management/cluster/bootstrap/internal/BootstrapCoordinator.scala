@@ -158,6 +158,10 @@ private[pekko] class BootstrapCoordinator(
     settings.contactPointDiscovery.portName,
     settings.contactPointDiscovery.protocol)
 
+  // Probes that carry credentials are only sent to contact points that service discovery currently returns.
+  private val stopProbingRemovedContactPoints: Boolean =
+    HttpContactPointBootstrap.basicAuthCredentials(settings).isDefined
+
   private var lastContactsObservation: Option[ServiceContactsObservation] = None
   private var seedNodesObservations: Map[ResolvedTarget, SeedNodesObservation] = Map.empty
 
@@ -199,6 +203,14 @@ private[pekko] class BootstrapCoordinator(
 
   /** Awaiting initial signal to start the bootstrap process */
   override def receive: Receive = {
+    case InitiateBootstrapping(selfContactPoint)
+        if !HttpContactPointBootstrap.mayProbeWithScheme(settings, selfContactPoint.scheme) =>
+      log.error(
+        "Cluster bootstrap is not started. {} Scheme: [{}]",
+        HttpContactPointBootstrap.InsecureBasicAuthMessage,
+        selfContactPoint.scheme)
+      context.stop(self)
+
     case InitiateBootstrapping(selfContactPoint) =>
       log.info(
         BootstrapLogMarker.init,
@@ -334,19 +346,39 @@ private[pekko] class BootstrapCoordinator(
       case (contactPoint, _) => !newObservation.observedContactPoints.contains(contactPoint)
     }
 
-    // TODO stop the obsolete children (they are stopped when probing fails for too long)
+    if (stopProbingRemovedContactPoints) {
+      // The probes carry credentials, so they must stop as soon as a contact point is no longer discovered,
+      // and not only once probing it has failed for `probing-failure-timeout`: its address may by then belong
+      // to something else.
+      val currentProbeNames =
+        newObservation.observedContactPoints.map(cp => probeName(probeBaseUri(selfContactPointScheme, cp)))
+      context.children.foreach { child =>
+        if (!currentProbeNames.contains(child.path.name)) {
+          log.info("Stopping [{}], its contact point is no longer returned by discovery", child.path.name)
+          context.stop(child)
+        }
+      }
+    }
+    // without credentials the obsolete children are stopped when probing fails for too long
 
     newObservation.observedContactPoints.foreach(ensureProbing(selfContactPointScheme, _))
   }
 
+  private def probeBaseUri(selfContactPointScheme: String, contactPoint: ResolvedTarget): Uri = {
+    val targetPort = contactPoint.port.getOrElse(settings.contactPoint.fallbackPort)
+    val rawBaseUri = Uri(selfContactPointScheme, Uri.Authority(Uri.Host(contactPoint.host), targetPort))
+    settings.managementBasePath.fold(rawBaseUri)(prefix => rawBaseUri.withPath(Uri.Path(s"/$prefix")))
+  }
+
+  private def probeName(baseUri: Uri): String =
+    HttpContactPointBootstrap.name(baseUri.authority.host, baseUri.authority.port)
+
   private[internal] def ensureProbing(
       selfContactPointScheme: String,
       contactPoint: ResolvedTarget): Option[ActorRef] = {
-    val targetPort = contactPoint.port.getOrElse(settings.contactPoint.fallbackPort)
-    val rawBaseUri = Uri(selfContactPointScheme, Uri.Authority(Uri.Host(contactPoint.host), targetPort))
-    val baseUri = settings.managementBasePath.fold(rawBaseUri)(prefix => rawBaseUri.withPath(Uri.Path(s"/$prefix")))
+    val baseUri = probeBaseUri(selfContactPointScheme, contactPoint)
 
-    val childActorName = HttpContactPointBootstrap.name(baseUri.authority.host, baseUri.authority.port)
+    val childActorName = probeName(baseUri)
     log.debug("Ensuring probing actor: " + childActorName)
 
     // This should never really happen in well configured env, but it may happen that someone is confused with ports

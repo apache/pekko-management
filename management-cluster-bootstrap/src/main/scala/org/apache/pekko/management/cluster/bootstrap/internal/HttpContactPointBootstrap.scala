@@ -72,6 +72,20 @@ private[bootstrap] object HttpContactPointBootstrap {
       BasicHttpCredentials(username, settings.contactPoint.httpClient.basicAuthPassword)
     }
 
+  /**
+   * `false` when basic auth credentials are configured and probing over `scheme` would send them in the clear,
+   * without `basic-auth.allow-insecure-http` having been enabled.
+   */
+  def mayProbeWithScheme(settings: ClusterBootstrapSettings, scheme: String): Boolean =
+    settings.contactPoint.httpClient.basicAuthUsername.isEmpty ||
+    scheme == "https" ||
+    settings.contactPoint.httpClient.basicAuthAllowInsecureHttp
+
+  val InsecureBasicAuthMessage: String =
+    "pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth is configured, but the contact " +
+    "points are not probed over https, so the credentials would be sent in the clear. Serve Pekko Management " +
+    "over HTTPS, or set basic-auth.allow-insecure-http = on if the connections are protected in another way."
+
   def generateSSLContext(settings: ClusterBootstrapSettings): SSLContext = {
     val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
     val keyStore = KeyStore.getInstance("PKCS12")
@@ -121,6 +135,10 @@ private[bootstrap] class HttpContactPointBootstrap(
       "Requested base Uri to be probed matches local remoting address, bailing out! " +
       s"Uri: $baseUri, this node's remoting address: ${cluster.selfAddress}")
   }
+
+  // the coordinator does not get this far with such settings, this makes sure that no other caller does either
+  if (!mayProbeWithScheme(settings, baseUri.scheme))
+    throw new IllegalArgumentException(s"$InsecureBasicAuthMessage Uri: $baseUri")
 
   private implicit val sys: ActorSystem = context.system
 

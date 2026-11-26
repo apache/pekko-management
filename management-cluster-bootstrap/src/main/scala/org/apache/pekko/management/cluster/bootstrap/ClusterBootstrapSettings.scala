@@ -149,6 +149,12 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
 
       /** The password that goes with [[basicAuthUsername]]. */
       val basicAuthPassword: String = httpClientConfig.getString("basic-auth.password")
+
+      /**
+       * Whether the credentials may be sent to contact points over plain `http`. When this is `false` (the default),
+       * cluster bootstrap refuses to probe with credentials unless the contact points are reached over `https`.
+       */
+      val basicAuthAllowInsecureHttp: Boolean = httpClientConfig.getBoolean("basic-auth.allow-insecure-http")
     }
 
     val fallbackPort: Int =
