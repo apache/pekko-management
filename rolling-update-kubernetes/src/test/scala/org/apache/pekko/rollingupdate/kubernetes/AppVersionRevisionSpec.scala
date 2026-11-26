@@ -13,8 +13,11 @@
 
 package org.apache.pekko.rollingupdate.kubernetes
 
+import scala.concurrent.Future
+
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
@@ -41,7 +44,10 @@ class AppVersionRevisionSpec
       ))
     with AnyWordSpecLike
     with Matchers
-    with ScalaFutures {
+    with ScalaFutures
+    with BeforeAndAfterAll {
+
+  override protected def afterAll(): Unit = shutdown()
 
   "AppVersionRevision extension" should {
     "return failed future if pod-name is not configured" in {
@@ -49,6 +55,22 @@ class AppVersionRevisionSpec
       revisionExtension.start()
       val failure = revisionExtension.getRevision().failed.futureValue
       failure.getMessage should include("No configuration found to extract the pod name from")
+    }
+
+    "fail the revision when the Kubernetes API cannot be initialized" in {
+      val config = ConfigFactory.parseString("""
+          pekko.rollingupdate.kubernetes.pod-name = test-pod
+          pekko.cluster.jmx.multi-mbeans-in-same-jvm = on
+        """).withFallback(AppVersionRevisionSpec.config)
+      val revisionSystem = ActorSystem("AppVersionRevisionSetupSpec", config)
+      try {
+        val extension = AppVersionRevision(revisionSystem)
+        val setupFailure = new IllegalStateException("Kubernetes API setup failed")
+        extension.startWith(Future.failed[KubernetesApi](setupFailure))
+        extension.getRevision().failed.futureValue shouldBe setupFailure
+      } finally {
+        TestKit.shutdownActorSystem(revisionSystem)
+      }
     }
   }
 }
