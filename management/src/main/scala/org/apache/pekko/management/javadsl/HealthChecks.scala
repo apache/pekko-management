@@ -175,9 +175,8 @@ final class CheckResult @InternalApi private[javadsl] (private val result: Eithe
   def isSuccess: java.lang.Boolean = result.isRight
 
   /**
-   * Present if the check succeeded, empty if the check failed. The element is a
-   * `scala.runtime.BoxedUnit`, which is kept for compatibility with existing Java callers.
-   * Java code should prefer [[isSuccess]].
+   * Present if the check succeeded, empty if the check failed. The element carries no
+   * information, use [[isSuccess]] to find out whether the check succeeded.
    */
   def success: Optional[Unit] =
     result.toOption.toJava
