@@ -17,12 +17,14 @@
 
 package org.apache.pekko.discovery.awsapi.ec2
 
+import java.lang.reflect.{ InvocationHandler, InvocationTargetException, Method, Proxy }
 import java.net.ServerSocket
 import java.util.concurrent.{ CountDownLatch, TimeUnit }
 import java.util.concurrent.atomic.{ AtomicInteger, AtomicReference }
 
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.retry.PredefinedRetryPolicies
+import com.amazonaws.services.ec2.AmazonEC2
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.{ ActorSystem, CoordinatedShutdown, ExtendedActorSystem }
@@ -55,6 +57,27 @@ object Ec2ClientShutdownSpec {
     setRetryPolicy(PredefinedRetryPolicies.NO_RETRY_POLICY)
     constructionStarted.countDown()
     require(finishConstruction.await(30, TimeUnit.SECONDS), "the test did not let the construction finish")
+  }
+
+  // Records the calls made on the EC2 client, and passes them on to the real client.
+  final class RecordingClient {
+    val shutdowns = new AtomicInteger(0)
+    val requests = new AtomicInteger(0)
+
+    def wrap(delegate: AmazonEC2): AmazonEC2 =
+      Proxy
+        .newProxyInstance(
+          classOf[AmazonEC2].getClassLoader,
+          Array[Class[?]](classOf[AmazonEC2]),
+          new InvocationHandler {
+            override def invoke(proxy: AnyRef, method: Method, args: Array[AnyRef]): AnyRef = {
+              if (method.getName == "shutdown") shutdowns.incrementAndGet()
+              else if (method.getDeclaringClass != classOf[Object]) requests.incrementAndGet()
+              try method.invoke(delegate, (if (args eq null) Array.empty[AnyRef] else args): _*)
+              catch { case e: InvocationTargetException => throw e.getCause }
+            }
+          })
+        .asInstanceOf[AmazonEC2]
   }
 
   def freePort(): Int = {
@@ -164,7 +187,8 @@ class Ec2ClientShutdownSpec extends AnyWordSpec with Matchers with BeforeAndAfte
             |""".stripMargin)
           .withFallback(ConfigFactory.load())).asInstanceOf[ExtendedActorSystem]
       try {
-        val discovery = new Ec2TagBasedServiceDiscovery(system)
+        val recording = new RecordingClient
+        val discovery = new Ec2TagBasedServiceDiscovery(system, recording.wrap)
 
         // the lookup is inside the lazy client initialiser when coordinated shutdown runs
         val lookup = discovery.lookup(Lookup("my-service"), 20.seconds)
@@ -179,8 +203,11 @@ class Ec2ClientShutdownSpec extends AnyWordSpec with Matchers with BeforeAndAfte
             ex.getMessage should include("The EC2 client has been closed because the actor system is shutting down")
         }
 
-        // the client that was built late has been taken out of the reference, which only happens
-        // on the way to shutting it down, so it is closed rather than leaked
+        // the client that was built late is closed, exactly once, and was never asked for anything
+        recording.shutdowns.get() should ===(1)
+        recording.requests.get() should ===(0)
+
+        // and it is no longer held by the discovery
         val builtClient = classOf[Ec2TagBasedServiceDiscovery].getDeclaredField("builtEc2Client")
         builtClient.setAccessible(true)
         builtClient.get(discovery).asInstanceOf[AtomicReference[AnyRef]].get() should ===(null)

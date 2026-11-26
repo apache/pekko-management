@@ -53,7 +53,12 @@ import scala.util.{ Failure, Success, Try }
 
 }
 
-final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends ServiceDiscovery {
+final class Ec2TagBasedServiceDiscovery @InternalApi private[ec2] (
+    system: ExtendedActorSystem,
+    decorateClient: AmazonEC2 => AmazonEC2)
+    extends ServiceDiscovery {
+
+  def this(system: ExtendedActorSystem) = this(system, identity[AmazonEC2])
 
   private val log = Logging(system, classOf[Ec2TagBasedServiceDiscovery])
 
@@ -140,7 +145,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
   @volatile private var shuttingDown = false
 
   private lazy val ec2Client: AmazonEC2 = {
-    val client = createEc2Client()
+    val client = decorateClient(createEc2Client())
     builtEc2Client.set(client)
     if (shuttingDown) takeBuiltEc2Client().foreach(_.shutdown())
     client
