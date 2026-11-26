@@ -38,6 +38,7 @@ Various parts of Pekko management can be used together for deploying Pekko Clust
   - [Deploy guide for Kubernetes](kubernetes-deployment/index.md)
   - [Pekko Management](pekko-management.md)
   - [Migrating from older versions](migration.md)
+  - [Migration from 1.x to 2.x](migration-guide-1.x-2.x.md)
   - [Health Checks](healthchecks.md)
   - [Pekko Cluster Bootstrap](bootstrap/index.md)
   - [Pekko Discovery Methods](discovery/index.md)
