@@ -160,9 +160,13 @@ final class LivenessCheckSetup private (
     val createHealthChecks: JFunction[ActorSystem, JList[Supplier[CompletionStage[java.lang.Boolean]]]]) extends Setup
 
 /**
- * Result for readiness and liveness checks
+ * Result for startup, readiness and liveness checks, constructor is *Internal API*
  */
-final class CheckResult private[javadsl] (private val result: Either[String, Unit]) {
+final class CheckResult @InternalApi private[javadsl] (private val result: Either[String, Unit]) {
+
+  /**
+   * The reason the check failed, empty if the check succeeded
+   */
   def failure: Optional[String] =
     Optional.ofNullable(result.left.toOption.orNull)
 
@@ -170,6 +174,10 @@ final class CheckResult private[javadsl] (private val result: Either[String, Uni
 
   def isSuccess: java.lang.Boolean = result.isRight
 
+  /**
+   * Present if the check succeeded, empty if the check failed. The element carries no
+   * information, use [[isSuccess]] to find out whether the check succeeded.
+   */
   def success: Optional[Unit] =
     result.toOption.toJava
 }

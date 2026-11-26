@@ -46,6 +46,7 @@ import org.apache.pekko.testkit.javadsl.TestKit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import scala.runtime.BoxedUnit;
 
 public class HealthCheckTest {
   private static Throwable cause = new RuntimeException("oh dear");
@@ -134,7 +135,9 @@ public class HealthCheckTest {
             .toCompletableFuture()
             .get();
     assertEquals(true, result.isSuccess());
-    assertTrue(result.success().isPresent());
+    // existing Java callers may name the element type, so it has to stay a BoxedUnit
+    BoxedUnit success = result.success().get();
+    assertSame(BoxedUnit.UNIT, success);
     assertFalse(result.failure().isPresent());
   }
 

@@ -25,6 +25,11 @@ This release is meant to be used with other Pekko 2.0 module releases.
 
 See the [GitHub Milestone for 2.0.0-M2](https://github.com/apache/pekko-management/milestone/9?closed=1) for a fuller list of changes.
 
+### Additions
+
+* Java API: `PekkoManagementSettings` has new `getHttpRouteProvidersReadOnly` and `getHttpGracefulTerminationTimeout` getters ([PR1065](https://github.com/apache/pekko-management/pull/1065))
+* Java API: a custom join decider can be written in Java by implementing `org.apache.pekko.management.cluster.bootstrap.javadsl.JoinDecider` ([PR1065](https://github.com/apache/pekko-management/pull/1065))
+
 ### Removals
 
 * The discovery-marathon-api module has been removed, because Apache Mesos has been retired. There is no replacement. The 1.x releases still include it ([#672](https://github.com/apache/pekko-management/issues/672))

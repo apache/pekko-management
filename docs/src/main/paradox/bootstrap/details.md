@@ -77,3 +77,8 @@ The above section explains the default `JoinDecider` implementation. It is possi
 configuration property `join-decider.class`. See `reference.conf` and API
 documentation.
 
+A Scala implementation extends `org.apache.pekko.management.cluster.bootstrap.JoinDecider` and returns a `Future`.
+A Java implementation implements `org.apache.pekko.management.cluster.bootstrap.javadsl.JoinDecider` and returns
+a `CompletionStage`. Either way, the class must have a public constructor with `ActorSystem` and
+`ClusterBootstrapSettings` parameters.
+
