@@ -263,7 +263,8 @@ setting `pekko.rollingupdate.kubernetes.namespace` or by providing `KUBERNETES_N
 
 #### Role based access control
 
-Make sure to provide access to the corresponding RBAC rules `apiGroups` and `resources` like this:
+`AppVersionRevision` reads its own Pod and then its owning ReplicaSet by name. It only needs `get` on those resources.
+If you also use @ref:[Kubernetes API discovery](discovery/kubernetes.md#role-based-access-control), also grant permission to list pods.
 
 ```yaml
 kind: Role
@@ -271,9 +272,12 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: pod-reader
 rules:
-- apiGroups: ["apps", ""]
-  resources: ["pods", "replicasets"]
-  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get"]
+- apiGroups: ["apps"]
+  resources: ["replicasets"]
+  verbs: ["get"]
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
