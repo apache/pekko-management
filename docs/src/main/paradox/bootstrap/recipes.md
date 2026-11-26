@@ -30,7 +30,7 @@ The recommended approach is to:
 
 * Use a Deployment for creating the pods
 * Use either the Kubernetes API or DNS for contact point discovery (details below)
-* Optionally use a service or ingress for any for traffic coming from outside of the Pekko Cluster e.g. gRPC and HTTP
+* If clients outside the Pekko cluster need access to the application, expose its endpoints (such as gRPC or HTTP) through a Kubernetes Service or Ingress
 
 ### Kubernetes Deployment
 
