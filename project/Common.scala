@@ -7,6 +7,7 @@
  * This file is part of the Apache Pekko project, which was derived from Akka.
  */
 
+import com.github.sbt.git.GitPlugin.autoImport.git
 import com.lightbend.paradox.projectinfo.ParadoxProjectInfoPluginKeys._
 import sbtheader.HeaderPlugin
 import sbtheader.HeaderPlugin.autoImport._
@@ -89,13 +90,19 @@ object Common extends AutoPlugin {
            "org.apache.pekko.pattern")
        else
          Seq("-skip-packages:org.apache.pekko.pattern")),
-      Compile / doc / scalacOptions ++= Seq(
-        "-doc-source-url", {
-          val branch = if (isSnapshot.value) "master" else s"v${version.value}"
-          s"https://github.com/apache/pekko-management/tree/${branch}€{FILE_PATH_EXT}#L€{FILE_LINE}"
-        },
-        "-doc-canonical-base-url",
-        "https://pekko.apache.org/api/pekko-management/current/"),
+      Compile / doc / scalacOptions ++= {
+        val root = (LocalRootProject / baseDirectory).value.getAbsolutePath
+        val revision = if (isSnapshot.value) git.gitHeadCommit.value.getOrElse("main") else s"v${version.value}"
+        val sourceLinks =
+          if (isScala3.value)
+            Seq(s"-source-links:${root}=github://apache/pekko-management/${revision}")
+          else Seq(
+            "-sourcepath",
+            root,
+            "-doc-source-url",
+            s"https://github.com/apache/pekko-management/blob/${revision}/€{FILE_PATH_EXT}#L€{FILE_LINE}")
+        sourceLinks ++ Seq("-doc-canonical-base-url", "https://pekko.apache.org/api/pekko-management/current/")
+      },
       autoAPIMappings := true,
       javafmtSortImports := false,
       // show full stack traces and test case durations
