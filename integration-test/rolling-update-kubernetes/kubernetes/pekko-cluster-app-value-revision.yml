@@ -66,9 +66,12 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: pod-reader
 rules:
-- apiGroups: ["apps", ""] # additional access to api to get revision
-  resources: ["pods", "replicasets"]
-  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"] # cluster bootstrap discovers peers by listing pods
+- apiGroups: ["apps"]
+  resources: ["replicasets"]
+  verbs: ["get"]
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
