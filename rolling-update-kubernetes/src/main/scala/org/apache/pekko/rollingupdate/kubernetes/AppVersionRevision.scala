@@ -43,7 +43,9 @@ final class AppVersionRevision(implicit system: ExtendedActorSystem) extends Ext
 
   def getRevision(): Future[Version] = versionPromise.future
 
-  def start(): Unit = {
+  def start(): Unit = startWith(KubernetesApiImpl(log, k8sSettings))
+
+  private[kubernetes] def startWith(api: => Future[KubernetesApi]): Unit = {
     if (isInitialized.compareAndSet(false, true)) {
       if (k8sSettings.podName.isEmpty) {
         val msg = "Not able to read the app version from the revision of the current ReplicaSet. Reason:" +
@@ -54,9 +56,7 @@ final class AppVersionRevision(implicit system: ExtendedActorSystem) extends Ext
         versionPromise.failure(new MissingPodNameException(msg))
       } else {
         Cluster(system).setAppVersionLater(getRevision())
-        KubernetesApiImpl(log, k8sSettings).foreach { kubernetesApi =>
-          versionPromise.completeWith(kubernetesApi.readRevision().map(Version(_)))
-        }
+        versionPromise.completeWith(api.flatMap(_.readRevision()).map(Version(_)))
       }
     } else {
       log.warning("AppVersionRevision extension already initiated, yet start() method was called again. Ignoring.")
