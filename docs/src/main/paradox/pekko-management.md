@@ -186,9 +186,9 @@ For example, the "Cluster HTTP Management" module exposes HTTP routes that can b
 and even trigger joining/leaving/downing decisions via HTTP calls to these routes. The routes and
 logic for these are implemented inside the `pekko-management-cluster-http`.
 
-Management route providers should be regular extensions that additionally extend the
-`org.apache.pekko.management.scaladsl.ManagementRoutesProvider` or `org.apache.pekko.management.javadsl.ManagementRoutesProvider`
-interface.
+Implement the route provider interface for the DSL you use:
+`org.apache.pekko.management.scaladsl.ManagementRouteProvider` for Scala or
+`org.apache.pekko.management.javadsl.ManagementRouteProvider` for Java.
 
 Libraries may register routes into the management routes by defining entries to this setting
 the library `reference.conf`:
@@ -202,7 +202,7 @@ pekko.management.http.routes {
 Where the `name` of the entry should be unique to allow different route providers to be registered
 by different libraries and applications.
 
-The FQCN is the fully qualified class name of the `ManagementRoutesProvider`.
+Use the fully qualified name of your provider class or of the `ExtensionIdProvider` that creates the provider.
 
 Route providers included by a library (from reference.conf) can be excluded by an application
 by using `""` or `null` as the FQCN of the named entry, for example:
