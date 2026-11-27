@@ -34,6 +34,12 @@ object Common extends AutoPlugin {
     Seq(
       startYear := Some(2022),
       homepage := Some(url("https://pekko.apache.org/")),
+      releaseNotesURL := {
+        val artifactVersion = version.value
+        // Sonatype's bundle target also treats versions ending in -SNAPSHOT as snapshots.
+        if (isSnapshot.value || artifactVersion.endsWith("-SNAPSHOT")) None
+        else Some(url(s"https://pekko.apache.org/docs/pekko-management/$artifactVersion/release-notes/index.html"))
+      },
       scmInfo := Some(
         ScmInfo(url("https://github.com/apache/pekko-management"),
           "git@github.com:apache/pekko-management.git")),

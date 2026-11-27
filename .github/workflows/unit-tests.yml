@@ -87,4 +87,27 @@ jobs:
         uses: coursier/cache-action@ee0650f98295f27a505e4bfd284c9bfaa913a465 # v9.0.1
 
       - name: Create all API docs for artifacts/website and all reference docs
-        run: sbt "unidoc; docs/paradox"
+        run: |
+          sbt "unidoc; docs/paradox" \
+            'set Seq(ThisBuild / version := "1.2.1", management / isSnapshot := false)' 'management/makePom' \
+            'set Seq(ThisBuild / version := "1.2.1-SNAPSHOT", management / isSnapshot := true)' 'management/makePom' \
+            'set Seq(ThisBuild / version := "1.2.0", management / isSnapshot := true)' 'management/makePom' \
+            'set Seq(ThisBuild / version := "1.2.2-SNAPSHOT", management / isSnapshot := false)' 'management/makePom'
+
+      - name: Verify release notes metadata in generated POMs
+        shell: python
+        run: |
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          # Give each classification case a distinct POM file.
+          for version, has_release_notes in (
+              ("1.2.1", True),
+              ("1.2.1-SNAPSHOT", False),
+              ("1.2.0", False),
+              ("1.2.2-SNAPSHOT", False),
+          ):
+              pom, = Path("management/target").glob(f"scala-*/pekko-management_*-{version}.pom")
+              props = ElementTree.parse(pom).findall("{*}properties/{*}info.releaseNotesUrl")
+              release_notes_url = f"https://pekko.apache.org/docs/pekko-management/{version}/release-notes/index.html"
+              assert [prop.text for prop in props] == ([release_notes_url] if has_release_notes else []), pom
