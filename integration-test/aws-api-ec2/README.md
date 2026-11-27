@@ -13,10 +13,13 @@ or host names for the cluster to form - the discovery mechanisms will do this fo
 Step 1: Launch Instances
 ------------------------
 
-From the AWS Management Console, provision a few EC2 instances (you'll need at least 2). Recommended image: Ubuntu Server 16.04. As for the instance type, this demo app runs fine even on t1.micro instances. As for the security group, 
-for now, just select the default one and make sure you allow yourself ssh access to your instances. Once the instances are ready, 
-ssh into them - you may need to install Java 8 ( you can use this [guide](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04)).
+Launch at least two x86_64 Amazon Linux 2023 instances in the same VPC. Restrict SSH
+to your own address. The sample requires Java 17; install its runtime on each instance:
 
+```shell
+sudo dnf install -y java-17-amazon-corretto-headless unzip
+java -version
+```
 
 Step 2: Create IAM Role
 -----------------------
@@ -65,8 +68,8 @@ Compile and package the demo app.
 ```
 $ cd pekko-management 
 $ sbt
-> project integration-test-aws-api-ec2-tag-based
-> universal:packageBin
+> project integration-test-aws-api-ec2
+> Universal / packageBin
 ```
 
 Now, in the `integration-test/aws-api-ec2/target/universal` folder, you should have a
@@ -92,8 +95,10 @@ Unzip the package and run the app like this on each instance:
 ```
 $ unzip app.zip
 $ cd app/bin
-$ MY_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`
-$ ./integration-test-aws-api-ec2-tag-based -Dpekko.management.http.hostname=$MY_IP -Dpekko.remote.netty.tcp.hostname=$MY_IP
+$ METADATA=http://169.254.169.254/latest
+$ TOKEN=$(curl -fsS -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' "$METADATA/api/token")
+$ MY_IP=$(curl -fsS -H "X-aws-ec2-metadata-token: $TOKEN" "$METADATA/meta-data/local-ipv4")
+$ ./integration-test-aws-api-ec2 -Dpekko.management.http.hostname="$MY_IP" -Dpekko.remote.artery.canonical.hostname="$MY_IP"
 ```
 
 Follow the logs and watch for signs of successful cluster formation (e.g., a welcome message from one of the nodes). 
@@ -101,8 +106,7 @@ Follow the logs and watch for signs of successful cluster formation (e.g., a wel
 Open a second terminal session to one of the EC2 instances:
 
 ```
-$ MY_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`
-$ curl -XGET http://$MY_IP:7626/cluster/members | python -mjson.tool
+$ curl -fsS "http://<private-ip>:7626/cluster/members" | python3 -m json.tool
 ```
 
 You should see two members with status equal to 'Up' and no unreachable members.

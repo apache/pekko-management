@@ -111,7 +111,6 @@ class IntegrationTest extends AnyFunSuite with Eventually with BeforeAndAfterAll
           .withParameterValue(s"https://s3.amazonaws.com/$bucket/$buildId/app.zip"),
         new Parameter().withParameterKey("SSHLocation").withParameterValue(myIp),
         new Parameter().withParameterKey("InstanceCount").withParameterValue(instanceCount.toString),
-        new Parameter().withParameterKey("InstanceType").withParameterValue("m3.xlarge"),
         new Parameter().withParameterKey("KeyPair").withParameterValue("none"),
         new Parameter().withParameterKey("Purpose").withParameterValue(s"demo-$buildId"))
 
@@ -186,7 +185,7 @@ class IntegrationTest extends AnyFunSuite with Eventually with BeforeAndAfterAll
     clusterPublicIps should have size instanceCount
     clusterPrivateIps should have size instanceCount
 
-    val expectedNodes: Set[String] = clusterPrivateIps.map(ip => s"pekko.tcp://demo@$ip:7355").toSet
+    val expectedNodes: Set[String] = clusterPrivateIps.map(ip => s"pekko://demo@$ip:7355").toSet
 
     eventually {
 

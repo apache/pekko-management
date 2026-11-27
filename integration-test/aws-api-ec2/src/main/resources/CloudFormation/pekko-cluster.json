@@ -1,6 +1,11 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Parameters": {
+    "ImageId": {
+      "Description": "Public SSM parameter for the regional Amazon Linux 2023 x86_64 AMI",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+      "Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+    },
     "Build": {
       "Description": "URL of zip file obtained from running sbt universal:packageBin",
       "Type": "String"
@@ -10,7 +15,6 @@
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
-      "Default": "0.0.0.0/0",
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
@@ -25,9 +29,9 @@
     "InstanceType": {
       "Description": "Instance type",
       "Type": "String",
-      "Default": "m3.xlarge",
+      "Default": "t3.medium",
       "AllowedValues": [
-        "m3.medium", "m3.xlarge", "m3.2xlarge"
+        "t3.small", "t3.medium", "t3.large"
       ]
     },
     "KeyPair": {
@@ -44,35 +48,33 @@
     "HasKeyPair": {"Fn::Not": [{"Fn::Equals": ["none", {"Ref": "KeyPair"}]}]}
   },
   "Resources": {
-    "LaunchConfiguration": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
+    "LaunchTemplate": {
+      "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
-        "ImageId": "ami-97785bed",
-        "IamInstanceProfile": {
-          "Ref": "IAMInstanceProfile"
-        },
-        "InstanceType": {
-          "Ref": "InstanceType"
-        },
-        "KeyName": {"Fn::If": ["HasKeyPair", {"Ref": "KeyPair"}, {"Ref": "AWS::NoValue"}]},
-        "SecurityGroups": [
-          {
-            "Ref": "PekkoClusterSecurityGroup"
-          }
-        ],
-        "UserData": {
-          "Fn::Base64": {
-            "Fn::Join": ["", ["#!/bin/bash -xe\n",
-              "sudo yum install -y java-1.8.0\n",
-              "sudo yum remove -y java-1.7.0-openjdk\n",
-              "wget ", {"Ref": "Build"}, "\n",
-              "export PURPOSE=", {"Ref": "Purpose"}, "\n",
-              "unzip app.zip\n",
-              "cd app\n",
-              "cd bin\n",
-              "MY_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`\n",
-              "./bootstrap-demo-aws-api-ec2-tag-based -Dpekko.management.http.hostname=$MY_IP -Dpekko.remote.netty.tcp.hostname=$MY_IP &"
-            ]]
+        "LaunchTemplateData": {
+          "ImageId": {"Ref": "ImageId"},
+          "IamInstanceProfile": {"Name": {"Ref": "IAMInstanceProfile"}},
+          "InstanceType": {"Ref": "InstanceType"},
+          "CreditSpecification": {"CpuCredits": "standard"},
+          "KeyName": {"Fn::If": ["HasKeyPair", {"Ref": "KeyPair"}, {"Ref": "AWS::NoValue"}]},
+          "SecurityGroupIds": [{"Fn::GetAtt": ["PekkoClusterSecurityGroup", "GroupId"]}],
+          "MetadataOptions": {"HttpTokens": "required"},
+          "UserData": {
+            "Fn::Base64": {
+              "Fn::Join": ["", [
+                "#!/bin/bash -eu\n",
+                "dnf install -y java-17-amazon-corretto-headless unzip\n",
+                "build=$(printf %s '", {"Fn::Base64": {"Ref": "Build"}}, "' | base64 -d)\n",
+                "purpose=$(printf %s '", {"Fn::Base64": {"Ref": "Purpose"}}, "' | base64 -d)\n",
+                "export PURPOSE=\"$purpose\"\n",
+                "curl --fail --silent --show-error --location --proto '=https' --output app.zip \"$build\"\n",
+                "unzip -q app.zip\n",
+                "metadata=http://169.254.169.254/latest\n",
+                "token=$(curl -fsS -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' \"$metadata/api/token\")\n",
+                "ip=$(curl -fsS -H \"X-aws-ec2-metadata-token: $token\" \"$metadata/meta-data/local-ipv4\")\n",
+                "nohup app/bin/integration-test-aws-api-ec2 -Dpekko.management.http.hostname=\"$ip\" -Dpekko.remote.artery.canonical.hostname=\"$ip\" >/var/log/pekko-ec2-demo.log 2>&1 </dev/null &\n"
+              ]]
+            }
           }
         }
       }
@@ -80,8 +82,9 @@
     "PekkoAutoScalingGroup": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "LaunchConfigurationName": {
-          "Ref": "LaunchConfiguration"
+        "LaunchTemplate": {
+          "LaunchTemplateId": {"Ref": "LaunchTemplate"},
+          "Version": {"Fn::GetAtt": ["LaunchTemplate", "LatestVersionNumber"]}
         },
         "AvailabilityZones": {
           "Fn::GetAZs": ""
@@ -222,7 +225,7 @@
   "Outputs" : {
     "AutoScalingGroupName": {
       "Value": {
-        "Ref": "APekkoAutoScalingGroup"
+        "Ref": "PekkoAutoScalingGroup"
       },
       "Description": "ASG name"
     }
