@@ -13,9 +13,11 @@
 
 package jdoc.org.apache.pekko.management.cluster.bootstrap;
 
+import java.util.concurrent.CompletionStage;
 import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.http.javadsl.model.Uri;
 import org.apache.pekko.management.cluster.bootstrap.ClusterBootstrap;
-import org.apache.pekko.management.scaladsl.PekkoManagement;
+import org.apache.pekko.management.javadsl.PekkoManagement;
 
 public class ClusterBootstrapCompileOnly {
   public static void bootstrap() {
@@ -24,7 +26,7 @@ public class ClusterBootstrapCompileOnly {
 
     // #start
     // Pekko Management hosts the HTTP routes used by bootstrap
-    PekkoManagement.get(system).start();
+    CompletionStage<Uri> managementStarted = PekkoManagement.get(system).start();
 
     // Starting the bootstrap process needs to be done explicitly
     ClusterBootstrap.get(system).start();
