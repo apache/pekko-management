@@ -47,11 +47,11 @@ The @ref:[2.0 release notes](release-notes/releases-2.0.md) list all the changes
 
 ### Cluster Bootstrap
 
-* `SelfAwareJoinDecider` no longer waits indefinitely for the self contact point. If `ClusterBootstrap.start()` has not been called, or the management HTTP endpoint could not be bound, deciding whether this node can join itself now fails instead of blocking a thread forever. ([PR908](https://github.com/apache/pekko-management/pull/908))
+* `SelfAwareJoinDecider` no longer waits indefinitely for the self contact point to be set. If it has not been set, for example because the bootstrap routes were wired manually rather than obtained from `ClusterBootstrap.routes`, deciding whether this node can join itself now fails with a `TimeoutException` instead of blocking a thread forever. This only bounds the wait for a missing self contact point. It does not detect a management HTTP endpoint that failed to bind, because the self contact point is set before the endpoint is bound. ([PR908](https://github.com/apache/pekko-management/pull/908))
 
 ### Kubernetes API discovery
 
-* A request to the Kubernetes API fails with a `TimeoutException` when it has not completed within the resolve timeout of the lookup. ([PR915](https://github.com/apache/pekko-management/pull/915))
+* A request to the Kubernetes API fails with a `TimeoutException` when the response headers have not been received within the resolve timeout of the lookup. Reading the response body then has a resolve timeout of its own, so a lookup as a whole can take longer than one resolve timeout. ([PR915](https://github.com/apache/pekko-management/pull/915))
 * `pekko.discovery.kubernetes-api.pod-namespace` is set from the `KUBERNETES_NAMESPACE` environment variable when that variable is defined. This takes precedence over the namespace read from `pod-namespace-path`. Check that the variable, if your deployment sets it, names the namespace that your pods run in. ([PR801](https://github.com/apache/pekko-management/pull/801))
 
 ### Kubernetes Lease

@@ -57,7 +57,7 @@ Pekko Management 2.0.0 is not binary compatible with Pekko Management 1.x. Read 
 ### Changes
 
 * Pekko Management logs a warning when the HTTP endpoint is started without an authenticator ([PR934](https://github.com/apache/pekko-management/pull/934))
-* Kubernetes API discovery: a request to the Kubernetes API now fails when it has not completed within the resolve timeout ([PR915](https://github.com/apache/pekko-management/pull/915))
+* Kubernetes API discovery: a request to the Kubernetes API now fails when the response headers have not been received within the resolve timeout. Reading the response body has a separate resolve timeout ([PR915](https://github.com/apache/pekko-management/pull/915))
 * Cluster Bootstrap: `SelfAwareJoinDecider` no longer waits indefinitely for the self contact point to be set ([PR908](https://github.com/apache/pekko-management/pull/908))
 * AWS discovery: the AWS clients are closed during coordinated shutdown ([PR907](https://github.com/apache/pekko-management/pull/907), [PR955](https://github.com/apache/pekko-management/pull/955))
 * Scala 3 artifacts are built with Scala 3.3 LTS. The build is also tested with Scala 3.9, but those artifacts are not published ([PR1056](https://github.com/apache/pekko-management/pull/1056))
