@@ -46,7 +46,7 @@ import pekko.http.scaladsl.model._
 import pekko.http.scaladsl.model.headers.{ Authorization, HttpEncodings, OAuth2BearerToken }
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.pki.kubernetes.PemManagersProvider
-import pekko.stream.{ KillSwitches, UniqueKillSwitch }
+import pekko.stream.{ KillSwitches, StreamLimitReachedException, UniqueKillSwitch }
 import pekko.stream.scaladsl.{ Framing, Keep, Sink, Source }
 import pekko.util.ByteString
 import spray.json._
@@ -100,6 +100,16 @@ object KubernetesApiServiceDiscovery {
     }
 
   class KubernetesApiException(msg: String) extends RuntimeException(msg) with NoStackTrace
+
+  /**
+   * INTERNAL API
+   *
+   * A watch event could not be applied to the pod cache. The events after it build on a state the cache
+   * does not have, so the watch has to resync from a full list rather than carry on or resume.
+   */
+  @InternalApi private[kubernetes] final class WatchEventNotAppliedException(msg: String)
+      extends RuntimeException(msg)
+      with NoStackTrace
 
   private[kubernetes] final case class KubernetesSetup(
       podNamespace: String,
@@ -514,21 +524,14 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
    * opens the watch stream. The returned future fails if either step does.
    */
   private[kubernetes] def startWatch(setup: KubernetesSetup, labelSelector: String, state: WatchState): Future[Unit] = {
+    // one deadline for the whole attempt, from sending the request to having read the response
+    val deadline = settings.watchListTimeout.fromNow
     val listed = for {
       listReq <- optionToFuture(
         listRequest(setup.apiToken, setup.podNamespace, labelSelector),
         s"Unable to form request; check Kubernetes environment (expecting env vars ${settings.apiServiceHostEnvName}, ${settings.apiServicePortEnvName})")
-      listResp <- http.singleRequest(listReq, setup.clientHttpsConnectionContext).map(decodeResponse)
-      bytes <- listResp.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-      podList <- {
-        listResp.status match {
-          case StatusCodes.OK =>
-            Unmarshal(HttpEntity(ContentTypes.`application/json`, bytes)).to[PodList]
-          case other =>
-            log.warning("Initial list failed with status [{}]", other)
-            Future.failed(new KubernetesApiException(s"Initial pod list failed with status $other"))
-        }
-      }
+      listResp <- listResponseWithin(http.singleRequest(listReq, setup.clientHttpsConnectionContext), deadline)
+      podList <- readPodList(decodeResponse(listResp), deadline)
     } yield {
       // A full list replaces the cache outright, so pods deleted while we were disconnected drop out.
       state.podCache.set(podsByName(podList))
@@ -541,6 +544,60 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
 
     listed.flatMap(_ => startWatchStream(setup, labelSelector, state))
   }
+
+  /**
+   * The response to a pod list request, if it arrives before `deadline`. A response that only arrives
+   * after that is discarded, so that its connection is released.
+   */
+  private[kubernetes] def listResponseWithin(response: Future[HttpResponse], deadline: Deadline)
+      : Future[HttpResponse] = {
+    val promise = Promise[HttpResponse]()
+    val timeoutCancellable = system.scheduler.scheduleOnce(deadline.timeLeft.max(Duration.Zero)) {
+      promise.tryFailure(
+        new TimeoutException(s"Kubernetes API pod list request timed out after ${settings.watchListTimeout}"))
+    }
+    response.onComplete {
+      case scala.util.Success(resp) =>
+        timeoutCancellable.cancel()
+        if (!promise.trySuccess(resp)) resp.discardEntityBytes()
+      case scala.util.Failure(ex) =>
+        timeoutCancellable.cancel()
+        promise.tryFailure(ex)
+    }
+    promise.future
+  }
+
+  /**
+   * Reads the pod list out of the response to a list request. The status is checked first: the entity of
+   * an unsuccessful response is discarded rather than buffered. The entity of a successful one is read
+   * until `deadline` at the latest and up to `watch-max-list-length` bytes. Whichever way this fails, the
+   * entity stream is cancelled or drained, so the connection is released and a later attempt can succeed.
+   */
+  private[kubernetes] def readPodList(response: HttpResponse, deadline: Deadline): Future[PodList] =
+    response.status match {
+      case StatusCodes.OK =>
+        response.entity.dataBytes
+          .limitWeighted(settings.watchMaxListLength)(_.length.toLong)
+          .completionTimeout(deadline.timeLeft.max(1.milli))
+          .runFold(ByteString.newBuilder)(_ ++= _)
+          .recoverWith {
+            case _: StreamLimitReachedException =>
+              Future.failed(new KubernetesApiException(
+                s"Pod list from the Kubernetes API is larger than watch-max-list-length " +
+                s"[${settings.watchMaxListLength} bytes]"))
+            case _: TimeoutException =>
+              Future.failed(new TimeoutException(
+                s"Kubernetes API pod list was not read within ${settings.watchListTimeout}"))
+          }
+          .flatMap(bytes => Unmarshal(HttpEntity(ContentTypes.`application/json`, bytes.result())).to[PodList])
+      case other =>
+        response.discardEntityBytes()
+        if (other == StatusCodes.Forbidden)
+          log.warning("Forbidden to list pods with the Kubernetes API; check RBAC settings")
+        else
+          log.warning("Pod list failed with status [{}]", other)
+        Future.failed(new KubernetesApiException(s"Pod list failed with status $other"))
+    }
 
   /**
    * Opens the watch stream from the current resource version. The returned future fails if the request
@@ -595,7 +652,7 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
           connectionContext))
       .runWith(Sink.head)
 
-  private def processWatchStream(
+  private[kubernetes] def processWatchStream(
       response: HttpResponse,
       setup: KubernetesSetup,
       labelSelector: String,
@@ -608,10 +665,15 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
       .map(_.utf8String)
       .filter(_.nonEmpty)
       .toMat(Sink.foreach { line =>
-        Try(JsonFormat.watchEventFormat.read(line.parseJson)) match {
-          case scala.util.Success(event) => processWatchEvent(event, state)
-          case scala.util.Failure(ex)    => log.warning("Failed to parse watch event: [{}]", ex.getMessage)
-        }
+        // An event that cannot be applied fails the stream, so that none of the events after it are
+        // applied either: they would advance the resume point past a change the cache does not have.
+        val event =
+          try JsonFormat.watchEventFormat.read(line.parseJson)
+          catch {
+            case NonFatal(ex) =>
+              throw new WatchEventNotAppliedException(s"Failed to parse watch event: ${ex.getMessage}")
+          }
+        processWatchEvent(event, state)
       })(Keep.both)
       .run()
 
@@ -623,7 +685,14 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         case scala.util.Success(_) =>
           log.info("Watch stream completed, reconnecting")
           settings.watchReconnectDelay
+        case scala.util.Failure(ex: WatchEventNotAppliedException) =>
+          // Not a disconnect: the cache has missed a change, so the version it would resume from no longer
+          // describes it. Drop the version, so that the restart replaces the cache from a full list.
+          log.warning("Watch event could not be applied: [{}], will resync from a fresh list", ex.getMessage)
+          state.resourceVersion.set(None)
+          settings.watchOnErrorReconnectDelay
         case scala.util.Failure(ex) =>
+          // a transport failure loses no event that was received, so the watch resumes from the last one
           log.warning("Watch stream failed: [{}], reconnecting", ex.getMessage)
           settings.watchOnErrorReconnectDelay
       }
@@ -641,6 +710,10 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
     if (isStopped(state)) state.killSwitch.getAndSet(None).foreach(_.shutdown())
   }
 
+  /**
+   * Applies a watch event to the cache and advances the version the watch resumes from. Throws a
+   * `WatchEventNotAppliedException`, leaving both as they were, for an event that cannot be applied.
+   */
   private[kubernetes] def processWatchEvent(event: WatchEvent, state: WatchState): Unit = {
     def withName(f: String => Unit): Unit = event.pod.metadata.flatMap(_.name) match {
       case Some(podName) =>
@@ -648,7 +721,9 @@ class KubernetesApiServiceDiscovery(settings: Settings)(
         // each event carries the version to resume the watch from
         event.pod.metadata.flatMap(_.resourceVersion).foreach(rv => state.resourceVersion.set(Some(rv)))
       case None =>
-        log.warning("Ignoring [{}] watch event for a pod without metadata.name", event.eventType)
+        // it cannot be told which pod changed, so the change is not applied and the cache needs a resync
+        throw new WatchEventNotAppliedException(
+          s"[${event.eventType}] watch event for a pod without metadata.name")
     }
 
     event.eventType match {

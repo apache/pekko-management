@@ -177,5 +177,59 @@ class SettingsSpec extends AnyWordSpec with Matchers {
         system.terminate()
       }
     }
+    "default watch-list-timeout to 10s and watch-max-list-length to 8 MiB" in {
+      val system = ActorSystem("test")
+      try {
+        val settings = Settings(system)
+        settings.watchListTimeout shouldBe 10.seconds
+        settings.watchMaxListLength shouldBe 8L * 1024 * 1024
+      } finally {
+        system.terminate()
+      }
+    }
+    "support watch-list-timeout and watch-max-list-length overrides" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          watch-list-timeout = 3s
+          watch-max-list-length = 64 MiB
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        val settings = Settings(system)
+        settings.watchListTimeout shouldBe 3.seconds
+        settings.watchMaxListLength shouldBe 64L * 1024 * 1024
+      } finally {
+        system.terminate()
+      }
+    }
+    "reject a non-positive watch-list-timeout" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          watch-list-timeout = 0s
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        val ex = intercept[IllegalArgumentException](Settings(system).watchListTimeout)
+        ex.getMessage should include("watch-list-timeout must be")
+      } finally {
+        system.terminate()
+      }
+    }
+    "reject a non-positive watch-max-list-length" in {
+      val config = ConfigFactory.parseString("""
+        pekko.discovery.kubernetes-api {
+          watch-max-list-length = 0
+        }
+      """)
+      val system = ActorSystem("test", config)
+      try {
+        val ex = intercept[IllegalArgumentException](Settings(system).watchMaxListLength)
+        ex.getMessage should include("watch-max-list-length must be")
+      } finally {
+        system.terminate()
+      }
+    }
   }
 }

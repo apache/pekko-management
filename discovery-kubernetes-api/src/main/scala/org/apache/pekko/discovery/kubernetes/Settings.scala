@@ -108,6 +108,27 @@ final class Settings(kubernetesApi: Config) extends Extension {
   }
 
   /**
+   * How long one attempt at listing the pods for a watch may take, from sending the request to having
+   * read the response.
+   */
+  val watchListTimeout: FiniteDuration = {
+    val configured = kubernetesApi.getDuration("watch-list-timeout").toScala
+    require(
+      configured > Duration.Zero,
+      s"pekko.discovery.kubernetes-api.watch-list-timeout must be a positive duration, was [$configured]")
+    configured
+  }
+
+  /** Maximum size, in bytes, of the pod list that a watch starts or resyncs from. */
+  val watchMaxListLength: Long = {
+    val configured = kubernetesApi.getBytes("watch-max-list-length").longValue
+    require(
+      configured > 0,
+      s"pekko.discovery.kubernetes-api.watch-max-list-length must be at least 1 byte, was [$configured]")
+    configured
+  }
+
+  /**
    * How long a watch may go without a lookup before it is stopped and its cached pods are released, or
    * `Duration.Inf` if watches are kept until the actor system shuts down.
    */

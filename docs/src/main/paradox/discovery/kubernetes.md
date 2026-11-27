@@ -146,6 +146,12 @@ pekko.discovery {
     # Optional: largest single watch event the stream will accept (default: 1 MiB)
     watch-max-frame-length = 1 MiB
 
+    # Optional: how long one attempt at the pod list of a watch may take (default: 10s)
+    watch-list-timeout = 10s
+
+    # Optional: largest pod list a watch will start or resync from (default: 8 MiB)
+    watch-max-list-length = 8 MiB
+
     # Optional: how long a watch may go without a lookup before it is stopped (default: 5 minutes),
     # or "off" to keep it until the actor system shuts down
     watch-idle-timeout = 5 minutes
@@ -153,7 +159,9 @@ pekko.discovery {
 }
 ```
 
-When watch mode is enabled, the first `lookup` call performs an initial pod list to populate a local cache, then starts a persistent watch stream. Subsequent lookups read directly from the cache without making API calls. The watch stream automatically reconnects on errors or stream completion, using the Kubernetes `resourceVersion` mechanism to resume from where it left off. If the resume point is no longer valid - the server answers `410 Gone`, or sends an `ERROR` event - the cache is rebuilt from a fresh list rather than resumed, so that pods deleted while disconnected do not linger.
+When watch mode is enabled, the first `lookup` call performs an initial pod list to populate a local cache, then starts a persistent watch stream. Subsequent lookups read directly from the cache without making API calls. The watch stream automatically reconnects on errors or stream completion, using the Kubernetes `resourceVersion` mechanism to resume from where it left off. If the resume point is no longer valid - the server answers `410 Gone`, or sends an `ERROR` event - the cache is rebuilt from a fresh list rather than resumed, so that pods deleted while disconnected do not linger. The same happens when a watch event cannot be parsed or applied: the stream is closed without applying any later event and, after `watch-on-error-reconnect-delay`, the cache is replaced from a fresh list. A connection that merely drops loses no event that was received, so in that case the watch resumes.
+
+Each attempt at the pod list, the initial one and every resync, has to complete within `watch-list-timeout` and its response has to fit in `watch-max-list-length`. The response status is checked before the body is read, and a response that is unsuccessful, too slow or too large is abandoned without being buffered, which releases its connection. The list is then retried after `watch-on-error-reconnect-delay`. Raise `watch-max-list-length` if the pods of one service do not fit in it.
 
 Each service name is watched separately, with its own cache, so one discovery instance can be used to look up more than one service. The watch streams are shut down during the `service-unbind` phase of Coordinated Shutdown. From then on lookups fail straight away, rather than starting a new watch or answering from a cache that is no longer kept up to date.
 

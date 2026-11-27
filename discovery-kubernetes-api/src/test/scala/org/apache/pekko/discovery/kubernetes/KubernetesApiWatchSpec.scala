@@ -22,7 +22,12 @@ import org.apache.pekko
 import pekko.Done
 import pekko.actor.ActorSystem
 import pekko.discovery.Lookup
-import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.{ KubernetesSetup, WatchState }
+import pekko.discovery.kubernetes.KubernetesApiServiceDiscovery.{
+  KubernetesApiException,
+  KubernetesSetup,
+  WatchEventNotAppliedException,
+  WatchState
+}
 import pekko.discovery.kubernetes.PodList._
 import pekko.http.scaladsl.{ ConnectionContext, Http }
 import pekko.http.scaladsl.model.{ ContentTypes, HttpEntity, HttpRequest, HttpResponse, StatusCodes }
@@ -31,15 +36,19 @@ import pekko.stream.KillSwitches
 import pekko.stream.scaladsl.{ Framing, Keep, Sink, Source }
 import pekko.util.ByteString
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import javax.net.ssl.SSLContext
 
-import scala.concurrent.{ Await, Future, TimeoutException }
+import scala.concurrent.{ Await, Future, Promise, TimeoutException }
 import scala.concurrent.duration._
 
-class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterAll {
+class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterAll with Eventually {
+
+  private implicit val eventuallyPatience: PatienceConfig = PatienceConfig(Span(10, Seconds), Span(20, Millis))
 
   private implicit val system: ActorSystem = ActorSystem(
     "KubernetesApiWatchSpec",
@@ -63,6 +72,23 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
       Some(Metadata(deletionTimestamp = None, name = Some(name), resourceVersion = Some(resourceVersion))))
 
   private def cachedNames(state: WatchState): Set[String] = state.podCache.get().keySet
+
+  /**
+   * A response entity, along with a future that completes once its stream has ended, be that because it
+   * was read to the end, drained or cancelled. Until then the response holds on to its connection.
+   */
+  private def trackedEntity(data: Source[ByteString, Any]): (HttpEntity.Chunked, Future[Done]) = {
+    val released = Promise[Done]()
+    val tracked = data.watchTermination { (_, done) =>
+      done.onComplete(_ => released.trySuccess(Done))(system.dispatcher)
+    }
+    (HttpEntity.Chunked.fromData(ContentTypes.`application/json`, tracked), released.future)
+  }
+
+  private def watchEventLine(eventType: String, name: String, resourceVersion: String): String =
+    s"""{"type":"$eventType","object":{"metadata":{"name":"$name","resourceVersion":"$resourceVersion"}}}""" + "\n"
+
+  private val setup = KubernetesSetup("default", "token", ConnectionContext.httpsClient(SSLContext.getDefault))
 
   "processWatchEvent" should {
 
@@ -115,14 +141,19 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
       cachedNames(state) should ===(Set("pod-a"))
     }
 
-    "ignore a pod with no metadata.name rather than caching it under a shared key" in {
+    "reject an event for a pod with no metadata.name, leaving the cache and the resource version alone" in {
       val state = new WatchState
-      val anonymous = Pod(None, None, Some(Metadata(deletionTimestamp = None, name = None)))
+      discovery.processWatchEvent(WatchEvent(Added, pod("pod-a", "10.0.0.1", "100")), state)
+      val anonymous =
+        Pod(None, None, Some(Metadata(deletionTimestamp = None, name = None, resourceVersion = Some("101"))))
 
-      discovery.processWatchEvent(WatchEvent(Added, anonymous), state)
-      discovery.processWatchEvent(WatchEvent(Added, anonymous), state)
+      intercept[WatchEventNotAppliedException] {
+        discovery.processWatchEvent(WatchEvent(Added, anonymous), state)
+      }
 
-      state.podCache.get() shouldBe empty
+      // not cached under a shared key, and the resume point has not moved past the event
+      cachedNames(state) should ===(Set("pod-a"))
+      state.resourceVersion.get() should ===(Some("100"))
     }
 
     "keep the caches of two label selectors separate" in {
@@ -221,12 +252,178 @@ class KubernetesApiWatchSpec extends AnyWordSpecLike with Matchers with BeforeAn
 
     // the caller schedules the retry, so it has to be told that the watch did not start
     "fail the returned future when the watch cannot be started" in {
-      val setup = KubernetesSetup("default", "token", ConnectionContext.httpsClient(SSLContext.getDefault))
-
       val failure = Await.result(discovery.startWatch(setup, "app=svc", new WatchState).failed, 10.seconds)
 
       failure shouldBe a[NoSuchElementException]
       failure.getMessage should include("Unable to form request")
+    }
+
+  }
+
+  "processWatchStream" should {
+
+    def watchResponse(first: String, rest: Future[ByteString]): HttpResponse =
+      HttpResponse(
+        StatusCodes.OK,
+        entity = HttpEntity(
+          ContentTypes.`application/json`,
+          Source.single(ByteString(first)).concat(Source.future(rest))))
+
+    // The cache has missed a change, so neither carrying on nor resuming from a later version is safe.
+    "resync from a fresh list after an event that cannot be applied, without applying the events after it" in {
+      val state = new WatchState
+      val rest = Promise[ByteString]()
+      try {
+        discovery.processWatchStream(watchResponse(watchEventLine("ADDED", "pod-a", "100"), rest.future), setup,
+          "app=svc", state)
+        eventually(state.resourceVersion.get() should ===(Some("100")))
+
+        rest.success(ByteString("this is not a watch event\n" + watchEventLine("ADDED", "pod-b", "102")))
+
+        // the resume point is dropped, which makes the restart go back through a full list
+        eventually(state.resourceVersion.get() should ===(None))
+        eventually(state.killSwitch.get() should ===(None))
+        cachedNames(state) should ===(Set("pod-a"))
+        state.resourceVersion.get() should ===(None)
+      } finally state.stop()
+    }
+
+    "resync from a fresh list after an event for a pod without a name" in {
+      val state = new WatchState
+      val rest = Promise[ByteString]()
+      try {
+        discovery.processWatchStream(watchResponse(watchEventLine("ADDED", "pod-a", "100"), rest.future), setup,
+          "app=svc", state)
+        eventually(state.resourceVersion.get() should ===(Some("100")))
+
+        rest.success(ByteString(
+          """{"type":"DELETED","object":{"metadata":{"resourceVersion":"101"}}}""" + "\n" +
+          watchEventLine("ADDED", "pod-b", "102")))
+
+        eventually(state.resourceVersion.get() should ===(None))
+        eventually(state.killSwitch.get() should ===(None))
+        cachedNames(state) should ===(Set("pod-a"))
+        state.resourceVersion.get() should ===(None)
+      } finally state.stop()
+    }
+
+    // A dropped connection loses no event that was received, so the watch resumes where it was.
+    "keep the resume point when the connection fails" in {
+      val state = new WatchState
+      val rest = Promise[ByteString]()
+      try {
+        discovery.processWatchStream(watchResponse(watchEventLine("ADDED", "pod-a", "100"), rest.future), setup,
+          "app=svc", state)
+        eventually {
+          state.resourceVersion.get() should ===(Some("100"))
+          state.killSwitch.get() should not be empty
+        }
+
+        rest.failure(new RuntimeException("connection reset"))
+
+        eventually(state.killSwitch.get() should ===(None))
+        state.resourceVersion.get() should ===(Some("100"))
+        cachedNames(state) should ===(Set("pod-a"))
+      } finally state.stop()
+    }
+
+  }
+
+  "readPodList" should {
+
+    val oneKilobyte = ByteString("x" * 1024)
+
+    // 1 KiB, and no time at all to wait for a list that does not arrive
+    def boundedDiscovery(listTimeout: String = "1 hour") =
+      new KubernetesApiServiceDiscovery(
+        new Settings(
+          ConfigFactory
+            .parseString(s"""
+              watch-max-list-length = 1 KiB
+              watch-list-timeout = $listTimeout
+              """)
+            .withFallback(system.settings.config.getConfig("pekko.discovery.kubernetes-api"))))
+
+    "read a pod list that is within the limits" in {
+      val (entity, released) = trackedEntity(Source.single(ByteString(
+        """{"metadata":{"resourceVersion":"500"},"items":[{"metadata":{"name":"pod-a","resourceVersion":"499"}}]}""")))
+
+      val podList =
+        Await.result(boundedDiscovery().readPodList(HttpResponse(StatusCodes.OK, entity = entity), 1.hour.fromNow),
+          10.seconds)
+
+      podList.metadata.flatMap(_.resourceVersion) should ===(Some("500"))
+      podList.items.flatMap(_.metadata.flatMap(_.name)) should ===(List("pod-a"))
+      Await.result(released, 10.seconds) should ===(Done)
+    }
+
+    "release an unsuccessful response instead of buffering it" in {
+      // the body is still being sent, so buffering it first would not have failed yet
+      val restOfBody = Promise[ByteString]()
+      val (entity, released) =
+        trackedEntity(Source.single(oneKilobyte).concat(Source.future(restOfBody.future)))
+
+      val failure = Await.result(
+        discovery.readPodList(HttpResponse(StatusCodes.Forbidden, entity = entity), 1.hour.fromNow).failed,
+        10.seconds)
+
+      failure shouldBe a[KubernetesApiException]
+      failure.getMessage should include("403")
+      // the body is drained as it arrives, after which the response no longer holds its connection
+      restOfBody.success(oneKilobyte)
+      Await.result(released, 10.seconds) should ===(Done)
+    }
+
+    "fail and release the response when the list is larger than watch-max-list-length" in {
+      val (entity, released) = trackedEntity(Source.repeat(oneKilobyte))
+
+      val failure = Await.result(
+        boundedDiscovery().readPodList(HttpResponse(StatusCodes.OK, entity = entity), 1.hour.fromNow).failed,
+        10.seconds)
+
+      failure shouldBe a[KubernetesApiException]
+      failure.getMessage should include("watch-max-list-length")
+      Await.result(released, 10.seconds) should ===(Done)
+    }
+
+    "fail and release the response when the list is not read by the deadline" in {
+      // sends the start of a list and then nothing more
+      val (entity, released) =
+        trackedEntity(Source.single(ByteString("""{"items":[""")).concat(Source.maybe[ByteString]))
+
+      val failure = Await.result(
+        boundedDiscovery("200 ms")
+          .readPodList(HttpResponse(StatusCodes.OK, entity = entity), 200.millis.fromNow)
+          .failed,
+        10.seconds)
+
+      failure shouldBe a[TimeoutException]
+      failure.getMessage should include("was not read within")
+      Await.result(released, 10.seconds) should ===(Done)
+    }
+
+  }
+
+  "listResponseWithin" should {
+
+    "pass on a response that arrives before the deadline" in {
+      val response = HttpResponse(StatusCodes.OK)
+      val passedOn =
+        Await.result(discovery.listResponseWithin(Future.successful(response), 1.hour.fromNow), 10.seconds)
+      (passedOn eq response) shouldBe true
+    }
+
+    "fail at the deadline, and release a response that arrives after it" in {
+      val late = Promise[HttpResponse]()
+
+      val failure =
+        Await.result(discovery.listResponseWithin(late.future, 200.millis.fromNow).failed, 10.seconds)
+      failure shouldBe a[TimeoutException]
+      failure.getMessage should include("pod list request timed out")
+
+      val (entity, released) = trackedEntity(Source.repeat(ByteString("x")).take(10))
+      late.success(HttpResponse(StatusCodes.OK, entity = entity))
+      Await.result(released, 10.seconds) should ===(Done)
     }
 
   }
