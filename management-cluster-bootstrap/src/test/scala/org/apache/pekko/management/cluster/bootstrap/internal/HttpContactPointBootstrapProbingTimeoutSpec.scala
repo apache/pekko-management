@@ -96,11 +96,16 @@ class HttpContactPointBootstrapProbingTimeoutSpec
     }
   }
 
-  private def settings(probingFailureTimeout: String): ClusterBootstrapSettings =
+  private def settings(probingFailureTimeout: String, probingRequestTimeout: String = "200 ms")
+      : ClusterBootstrapSettings =
     new ClusterBootstrapSettings(
       ConfigFactory
-        .parseString(
-          s"pekko.management.cluster.bootstrap.contact-point.probing-failure-timeout = $probingFailureTimeout")
+        .parseString(s"""
+          pekko.management.cluster.bootstrap.contact-point {
+            probing-failure-timeout = $probingFailureTimeout
+            probing-request-timeout = $probingRequestTimeout
+          }
+          """)
         .withFallback(system.settings.config),
       Logging(system, classOf[HttpContactPointBootstrapProbingTimeoutSpec]))
 
@@ -146,6 +151,73 @@ class HttpContactPointBootstrapProbingTimeoutSpec
       } finally {
         contactPoint.close().futureValue
       }
+    }
+
+    "not give a request longer than what is left of the probing failure timeout" in {
+      val contactPoint = new ContactPoint(unansweredRequests = Int.MaxValue)
+      val parent = TestProbe()
+      // without the cap the only request would time out after a minute, long after this test gave up
+      val child =
+        parent.childActorOf(HttpContactPointBootstrap.props(
+          settings(probingFailureTimeout = "250 ms", probingRequestTimeout = "1 minute"), contactPoint.target,
+          contactPoint.baseUri))
+      try {
+        parent.watch(child)
+        val failed = parent.expectMsgType[BootstrapCoordinator.Protocol.ProbingFailed](10.seconds)
+        failed.contactPoint should ===(contactPoint.target)
+        failed.cause.getMessage should include("Probing timeout")
+        parent.expectTerminated(child, 10.seconds)
+        contactPoint.requestCount.get should be <= 1
+      } finally {
+        contactPoint.close().futureValue
+      }
+    }
+
+    "not start a probe once the probing failure timeout has passed" in {
+      val contactPoint = new ContactPoint(unansweredRequests = Int.MaxValue)
+      val parent = TestProbe()
+      // The first request times out after 200 ms and the next probe is due at least 100 ms after that, which
+      // is not before the failure deadline of 300 ms that started when the actor was created.
+      val child =
+        parent.childActorOf(HttpContactPointBootstrap.props(
+          settings(probingFailureTimeout = "300 ms", probingRequestTimeout = "200 ms"), contactPoint.target,
+          contactPoint.baseUri))
+      try {
+        parent.watch(child)
+        val failed = parent.expectMsgType[BootstrapCoordinator.Protocol.ProbingFailed](10.seconds)
+        failed.contactPoint should ===(contactPoint.target)
+        // the cause is the failure of the request that was sent
+        failed.cause.getMessage should include("Probing timeout")
+        parent.expectTerminated(child, 10.seconds)
+        contactPoint.requestCount.get should be <= 1
+      } finally {
+        contactPoint.close().futureValue
+      }
+    }
+
+    "cap the request timeout of a configuration that only sets a shorter probing failure timeout" in {
+      // an existing configuration: it does not know about probing-request-timeout, which defaults to 1 second
+      val existing = new ClusterBootstrapSettings(
+        ConfigFactory
+          .parseString("pekko.management.cluster.bootstrap.contact-point.probing-failure-timeout = 250 ms")
+          .withFallback(ConfigFactory.load()),
+        Logging(system, classOf[HttpContactPointBootstrapProbingTimeoutSpec]))
+      existing.contactPoint.probingRequestTimeout should ===(1.second)
+
+      // the first probe has the whole failure timeout left, and that is all it gets
+      HttpContactPointBootstrap.probeRequestTimeout(
+        existing.contactPoint.probingRequestTimeout,
+        existing.contactPoint.probingFailureTimeout) should ===(Some(250.millis))
+      HttpContactPointBootstrap.probeRequestTimeout(existing.contactPoint.probingRequestTimeout,
+        100.millis) should ===(Some(100.millis))
+      // with plenty of time left the request timeout applies
+      HttpContactPointBootstrap.probeRequestTimeout(existing.contactPoint.probingRequestTimeout,
+        10.seconds) should ===(Some(1.second))
+      // no request is sent when the failure timeout has passed
+      HttpContactPointBootstrap.probeRequestTimeout(existing.contactPoint.probingRequestTimeout,
+        Duration.Zero) should ===(None)
+      HttpContactPointBootstrap.probeRequestTimeout(existing.contactPoint.probingRequestTimeout,
+        -1.milli) should ===(None)
     }
   }
 }

@@ -33,7 +33,7 @@ See the [GitHub Milestone for 2.0.0-M2](https://github.com/apache/pekko-manageme
 
 ### Changes
 
-* Cluster Bootstrap: a probe request to a contact point now times out after the new `pekko.management.cluster.bootstrap.contact-point.probing-request-timeout` (1 second by default) and is retried until `probing-failure-timeout` has passed. Before, a request only timed out after `probing-failure-timeout` and was never retried ([#209](https://github.com/apache/pekko-management/issues/209))
+* Cluster Bootstrap: a probe request to a contact point now times out after the new `pekko.management.cluster.bootstrap.contact-point.probing-request-timeout` (1 second by default) and is retried until `probing-failure-timeout` has passed. Before, a request only timed out after `probing-failure-timeout` and was never retried. A request is never given longer than what is left of `probing-failure-timeout`, so a configuration with a `probing-failure-timeout` shorter than 1 second keeps its bound ([#209](https://github.com/apache/pekko-management/issues/209))
 
 ### Removals
 
