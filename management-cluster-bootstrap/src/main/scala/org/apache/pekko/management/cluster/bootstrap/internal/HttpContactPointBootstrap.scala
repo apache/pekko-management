@@ -39,6 +39,7 @@ import pekko.http.scaladsl.model.HttpResponse
 import pekko.http.scaladsl.model.StatusCodes
 import pekko.http.scaladsl.model.Uri
 import pekko.http.scaladsl.model.Uri.Host
+import pekko.http.scaladsl.model.headers.BasicHttpCredentials
 import pekko.http.scaladsl.settings.ConnectionPoolSettings
 import pekko.http.scaladsl.unmarshalling.Unmarshal
 import pekko.management.cluster.bootstrap.ClusterBootstrapSettings
@@ -65,6 +66,25 @@ private[bootstrap] object HttpContactPointBootstrap {
   private case object ProbeTick extends DeadLetterSuppression
   private val ProbingTimerKey = "probing-key"
   private val DefaultTlsVersion = "TLSv1.2" // keep in sync with default in reference.conf
+
+  def basicAuthCredentials(settings: ClusterBootstrapSettings): Option[BasicHttpCredentials] =
+    settings.contactPoint.httpClient.basicAuthUsername.map { username =>
+      BasicHttpCredentials(username, settings.contactPoint.httpClient.basicAuthPassword)
+    }
+
+  /**
+   * `false` when basic auth credentials are configured and probing over `scheme` would send them in the clear,
+   * without `basic-auth.allow-insecure-http` having been enabled.
+   */
+  def mayProbeWithScheme(settings: ClusterBootstrapSettings, scheme: String): Boolean =
+    settings.contactPoint.httpClient.basicAuthUsername.isEmpty ||
+    scheme == "https" ||
+    settings.contactPoint.httpClient.basicAuthAllowInsecureHttp
+
+  val InsecureBasicAuthMessage: String =
+    "pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth is configured, but the contact " +
+    "points are not probed over https, so the credentials would be sent in the clear. Serve Pekko Management " +
+    "over HTTPS, or set basic-auth.allow-insecure-http = on if the connections are protected in another way."
 
   def generateSSLContext(settings: ClusterBootstrapSettings): SSLContext = {
     val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
@@ -116,6 +136,10 @@ private[bootstrap] class HttpContactPointBootstrap(
       s"Uri: $baseUri, this node's remoting address: ${cluster.selfAddress}")
   }
 
+  // the coordinator does not get this far with such settings, this makes sure that no other caller does either
+  if (!mayProbeWithScheme(settings, baseUri.scheme))
+    throw new IllegalArgumentException(s"$InsecureBasicAuthMessage Uri: $baseUri")
+
   private implicit val sys: ActorSystem = context.system
 
   private val useCustomSslContext: Boolean =
@@ -131,7 +155,13 @@ private[bootstrap] class HttpContactPointBootstrap(
   import context.dispatcher
 
   private val probeInterval = settings.contactPoint.probeInterval
-  private val probeRequest = ClusterBootstrapRequests.bootstrapSeedNodes(baseUri)
+  private val probeRequest = {
+    val request = ClusterBootstrapRequests.bootstrapSeedNodes(baseUri)
+    basicAuthCredentials(settings) match {
+      case Some(credentials) => request.addCredentials(credentials)
+      case None              => request
+    }
+  }
 
   /**
    * If probing keeps failing until the deadline triggers, we notify the parent,

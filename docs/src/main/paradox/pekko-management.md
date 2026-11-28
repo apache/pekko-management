@@ -155,6 +155,35 @@ In order to do this, invoke `start(transformSettings)` where `transformSettings`
 to amend the `ManagementRouteProviderSettings`. Use `.withAuth` and `.withHttpsConnectionContext`
 if the `ManagementRouteProviderSettings` to enable authentication and HTTPS respectively.
 
+#### Basic Authentication and Cluster Bootstrap
+
+When the management endpoints require Basic Authentication, @ref[Pekko Cluster Bootstrap](bootstrap/index.md) has to
+authenticate as well, because every node probes the `/bootstrap/seed-nodes` endpoint of the other nodes. Configure
+the credentials that the bootstrap client sends, on every node, and make sure the authenticator accepts them:
+
+```
+pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth {
+  username = "bootstrap"
+  password = ${?MANAGEMENT_PASSWORD}
+}
+```
+
+The `Authorization` header is only sent when `username` is not empty. Supply the password through an environment
+variable or a mounted secret rather than hardcoding it in a config file.
+
+Basic credentials are only base64 encoded, so Cluster Bootstrap only sends them over HTTPS. If credentials are
+configured and Pekko Management is not served over HTTPS, Cluster Bootstrap logs an error and does not start.
+If the connections between the nodes are protected in some other way, for example by a service mesh that applies
+mTLS, you can allow the credentials to be sent over plain HTTP:
+
+```
+pekko.management.cluster.bootstrap.contact-point.http-client.basic-auth.allow-insecure-http = on
+```
+
+While credentials are configured, a contact point is only probed for as long as service discovery keeps returning it.
+Probing of a contact point that is no longer discovered stops right away, instead of continuing until the
+`probing-failure-timeout` has passed, so that the credentials are not sent to an address that has left the deployment.
+
 ## Stopping Pekko Management
 
 In a dynamic environment you might stop instances of Pekko Management, for example if you want to free up resources
