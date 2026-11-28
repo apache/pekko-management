@@ -217,7 +217,7 @@ class HttpContactPointBootstrapProbingTimeoutSpec
       HttpContactPointBootstrap.probeRequestTimeout(existing.contactPoint.probingRequestTimeout,
         Duration.Zero) should ===(None)
       HttpContactPointBootstrap.probeRequestTimeout(existing.contactPoint.probingRequestTimeout,
-        -1.milli) should ===(None)
+        (-1).milli) should ===(None)
     }
   }
 }
