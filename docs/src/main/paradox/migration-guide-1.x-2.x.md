@@ -39,6 +39,13 @@ The @ref:[2.0 release notes](release-notes/releases-2.0.md) list all the changes
 
 ## Behavior changes
 
+### TLS version
+
+* `tls-version` is now the minimum TLS version that a client accepts. This applies to `pekko.discovery.kubernetes-api.tls-version`, `pekko.coordination.lease.kubernetes.tls-version` and `pekko.management.cluster.bootstrap.contact-point.http-client.tls-version`. In 1.x the value was the protocol that the `SSLContext` was created with, so the default of `TLSv1.2` did not enable TLS 1.3. In 2.x the default of `TLSv1.2` means that TLS 1.2 and TLS 1.3 can be negotiated and that older versions are refused. The minimum only narrows the TLS versions that the JVM enables for clients, it never enables more. ([PR930](https://github.com/apache/pekko-management/pull/930))
+* The value has to be one of `TLSv1`, `TLSv1.1`, `TLSv1.2` or `TLSv1.3`. Any other value, or a minimum that no enabled TLS version satisfies, fails with an `IllegalArgumentException` when the client is set up. ([PR930](https://github.com/apache/pekko-management/pull/930))
+* Cluster Bootstrap: when `ca-path` is empty and `tls-version` is left at its default, contact points are still probed with the default client HTTPS context of Pekko HTTP, and the minimum is not applied to it. Setting `ca-path`, or a `tls-version` other than the default, makes the probes use a context of their own that the minimum does apply to. ([PR930](https://github.com/apache/pekko-management/pull/930))
+* The `tlsVersion` accessors of the Kubernetes API discovery `Settings` and of the Cluster Bootstrap `contactPoint.httpClient` settings are deprecated. Use `minTlsVersion` instead. ([PR930](https://github.com/apache/pekko-management/pull/930))
+
 ### Pekko Management
 
 * When the management HTTP server is stopped, it is now terminated gracefully. Requests that are in progress get up to `pekko.management.http.graceful-termination-timeout` (5 seconds by default) to complete, so stopping can take that much longer than in 1.x, where the server was only unbound. ([PR909](https://github.com/apache/pekko-management/pull/909))
