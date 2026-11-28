@@ -19,6 +19,7 @@ import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.ec2.model.{ DescribeInstancesRequest, Filter, Reservation }
 import com.amazonaws.services.ec2.{ AmazonEC2, AmazonEC2ClientBuilder }
 import org.apache.pekko
+import pekko.Done
 import pekko.actor.{ CoordinatedShutdown, ExtendedActorSystem }
 import pekko.annotation.InternalApi
 import pekko.discovery.ServiceDiscovery.{ Resolved, ResolvedTarget }
@@ -29,6 +30,7 @@ import pekko.pattern.after
 
 import java.net.InetAddress
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicReference
 import scala.annotation.tailrec
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ ExecutionContext, Future }
@@ -51,7 +53,12 @@ import scala.util.{ Failure, Success, Try }
 
 }
 
-final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends ServiceDiscovery {
+final class Ec2TagBasedServiceDiscovery @InternalApi private[ec2] (
+    system: ExtendedActorSystem,
+    decorateClient: AmazonEC2 => AmazonEC2)
+    extends ServiceDiscovery {
+
+  def this(system: ExtendedActorSystem) = this(system, identity[AmazonEC2])
 
   private val log = Logging(system, classOf[Ec2TagBasedServiceDiscovery])
 
@@ -99,10 +106,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
       }
   }
 
-  @volatile private var ec2ClientUsed = false
-
-  private lazy val ec2Client: AmazonEC2 = {
-    ec2ClientUsed = true
+  private def createEc2Client(): AmazonEC2 = {
     val clientConfiguration = clientConfigFqcn match {
       case Some(fqcn) =>
         getCustomClientConfigurationInstance(fqcn) match {
@@ -132,14 +136,47 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
     builder.build()
   }
 
+  // holds the client once it has been successfully built, so that shutdown never forces
+  // (or re-attempts) the lazy initialisation
+  private val builtEc2Client = new AtomicReference[AmazonEC2]()
+
+  // set when coordinated shutdown closes the client, so that a client whose construction was still
+  // in progress at that point is closed as soon as it has been built rather than leaked
+  @volatile private var shuttingDown = false
+
+  private lazy val ec2Client: AmazonEC2 = {
+    val client = decorateClient(createEc2Client())
+    builtEc2Client.set(client)
+    if (shuttingDown) takeBuiltEc2Client().foreach(_.shutdown())
+    client
+  }
+
+  private def takeBuiltEc2Client(): Option[AmazonEC2] = Option(builtEc2Client.getAndSet(null))
+
+  // A lookup must not use a client that coordinated shutdown has closed (or is about to close), so
+  // it fails here, before any AWS request is made. The flag is checked before the lazy val is
+  // touched, so that no client is built once shutdown has started, and again afterwards, to catch
+  // a client whose construction overlapped with shutdown and which has therefore been closed.
+  private def activeEc2Client(): AmazonEC2 = {
+    failIfShuttingDown()
+    val client = ec2Client
+    failIfShuttingDown()
+    client
+  }
+
+  private def failIfShuttingDown(): Unit =
+    if (shuttingDown)
+      throw new IllegalStateException("The EC2 client has been closed because the actor system is shutting down")
+
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "ec2-client-close") { () =>
-    if (ec2ClientUsed) {
-      Future {
-        ec2Client.shutdown()
-        pekko.Done
-      }(ec)
-    } else {
-      Future.successful(pekko.Done)
+    shuttingDown = true
+    takeBuiltEc2Client() match {
+      case None         => Future.successful(Done)
+      case Some(client) =>
+        Future {
+          client.shutdown()
+          Done
+        }(ec)
     }
   }
 
@@ -148,7 +185,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
       client: AmazonEC2,
       filters: List[Filter],
       nextToken: Option[String],
-      accumulator: List[String] = Nil): List[String] = {
+      accumulator: Vector[String] = Vector.empty): Vector[String] = {
 
     val describeInstancesRequest = new DescribeInstancesRequest()
       .withFilters(filters.asJava) // withFilters is a set operation (i.e. calls setFilters, be careful with chaining)
@@ -156,11 +193,10 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
 
     val describeInstancesResult = client.describeInstances(describeInstancesRequest)
 
-    val ips: List[String] =
-      describeInstancesResult.getReservations.asScala
+    val ips =
+      describeInstancesResult.getReservations.asScala.view
         .flatMap((r: Reservation) => r.getInstances.asScala)
         .map(instance => instance.getPrivateIpAddress)
-        .toList
 
     val accumulatedIps = accumulator ++ ips
 
@@ -189,7 +225,7 @@ final class Ec2TagBasedServiceDiscovery(system: ExtendedActorSystem) extends Ser
     val allFilters: List[Filter] = runningInstancesFilter :: tagFilter :: otherFilters
 
     Future {
-      getInstances(ec2Client, allFilters, None).flatMap((ip: String) =>
+      getInstances(activeEc2Client(), allFilters, None).flatMap((ip: String) =>
         preDefinedPorts match {
           case None =>
             ResolvedTarget(host = ip, port = None, address = Try(InetAddress.getByName(ip)).toOption) :: Nil
