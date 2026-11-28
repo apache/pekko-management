@@ -27,7 +27,20 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class PekkoManagementSpec extends TestKit(ActorSystem("PekkoManagementSpec"))
+object PekkoManagementSpec {
+  val config = ConfigFactory.parseString(
+    """
+      |pekko.remote.log-remote-lifecycle-events = off
+      |pekko.remote.netty.tcp.port = 0
+      |pekko.remote.artery.canonical.port = 0
+      |
+      |# bind a free port rather than the default management port, which may be in use
+      |pekko.management.http.port = 0
+      |#pekko.loglevel = DEBUG
+    """.stripMargin)
+}
+
+class PekkoManagementSpec extends TestKit(ActorSystem("PekkoManagementSpec", PekkoManagementSpec.config))
     with AnyWordSpecLike
     with BeforeAndAfterAll
     with Matchers
@@ -37,16 +50,6 @@ class PekkoManagementSpec extends TestKit(ActorSystem("PekkoManagementSpec"))
   // ScalaFutures waits by default.
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = scaled(Span(10, Seconds)), interval = scaled(Span(50, Millis)))
-
-  val config = ConfigFactory.parseString(
-    """
-      |pekko.remote.log-remote-lifecycle-events = off
-      |pekko.remote.netty.tcp.port = 0
-      |pekko.remote.artery.canonical.port = 0
-      |
-      |pekko.management.http.port = 0
-      |#pekko.loglevel = DEBUG
-    """.stripMargin)
 
   val mgmt = PekkoManagement(system)
 
