@@ -22,24 +22,34 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.testkit.TestKit
 import org.apache.pekko.management.scaladsl.PekkoManagement
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{ Millis, Seconds, Span }
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class PekkoManagementSpec extends TestKit(ActorSystem("PekkoManagementSpec"))
-    with AnyWordSpecLike
-    with BeforeAndAfterAll
-    with Matchers {
-
+object PekkoManagementSpec {
   val config = ConfigFactory.parseString(
     """
       |pekko.remote.log-remote-lifecycle-events = off
       |pekko.remote.netty.tcp.port = 0
       |pekko.remote.artery.canonical.port = 0
       |
+      |# bind a free port rather than the default management port, which may be in use
       |pekko.management.http.port = 0
       |#pekko.loglevel = DEBUG
     """.stripMargin)
+}
+
+class PekkoManagementSpec extends TestKit(ActorSystem("PekkoManagementSpec", PekkoManagementSpec.config))
+    with AnyWordSpecLike
+    with BeforeAndAfterAll
+    with Matchers
+    with ScalaFutures {
+
+  // Starting binds the management HTTP server, which can take longer than the 150 milliseconds that
+  // ScalaFutures waits by default.
+  implicit override val patienceConfig: PatienceConfig =
+    PatienceConfig(timeout = scaled(Span(10, Seconds)), interval = scaled(Span(50, Millis)))
 
   val mgmt = PekkoManagement(system)
 
