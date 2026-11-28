@@ -13,6 +13,8 @@
 
 package org.apache.pekko.management.cluster.bootstrap
 
+import scala.concurrent.duration._
+
 import org.apache.pekko.event.NoLogging
 import com.typesafe.config.ConfigFactory
 
@@ -92,6 +94,21 @@ class ClusterBootstrapSettingsSpec extends AbstractBootstrapSpec {
       intercept[IllegalArgumentException] {
         ClusterBootstrapSettings(overrides.withFallback(config), NoLogging)
       }
+    }
+
+    "have a probing request timeout that is shorter than the probing failure timeout by default" in {
+      val settings = ClusterBootstrapSettings(config, NoLogging)
+      settings.contactPoint.probingRequestTimeout should ===(1.second)
+      settings.contactPoint.probingRequestTimeout should be < settings.contactPoint.probingFailureTimeout
+      settings.getContactPointProbingRequestTimeout should ===(java.time.Duration.ofSeconds(1))
+    }
+
+    "read the probing request timeout" in {
+      val overrides = ConfigFactory.parseString(
+        "pekko.management.cluster.bootstrap.contact-point.probing-request-timeout = 250 ms")
+      val settings = ClusterBootstrapSettings(overrides.withFallback(config), NoLogging)
+      settings.contactPoint.probingRequestTimeout should ===(250.millis)
+      settings.getContactPointProbingRequestTimeout should ===(java.time.Duration.ofMillis(250))
     }
   }
 }

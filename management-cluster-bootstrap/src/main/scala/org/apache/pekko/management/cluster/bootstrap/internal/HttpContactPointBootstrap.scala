@@ -85,6 +85,15 @@ private[bootstrap] object HttpContactPointBootstrap {
     "points are not probed over https, so the credentials would be sent in the clear. Serve Pekko Management " +
     "over HTTPS, or set basic-auth.allow-insecure-http = on if the connections are protected in another way."
 
+  /**
+   * How long a probe request that is about to be sent may take: `probingRequestTimeout`, but never longer than
+   * `timeLeft`, which is what is left of the probing failure timeout. `None` when there is no time left, in
+   * which case no request should be sent at all.
+   */
+  def probeRequestTimeout(probingRequestTimeout: FiniteDuration, timeLeft: FiniteDuration): Option[FiniteDuration] =
+    if (timeLeft <= Duration.Zero) None
+    else Some(probingRequestTimeout.min(timeLeft))
+
   def generateSSLContext(settings: ClusterBootstrapSettings): SSLContext = {
     val caPath = settings.contactPoint.httpClient.caPath.trim
     // an empty ca-path means use the default JVM trust store
@@ -179,49 +188,27 @@ private[bootstrap] class HttpContactPointBootstrap(
   private def resetProbingKeepFailingWithinDeadline(): Unit =
     probingKeepFailingDeadline = settings.contactPoint.probingFailureTimeout.fromNow
 
+  /** Why the most recent probe failed, if it did. Reported to the parent when probing is given up. */
+  private var lastProbeFailure: Option[Throwable] = None
+
   override def preStart(): Unit =
     self ! ProbeTick
 
   override def receive = {
     case ProbeTick =>
-      log.debug("Probing [{}] for seed nodes...", probeRequest.uri)
-      val customSslContext = if (probeRequest.uri.scheme == "https") customClientSslContext else None
-      val response = customSslContext match {
-        case Some(connectionContext) =>
-          http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
-            connectionContext = connectionContext)
-        case None =>
-          http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries)
+      probeRequestTimeout(settings.contactPoint.probingRequestTimeout, probingKeepFailingDeadline.timeLeft) match {
+        case Some(requestTimeout) => probe(requestTimeout)
+        case None                 =>
+          // The failure deadline passed while waiting for this tick. A request sent now could only complete
+          // after the deadline, so none is sent.
+          probingFailed(lastProbeFailure.getOrElse(new TimeoutException(s"Probing timeout of [$baseUri]")))
       }
-      // Use a Promise-based pattern instead of Future.firstCompletedOf so that when the
-      // timeout fires first, we properly discard the in-flight response entity to release
-      // the HTTP connection back to the pool.
-      val promise = Promise[SeedNodes]()
-      val timeoutCancellable = context.system.scheduler.scheduleOnce(settings.contactPoint.probingFailureTimeout) {
-        promise.tryFailure(new TimeoutException(s"Probing timeout of [$baseUri]"))
-      }
-      response.flatMap(handleResponse).onComplete {
-        case scala.util.Success(seedNodes) =>
-          timeoutCancellable.cancel()
-          promise.trySuccess(seedNodes)
-        case scala.util.Failure(ex) =>
-          timeoutCancellable.cancel()
-          promise.tryFailure(ex)
-      }(context.dispatcher)
-      // If timeout fires first, discard the in-flight response to release the connection
-      promise.future.failed.foreach { _ =>
-        response.foreach { resp =>
-          resp.discardEntityBytes()(pekko.stream.Materializer.matFromSystem(context.system))
-        }(context.dispatcher)
-      }(context.dispatcher)
-      promise.future.pipeTo(self)
 
     case Status.Failure(cause) =>
       log.warning("Probing [{}] failed due to: {}", probeRequest.uri, cause.getMessage)
+      lastProbeFailure = Some(cause)
       if (probingKeepFailingDeadline.isOverdue()) {
-        log.error("Overdue of probing-failure-timeout, stop probing, signaling that it's failed")
-        context.parent ! BootstrapCoordinator.Protocol.ProbingFailed(contactPoint, cause)
-        context.stop(self)
+        probingFailed(cause)
       } else {
         // keep probing, hoping the request will eventually succeed
         scheduleNextContactPointProbing()
@@ -229,10 +216,58 @@ private[bootstrap] class HttpContactPointBootstrap(
 
     case response: SeedNodes =>
       notifyParentAboutSeedNodes(response)
+      lastProbeFailure = None
       resetProbingKeepFailingWithinDeadline()
       // we keep probing and looking if maybe a cluster does form after all
       // (technically could be long polling or web-sockets, but that would need reconnect logic, so this is simpler)
       scheduleNextContactPointProbing()
+  }
+
+  private def probingFailed(cause: Throwable): Unit = {
+    log.error("Overdue of probing-failure-timeout, stop probing, signaling that it's failed")
+    context.parent ! BootstrapCoordinator.Protocol.ProbingFailed(contactPoint, cause)
+    context.stop(self)
+  }
+
+  /**
+   * Sends one probe request, which fails when it has not completed within `requestTimeout`.
+   */
+  private def probe(requestTimeout: FiniteDuration): Unit = {
+    log.debug("Probing [{}] for seed nodes...", probeRequest.uri)
+    val customSslContext = if (probeRequest.uri.scheme == "https") customClientSslContext else None
+    val response = customSslContext match {
+      case Some(connectionContext) =>
+        http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
+          connectionContext = connectionContext)
+      case None =>
+        http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries)
+    }
+    // Use a Promise-based pattern instead of Future.firstCompletedOf so that when the
+    // timeout fires first, we properly discard the in-flight response entity to release
+    // the HTTP connection back to the pool.
+    val promise = Promise[SeedNodes]()
+    // The request timeout is normally shorter than probingFailureTimeout: the failure deadline started before
+    // this request was sent, so a request that only fails at probingFailureTimeout would never be retried.
+    // It is also never longer than what is left of probingFailureTimeout, so that a request cannot outlast
+    // the failure deadline.
+    val timeoutCancellable = context.system.scheduler.scheduleOnce(requestTimeout) {
+      promise.tryFailure(new TimeoutException(s"Probing timeout of [$baseUri]"))
+    }
+    response.flatMap(handleResponse).onComplete {
+      case scala.util.Success(seedNodes) =>
+        timeoutCancellable.cancel()
+        promise.trySuccess(seedNodes)
+      case scala.util.Failure(ex) =>
+        timeoutCancellable.cancel()
+        promise.tryFailure(ex)
+    }(context.dispatcher)
+    // If timeout fires first, discard the in-flight response to release the connection
+    promise.future.failed.foreach { _ =>
+      response.foreach { resp =>
+        resp.discardEntityBytes()(pekko.stream.Materializer.matFromSystem(context.system))
+      }(context.dispatcher)
+    }(context.dispatcher)
+    promise.future.pipeTo(self)
   }
 
   private def handleResponse(response: HttpResponse): Future[SeedNodes] = {
