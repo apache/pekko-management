@@ -51,8 +51,11 @@ final class Settings(kubernetesApi: Config) extends Extension {
   val apiServicePortEnvName: String =
     kubernetesApi.getString("api-service-port-env-name")
 
-  val tlsVersion: String =
+  val minTlsVersion: String =
     kubernetesApi.getString("tls-version")
+
+  @deprecated("Use minTlsVersion instead", "2.0.0")
+  val tlsVersion: String = minTlsVersion
 
   val podNamespacePath: String =
     kubernetesApi.getString("pod-namespace-path")
@@ -146,8 +149,8 @@ final class Settings(kubernetesApi: Config) extends Extension {
 
   override def toString =
     s"Settings($apiCaPath, $apiTokenPath, $apiServiceHostEnvName, $apiServicePortEnvName, " +
-    s"$podNamespacePath, $podNamespace, $podDomain, httpRequestAcceptEncoding=$httpRequestAcceptEncoding, " +
-    s"apiPollMode=$apiPollMode)"
+    s"$podNamespacePath, $podNamespace, $podDomain, minTlsVersion=$minTlsVersion, " +
+    s"httpRequestAcceptEncoding=$httpRequestAcceptEncoding, apiPollMode=$apiPollMode)"
 }
 
 object Settings extends ExtensionId[Settings] with ExtensionIdProvider {

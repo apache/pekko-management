@@ -15,10 +15,13 @@ package org.apache.pekko.management.cluster.bootstrap.internal
 
 import java.nio.file.NoSuchFileException
 
+import scala.annotation.nowarn
+
 import org.apache.pekko
 import pekko.actor.{ ActorPath, ActorSystem }
 import pekko.event.Logging
 import pekko.management.cluster.bootstrap.ClusterBootstrapSettings
+import pekko.pki.kubernetes.PemManagersProvider
 import pekko.http.scaladsl.model.Uri.Host
 import com.typesafe.config.ConfigFactory
 import org.scalatest.matchers.should.Matchers
@@ -27,6 +30,13 @@ import org.scalatest.wordspec.AnyWordSpec
 class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
 
   val userDir = System.getProperty("user.dir")
+
+  @nowarn("cat=deprecation")
+  private def matchesTlsVersion(settings: ClusterBootstrapSettings, version: String): Boolean =
+    version match {
+      case settings.contactPoint.httpClient.tlsVersion => true
+      case _                                           => false
+    }
 
   "HttpContactPointBootstrap" should {
     "use a safe name when connecting over IPv6" in {
@@ -73,7 +83,7 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
         sys.terminate()
       }
     }
-    "fail to generate SSLContext with bad tls-version" in {
+    "fail with bad tls-version when the connection context is built" in {
       val sys = ActorSystem("HttpContactPointBootstrapSpec")
       val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
       try {
@@ -83,10 +93,80 @@ class HttpContactPointBootstrapSpec extends AnyWordSpec with Matchers {
             tls-version = "BAD_VERSION"
           }""").withFallback(sys.settings.config)
         val settings = new ClusterBootstrapSettings(cfg, log)
-        val noSuchAlgorithmException = intercept[java.security.NoSuchAlgorithmException] {
-          HttpContactPointBootstrap.generateSSLContext(settings)
+        // the version is validated up front, not on each connection attempt
+        val illegalArgumentException = intercept[IllegalArgumentException] {
+          HttpContactPointBootstrap.generateClientConnectionContext(settings)
         }
-        noSuchAlgorithmException.getMessage.contains("BAD_VERSION") should be(true)
+        illegalArgumentException.getMessage.contains("BAD_VERSION") should be(true)
+      } finally {
+        sys.terminate()
+      }
+    }
+
+    "restrict the enabled protocols to the configured minimum" in {
+      val sys = ActorSystem("HttpContactPointBootstrapSpec")
+      val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
+      try {
+        val cfg = ConfigFactory.parseString(s"""
+          pekko.management.cluster.bootstrap.contact-point.http-client {
+            ca-path = "${userDir}/src/test/files/ca.crt"
+            tls-version = "TLSv1.3"
+          }""").withFallback(sys.settings.config)
+        val settings = new ClusterBootstrapSettings(cfg, log)
+        HttpContactPointBootstrap.generateClientConnectionContext(settings) should not be null
+        val sslContext = HttpContactPointBootstrap.generateSSLContext(settings)
+        val engine = PemManagersProvider.clientEngineFactory(
+          sslContext,
+          settings.contactPoint.httpClient.minTlsVersion)("example.com", 443)
+        engine.getEnabledProtocols.toSeq shouldEqual Seq("TLSv1.3")
+        engine.getSSLParameters.getEndpointIdentificationAlgorithm shouldEqual "https"
+        // the deprecated accessor still reports the configured value
+        (settings.contactPoint.httpClient.tlsVersion: @nowarn("cat=deprecation")) shouldEqual "TLSv1.3"
+        // the deprecated accessor is a val, so that it can still be used as a stable identifier
+        matchesTlsVersion(settings, "TLSv1.3") shouldBe true
+        matchesTlsVersion(settings, "TLSv1.2") shouldBe false
+      } finally {
+        sys.terminate()
+      }
+    }
+
+    "leave https probes on the default client https context with the default config" in {
+      val sys = ActorSystem("HttpContactPointBootstrapSpec")
+      val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
+      try {
+        val settings = new ClusterBootstrapSettings(sys.settings.config, log)
+        // the default context of the HTTP extension takes precedence, the minimum is not applied to it
+        HttpContactPointBootstrap.customClientConnectionContext(settings) shouldBe empty
+      } finally {
+        sys.terminate()
+      }
+    }
+
+    "use a context of its own for https probes when ca-path is set" in {
+      val sys = ActorSystem("HttpContactPointBootstrapSpec")
+      val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
+      try {
+        val cfg = ConfigFactory.parseString(s"""
+          pekko.management.cluster.bootstrap.contact-point.http-client {
+            ca-path = "${userDir}/src/test/files/ca.crt"
+          }""").withFallback(sys.settings.config)
+        val settings = new ClusterBootstrapSettings(cfg, log)
+        HttpContactPointBootstrap.customClientConnectionContext(settings) should not be empty
+      } finally {
+        sys.terminate()
+      }
+    }
+
+    "use a context of its own for https probes when tls-version is not the default" in {
+      val sys = ActorSystem("HttpContactPointBootstrapSpec")
+      val log = Logging(sys, classOf[HttpContactPointBootstrapSpec])
+      try {
+        val cfg = ConfigFactory.parseString("""
+          pekko.management.cluster.bootstrap.contact-point.http-client {
+            tls-version = "TLSv1.3"
+          }""").withFallback(sys.settings.config)
+        val settings = new ClusterBootstrapSettings(cfg, log)
+        HttpContactPointBootstrap.customClientConnectionContext(settings) should not be empty
       } finally {
         sys.terminate()
       }

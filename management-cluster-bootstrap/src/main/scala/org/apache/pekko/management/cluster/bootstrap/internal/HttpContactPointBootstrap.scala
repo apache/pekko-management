@@ -14,10 +14,9 @@
 package org.apache.pekko.management.cluster.bootstrap.internal
 
 import java.time.LocalDateTime
-import java.security.{ KeyStore, SecureRandom }
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeoutException
-import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager }
+import javax.net.ssl.SSLContext
 import scala.concurrent.{ Future, Promise }
 import scala.concurrent.duration._
 
@@ -87,25 +86,36 @@ private[bootstrap] object HttpContactPointBootstrap {
     "over HTTPS, or set basic-auth.allow-insecure-http = on if the connections are protected in another way."
 
   def generateSSLContext(settings: ClusterBootstrapSettings): SSLContext = {
-    val factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
-    val keyStore = KeyStore.getInstance("PKCS12")
-    keyStore.load(null)
-    factory.init(keyStore, Array.empty)
-    val km: Array[KeyManager] = factory.getKeyManagers
     val caPath = settings.contactPoint.httpClient.caPath.trim
-    val tm: Array[TrustManager] = if (caPath.isEmpty) {
-      // null means use the default JVM trust store, which is what we want if no CA path is configured
-      None.orNull
-    } else {
-      val certificates = PemManagersProvider.loadCertificates(caPath)
-      PemManagersProvider.buildTrustManagers(certificates)
-    }
-    val tlsVersion = settings.contactPoint.httpClient.tlsVersion.trim
-    val random: SecureRandom = new SecureRandom
-    val sslContext = SSLContext.getInstance(tlsVersion)
-    sslContext.init(km, tm, random)
-    sslContext
+    // an empty ca-path means use the default JVM trust store
+    PemManagersProvider.createSslContext(if (caPath.nonEmpty) Some(caPath) else None)
   }
+
+  def generateClientConnectionContext(settings: ClusterBootstrapSettings): HttpsConnectionContext = {
+    val sslContext = generateSSLContext(settings)
+    ConnectionContext.httpsClient(
+      PemManagersProvider.clientEngineFactory(sslContext, settings.contactPoint.httpClient.minTlsVersion))
+  }
+
+  /**
+   * The connection context that https probes use instead of the default client https context
+   * of the HTTP extension, if there is one.
+   *
+   * With the shipped defaults (no `ca-path` and the default `tls-version`) this is `None` and
+   * the probes use `Http().defaultClientHttpsContext`, which the application may have replaced
+   * with `Http().setDefaultClientHttpsContext`. That context then takes precedence: it decides
+   * what is trusted and which TLS versions are enabled, and the configured minimum is not
+   * applied to it. Pekko HTTP offers no way to narrow the protocols of an existing
+   * `HttpsConnectionContext` without replacing its trust settings.
+   *
+   * Setting a `ca-path`, or a `tls-version` other than the default, gives the probes a context
+   * of their own, restricted to the configured minimum TLS version.
+   */
+  def customClientConnectionContext(settings: ClusterBootstrapSettings): Option[HttpsConnectionContext] =
+    if (settings.contactPoint.httpClient.caPath.trim.nonEmpty ||
+      settings.contactPoint.httpClient.minTlsVersion.trim != DefaultTlsVersion)
+      Some(generateClientConnectionContext(settings))
+    else None
 }
 
 /**
@@ -142,12 +152,9 @@ private[bootstrap] class HttpContactPointBootstrap(
 
   private implicit val sys: ActorSystem = context.system
 
-  private val useCustomSslContext: Boolean =
-    settings.contactPoint.httpClient.caPath.trim.nonEmpty ||
-    settings.contactPoint.httpClient.tlsVersion != DefaultTlsVersion
-
-  private lazy val clientSslContext: HttpsConnectionContext =
-    ConnectionContext.httpsClient(generateSSLContext(settings))
+  // None means that the default client https context of the HTTP extension is used
+  private lazy val customClientSslContext: Option[HttpsConnectionContext] =
+    customClientConnectionContext(settings)
 
   private val http = Http()
 
@@ -178,11 +185,13 @@ private[bootstrap] class HttpContactPointBootstrap(
   override def receive = {
     case ProbeTick =>
       log.debug("Probing [{}] for seed nodes...", probeRequest.uri)
-      val response = if (probeRequest.uri.scheme == "https" && useCustomSslContext) {
-        http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
-          connectionContext = clientSslContext)
-      } else {
-        http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries)
+      val customSslContext = if (probeRequest.uri.scheme == "https") customClientSslContext else None
+      val response = customSslContext match {
+        case Some(connectionContext) =>
+          http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries,
+            connectionContext = connectionContext)
+        case None =>
+          http.singleRequest(probeRequest, settings = connectionPoolWithoutRetries)
       }
       // Use a Promise-based pattern instead of Future.firstCompletedOf so that when the
       // timeout fires first, we properly discard the in-flight response entity to release

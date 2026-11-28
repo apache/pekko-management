@@ -139,7 +139,10 @@ final class ClusterBootstrapSettings(config: Config, log: LoggingAdapter) {
       private val httpClientConfig = contactPointConfig.getConfig("http-client")
 
       val caPath: String = httpClientConfig.getString("ca-path")
-      val tlsVersion: String = httpClientConfig.getString("tls-version")
+      val minTlsVersion: String = httpClientConfig.getString("tls-version")
+
+      @deprecated("Use minTlsVersion instead", "2.0.0")
+      val tlsVersion: String = minTlsVersion
 
       /**
        * The username sent as HTTP Basic credentials with the requests made to the contact points.

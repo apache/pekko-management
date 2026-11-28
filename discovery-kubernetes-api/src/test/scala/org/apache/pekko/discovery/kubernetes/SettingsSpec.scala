@@ -17,6 +17,7 @@
 
 package org.apache.pekko.discovery.kubernetes
 
+import scala.annotation.nowarn
 import scala.concurrent.duration._
 
 import com.typesafe.config.ConfigFactory
@@ -27,12 +28,19 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class SettingsSpec extends AnyWordSpec with Matchers {
 
+  @nowarn("cat=deprecation")
+  private def matchesTlsVersion(settings: Settings, version: String): Boolean =
+    version match {
+      case settings.tlsVersion => true
+      case _                   => false
+    }
+
   "Settings" should {
-    "default tls-version to v1.2" in {
+    "default min-tls-version to v1.2" in {
       val system = ActorSystem("test")
       try {
         val settings = Settings(system)
-        settings.tlsVersion shouldBe "TLSv1.2"
+        settings.minTlsVersion shouldBe "TLSv1.2"
       } finally {
         system.terminate()
       }
@@ -46,7 +54,12 @@ class SettingsSpec extends AnyWordSpec with Matchers {
       val system = ActorSystem("test", config)
       try {
         val settings = Settings(system)
-        settings.tlsVersion shouldBe "TLSv1.3"
+        settings.minTlsVersion shouldBe "TLSv1.3"
+        // the deprecated accessor still reports the configured value
+        (settings.tlsVersion: @nowarn("cat=deprecation")) shouldBe "TLSv1.3"
+        // the deprecated accessor is a val, so that it can still be used as a stable identifier
+        matchesTlsVersion(settings, "TLSv1.3") shouldBe true
+        matchesTlsVersion(settings, "TLSv1.2") shouldBe false
       } finally {
         system.terminate()
       }
