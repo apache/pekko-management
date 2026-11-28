@@ -9,6 +9,10 @@
 
 # Migration guide
 
+## 2.0
+
+See @ref:[Migration from Apache Pekko Management 1.x to 2.x](migration-guide-1.x-2.x.md).
+
 ## 1.0
 
 When migrating from Akka Management it is recommended to first upgrade to Akka 2.6.20 / Akka Management 1.1.4 before switching to Pekko/Pekko Management.
